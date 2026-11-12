@@ -1,0 +1,47 @@
+{
+  "en": {
+    "title": "Checking this computer",
+    "ok": "This computer meets the requirements.",
+    "blocked": "The installation cannot continue. Nothing was downloaded.",
+    "warned": "The installation continues, but note:",
+    "doc": "Details: {doc}",
+    "gpu": "Voice Tutor needs an NVIDIA graphics card (GeForce RTX 20 series or newer, 6 GB of video memory or more). No NVIDIA card was found on this computer (found: {value}).",
+    "driver_missing": "The NVIDIA card {name} has no NVIDIA driver installed. Install the latest driver from nvidia.com/drivers or the NVIDIA app, restart the computer and run the installer again.",
+    "driver": "The NVIDIA driver {value} is too old; version {required} or newer is needed. Update it from nvidia.com/drivers or the NVIDIA app, restart the computer and run the installer again.",
+    "architecture": "The card {name} is too old (CUDA compute capability {value}); {required} or newer is needed, which means GeForce RTX 20 series or newer.",
+    "vram": "The card {name} has {value} of video memory; at least {required} is needed.",
+    "ram": "This computer has {value} of RAM; {required} is recommended. The app may be slow while other programs are open.",
+    "disk": "Drive {name} has {value} free; the installation needs about {required}. Free up space and run the installer again.",
+    "windows": "Windows build {value} is older than {required}. The app is tested on Windows 10 22H2 and Windows 11; update Windows if something does not work."
+  },
+  "es": {
+    "title": "Revisando esta computadora",
+    "ok": "Esta computadora cumple los requisitos.",
+    "blocked": "La instalación no puede continuar. No se descargó nada.",
+    "warned": "La instalación continúa, pero ten en cuenta:",
+    "doc": "Detalles: {doc}",
+    "gpu": "Voice Tutor necesita una tarjeta gráfica NVIDIA (GeForce RTX serie 20 o más reciente, con 6 GB de memoria de video o más). No se encontró ninguna tarjeta NVIDIA en esta computadora (se encontró: {value}).",
+    "driver_missing": "La tarjeta NVIDIA {name} no tiene instalado el controlador de NVIDIA. Instala el controlador más reciente desde nvidia.com/drivers o la aplicación NVIDIA, reinicia la computadora y vuelve a ejecutar el instalador.",
+    "driver": "El controlador de NVIDIA {value} es demasiado antiguo; se necesita la versión {required} o más reciente. Actualízalo desde nvidia.com/drivers o la aplicación NVIDIA, reinicia la computadora y vuelve a ejecutar el instalador.",
+    "architecture": "La tarjeta {name} es demasiado antigua (capacidad de cómputo CUDA {value}); se necesita {required} o más, es decir, GeForce RTX serie 20 o más reciente.",
+    "vram": "La tarjeta {name} tiene {value} de memoria de video; se necesitan al menos {required}.",
+    "ram": "Esta computadora tiene {value} de RAM; se recomiendan {required}. La aplicación puede ir lenta si hay otros programas abiertos.",
+    "disk": "La unidad {name} tiene {value} libres; la instalación necesita unos {required}. Libera espacio y vuelve a ejecutar el instalador.",
+    "windows": "La compilación de Windows {value} es anterior a {required}. La aplicación se prueba en Windows 10 22H2 y Windows 11; actualiza Windows si algo no funciona."
+  },
+  "pt-BR": {
+    "title": "Verificando este computador",
+    "ok": "Este computador atende aos requisitos.",
+    "blocked": "A instalação não pode continuar. Nada foi baixado.",
+    "warned": "A instalação continua, mas atenção:",
+    "doc": "Detalhes: {doc}",
+    "gpu": "O Voice Tutor precisa de uma placa de vídeo NVIDIA (GeForce RTX série 20 ou mais nova, com 6 GB de memória de vídeo ou mais). Nenhuma placa NVIDIA foi encontrada neste computador (encontrado: {value}).",
+    "driver_missing": "A placa NVIDIA {name} está sem o driver da NVIDIA. Instale o driver mais recente em nvidia.com/drivers ou pelo aplicativo NVIDIA, reinicie o computador e execute o instalador de novo.",
+    "driver": "O driver da NVIDIA {value} é antigo demais; é preciso a versão {required} ou mais nova. Atualize em nvidia.com/drivers ou pelo aplicativo NVIDIA, reinicie o computador e execute o instalador de novo.",
+    "architecture": "A placa {name} é antiga demais (capacidade de computação CUDA {value}); é preciso {required} ou mais, ou seja, GeForce RTX série 20 ou mais nova.",
+    "vram": "A placa {name} tem {value} de memória de vídeo; são necessários pelo menos {required}.",
+    "ram": "Este computador tem {value} de RAM; o recomendado são {required}. O aplicativo pode ficar lento com outros programas abertos.",
+    "disk": "A unidade {name} tem {value} livres; a instalação precisa de cerca de {required}. Libere espaço e execute o instalador de novo.",
+    "windows": "A compilação do Windows {value} é anterior à {required}. O aplicativo é testado no Windows 10 22H2 e no Windows 11; atualize o Windows se algo não funcionar."
+  }
+}

@@ -1,14 +1,29 @@
 # Prepares everything the app needs: Python environment, dependencies, models.
 # Safe to run again: every step checks what is already in place.
+#
+# -NoHardwareCheck skips the requirements check (scripts\requirements.ps1). It is for developer
+# machines without an NVIDIA GPU (CI) that only need the Python environment; the app itself
+# still checks the hardware at every start.
 param(
-    [switch]$SkipModels
+    [switch]$SkipModels,
+    [switch]$NoHardwareCheck
 )
 . "$PSScriptRoot\_common.ps1"
+. "$PSScriptRoot\requirements.ps1"
 Set-AppEnv
+# Accented messages (Spanish, Portuguese) stay intact when the output is redirected to a log.
+try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch { }
 
 $UvVersion = '0.13.7'
 
 function Write-Step([string]$Text) { Write-Host "--- $Text" -ForegroundColor Cyan }
+
+# 0. Requirements, before anything is downloaded.
+if ($NoHardwareCheck) {
+    Write-Host 'requirements check skipped (-NoHardwareCheck)' -ForegroundColor Yellow
+} elseif (-not (Invoke-VtRequirements -RepoRoot $RepoRoot -DataDir (Get-AppDataDir))) {
+    exit 1
+}
 
 # 1. Python 3.12 through the py launcher.
 Write-Step 'Python 3.12'
