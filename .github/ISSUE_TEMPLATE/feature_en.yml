@@ -1,0 +1,16 @@
+name: Feature request (English)
+description: An idea to make Voice Tutor better.
+labels:
+- enhancement
+body:
+- type: textarea
+  id: idea
+  attributes:
+    label: What would you like?
+    description: Describe the idea and the situation where it helps.
+  validations:
+    required: true
+- type: textarea
+  id: alternatives
+  attributes:
+    label: Alternatives you considered

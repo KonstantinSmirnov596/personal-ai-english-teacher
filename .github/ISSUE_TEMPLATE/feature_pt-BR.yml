@@ -1,0 +1,16 @@
+name: Sugestão de melhoria (português)
+description: Uma ideia para melhorar o Voice Tutor.
+labels:
+- enhancement
+body:
+- type: textarea
+  id: idea
+  attributes:
+    label: O que você gostaria?
+    description: Descreva a ideia e a situação em que ela ajuda.
+  validations:
+    required: true
+- type: textarea
+  id: alternatives
+  attributes:
+    label: Alternativas que você considerou

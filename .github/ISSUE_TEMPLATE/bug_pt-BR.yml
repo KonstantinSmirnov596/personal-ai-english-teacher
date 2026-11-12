@@ -1,0 +1,76 @@
+name: Relato de erro (português)
+description: Algo não funciona como descrito.
+labels:
+- bug
+body:
+- type: markdown
+  attributes:
+    value: 'Nunca cole uma chave de API. Problemas de segurança: veja o SECURITY.md, não abra um relato público.'
+- type: textarea
+  id: what
+  attributes:
+    label: O que aconteceu?
+    description: O que você fez, o que esperava e o que aconteceu no lugar?
+  validations:
+    required: true
+- type: textarea
+  id: steps
+  attributes:
+    label: Passos para reproduzir
+- type: input
+  id: version
+  attributes:
+    label: Versão do Voice Tutor
+    description: Aparece no nome do arquivo da versão, por exemplo 0.1.0.
+  validations:
+    required: true
+- type: input
+  id: windows
+  attributes:
+    label: Versão do Windows
+- type: input
+  id: gpu
+  attributes:
+    label: Placa de vídeo e memória de vídeo
+    description: 'Por exemplo: RTX 3060 Laptop, 6 GB.'
+  validations:
+    required: true
+- type: input
+  id: driver
+  attributes:
+    label: Versão do driver da NVIDIA
+- type: dropdown
+  id: profile
+  attributes:
+    label: Perfil
+    description: Configurações → Desempenho.
+    options:
+    - completo
+    - compacto
+    - não compatível
+    - Não sei
+- type: dropdown
+  id: language
+  attributes:
+    label: Idioma da interface
+    options:
+    - Español
+    - Português
+    - Não se aplica
+- type: input
+  id: provider
+  attributes:
+    label: Provedor e modelo de linguagem (sem a chave)
+- type: textarea
+  id: log
+  attributes:
+    label: Trecho do registro
+    description: 'De %LOCALAPPDATA%\VoiceTutor\logs\voicetutor.log. Melhor ainda: anexe o arquivo do scripts\collect_diagnostics.ps1.'
+    render: text
+- type: checkboxes
+  id: privacy
+  attributes:
+    label: Privacidade
+    options:
+    - label: Tirei as chaves de API e os dados pessoais de tudo o que anexei.
+      required: true

@@ -1,0 +1,76 @@
+name: Reporte de error (español)
+description: Algo no funciona como se describe.
+labels:
+- bug
+body:
+- type: markdown
+  attributes:
+    value: 'Nunca pegues una clave de API. Problemas de seguridad: consulta SECURITY.md, no abras un reporte público.'
+- type: textarea
+  id: what
+  attributes:
+    label: ¿Qué pasó?
+    description: ¿Qué hiciste, qué esperabas y qué pasó en cambio?
+  validations:
+    required: true
+- type: textarea
+  id: steps
+  attributes:
+    label: Pasos para reproducirlo
+- type: input
+  id: version
+  attributes:
+    label: Versión de Voice Tutor
+    description: Aparece en el nombre del archivo de la versión, por ejemplo 0.1.0.
+  validations:
+    required: true
+- type: input
+  id: windows
+  attributes:
+    label: Versión de Windows
+- type: input
+  id: gpu
+  attributes:
+    label: Tarjeta gráfica y memoria de video
+    description: 'Por ejemplo: RTX 3060 Laptop, 6 GB.'
+  validations:
+    required: true
+- type: input
+  id: driver
+  attributes:
+    label: Versión del controlador de NVIDIA
+- type: dropdown
+  id: profile
+  attributes:
+    label: Perfil
+    description: Configuración → Rendimiento.
+    options:
+    - completo
+    - compacto
+    - no compatible
+    - No lo sé
+- type: dropdown
+  id: language
+  attributes:
+    label: Idioma de la interfaz
+    options:
+    - Español
+    - Português
+    - No aplica
+- type: input
+  id: provider
+  attributes:
+    label: Proveedor y modelo de lenguaje (sin la clave)
+- type: textarea
+  id: log
+  attributes:
+    label: Fragmento del registro
+    description: 'De %LOCALAPPDATA%\VoiceTutor\logs\voicetutor.log. Mejor aún: adjunta el archivo de scripts\collect_diagnostics.ps1.'
+    render: text
+- type: checkboxes
+  id: privacy
+  attributes:
+    label: Privacidad
+    options:
+    - label: Quité las claves de API y los datos personales de todo lo que adjunté.
+      required: true
