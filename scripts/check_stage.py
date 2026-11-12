@@ -176,7 +176,8 @@ def _matches(required: str, test_id: str) -> bool:
     return test_id == required or test_id.startswith(required + "[")
 
 
-_PLACEHOLDER = re.compile(r"\b(TBD|TODO)\b|\?\?\?")
+# TBD/TODO/??? anywhere, or a line that is nothing but an upper-case token (a template slot).
+_PLACEHOLDER = re.compile(r"\b(TBD|TODO)\b|\?\?\?|^[A-Z][A-Z_]{3,}$")
 
 
 def check_report(path: Path) -> list[str]:

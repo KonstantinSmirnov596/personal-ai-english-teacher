@@ -2,7 +2,7 @@
 
 ## Result
 
-RESULT_LINE
+Stage 0 is closed: `scripts/check_stage.ps1 0` exits with 0 (repeated setup, `fast`, `gpu` and `e2e` green under the new name, all required tests passed). Open owner questions do not block stage 1.
 
 ## Hardware facts (SPEC 7)
 
@@ -41,7 +41,16 @@ During every run another process (the predecessor's windowless core, see "Did no
 
 ## Checks
 
-CHECKS
+`scripts/check_stage.ps1 0` on 2026-11-12: repeated `scripts/setup.ps1` OK, then:
+
+| Suite | Passed | Failed | Skipped | Note |
+| --- | --- | --- | --- | --- |
+| `fast` | 128 | 0 | 0 | Includes `test_hygiene` (9), `test_licenses` (4), `test_providers` (2), the new connection, client and launcher tests |
+| `gpu` | 26 | 0 | 0 | Includes `test_cuda_device_meets_minimum`, `test_torch_arch_list_covers_minimum`, loop WER, network audit, startup |
+| `e2e` | 11 | 0 | 0 | Edge with fake microphone: conversation, auto mode, helpers, summary, reading, pronunciation marks, shortcut |
+| `live` | — | — | — | Not part of stage 0; no key saved |
+
+Required tests: the predecessor's 60 required tests (its stages 0–4) under the new name plus 19 new ones (`scripts/check_stage.py`, `STAGES[0]`). Reports checked: `stage0.md`, `licenses.md`, `providers.md` (no placeholders, no empty table cells).
 
 ## Decisions and deviations
 
@@ -55,7 +64,9 @@ CHECKS
 
 ## Did not work
 
-DID_NOT_WORK
+- **Unstable `e2e` while another process holds VRAM.** The predecessor's core has been running without a window since 2026-11-11 22:12 and holds about 3.9 GB of VRAM. Its own log says "window closed and not reconnected for 10 s: exiting" at 23:24, but the process never ended. With it running, the test core (about 3.6 GB) and the other process together exceed the 8 GB card; Windows then pages video memory and some end-to-end runs hit their 60 s timeouts. Two of three `e2e` runs had one or three failures, the acceptance run passed completely; each failing test passed when run again alone. Not stopped by Claude Code because it is the owner's process outside the project; question in `docs/HUMAN_TASKS.md`.
+- **The same shutdown hang exists in the inherited launcher.** Fixed: uvicorn now drops open connections after 5 s of graceful shutdown, and an exit watchdog ends the process 30 s after the core decided to exit (`tests/test_launcher.py::test_exit_watchdog_ends_a_process_with_a_stuck_thread`).
+- **VRAM per model** cannot be measured precisely while another process's allocations are being evicted; repeated in stage 3.
 
 ## Needed from the owner
 

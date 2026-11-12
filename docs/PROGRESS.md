@@ -4,9 +4,9 @@ Maintained by Claude Code. Read at the start of every session, updated after eve
 
 ## State
 
-- Current stage: 0
-- Current item: 0.1
-- Last stage check: none yet
+- Current stage: 1
+- Current item: 1.1
+- Last stage check: `check_stage.ps1 0` — exit 0, 2026-11-12 (fast 128, gpu 26, e2e 11)
 
 ## Plan items
 
@@ -14,15 +14,15 @@ Mark `[x]` only after the item's check passed.
 
 ### Stage 0
 
-- [ ] 0.1 Transfer
-- [ ] 0.2 Rename
-- [ ] 0.3 Environment
-- [ ] 0.4 Cleanup
-- [ ] 0.5 Predecessor suites under the new name
-- [ ] 0.6 Hardware facts
-- [ ] 0.7 License audit
-- [ ] 0.8 Provider templates
-- [ ] 0.9 Benchmarks under the new name
+- [x] 0.1 Transfer
+- [x] 0.2 Rename
+- [x] 0.3 Environment
+- [x] 0.4 Cleanup
+- [x] 0.5 Predecessor suites under the new name
+- [x] 0.6 Hardware facts
+- [x] 0.7 License audit
+- [x] 0.8 Provider templates
+- [x] 0.9 Benchmarks under the new name
 
 ### Stage 1
 
@@ -97,7 +97,7 @@ Format: date, item, decision, reason. Deviations from SPEC, PLAN or `docs/design
 
 Format: check, what was tried, what was seen, next step.
 
-- none yet
+- `e2e` flaky while the predecessor's windowless core holds 3.9 GB of VRAM (owner's process outside the project). Tried: rerunning single tests (they pass alone), full suite three times (one, three and zero failures). Seen: 60 s Playwright timeouts waiting for the tutor's first audio when VRAM is oversubscribed. Next: owner decides whether that process may be stopped (HUMAN_TASKS); stage 3 VRAM measurements need a free GPU.
 
 ## Measurements
 
@@ -105,4 +105,11 @@ Latest values of the targets in `docs/PLAN.md`.
 
 | Metric | Target | Measured | Date |
 | --- | --- | --- | --- |
-| STT of a 10 s turn | ≤ 0.4 s | not measured yet | — |
+| STT of a 10 s turn | ≤ 0.4 s | 0.299 s (warm median) | 2026-11-12 |
+| TTS first sentence | ≤ 0.3 s | 0.086 s (warm median) | 2026-11-12 |
+| End of turn → first audio, mock 0 ms | ≤ 0.9 s | 0.399 s (median), 0.402 s max | 2026-11-12 |
+| End of turn → first audio, mock 500 ms | ≤ 1.5 s | 0.907 s (median), 0.925 s max | 2026-11-12 |
+| VRAM, all three models | ≤ 6.5 GB | 3.56 GB device-wide delta (lower bound: another process held VRAM) | 2026-11-12 |
+| WER TTS → STT loop | ≤ 10 % | 0.0 % | 2026-11-12 |
+| Startup to models ready | ≤ 20 s | 15.1–15.9 s (window 2.2 s) | 2026-11-12 |
+| Outbound connections | only the LLM host | 0 outside 127.0.0.1 | 2026-11-12 |
