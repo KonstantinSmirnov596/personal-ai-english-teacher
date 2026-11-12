@@ -87,8 +87,8 @@ Goal: the whole app works in `es-419` and `pt-BR`, switched by hand without rest
   *Check:* `tests/test_corrector_sets.py` (counts, schema); `live` run if a key is saved, otherwise deferred in `HUMAN_TASKS.md`.
 - **1.9 Window behaviour.** Translations, "How do I say?", hints, summary and errors in the learner language; history keeps the language it was created in.
   *Check:* e2e conversation per language; e2e check that elements with `lang="en"` contain no learner-language text (guard detector).
-- **1.10 Drop the Russian locale.** Remove `ru.js`, `i18n_ru.py`, Russian data; shrink the hygiene allowlist to learner-language data paths.
-  *Check:* `test_hygiene.py` with no Cyrillic allowlist.
+- **1.10 Drop the Russian locale.** Remove `ru.js`, `i18n_ru.py`, Russian prompts, mistake keys, scenarios and the Russian corrector set. The Russian pronunciation catalog stays until item 2.1 replaces it.
+  *Check:* `test_hygiene.py` allowlists only `voicetutor/data/l1_ru_catalog.json`; item 2.1 empties the list.
 
 Acceptance (`check_stage.ps1 1`): stage 0 checks; i18n completeness 100 % for both languages; e2e conversation in each language; no learner-language text in `lang="en"` elements; `live` for both languages if a key exists, otherwise noted; `docs/reports/stage1.md`.
 

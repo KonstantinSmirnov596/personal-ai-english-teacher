@@ -130,6 +130,65 @@ STAGES: dict[int, Stage] = {
         reports=("stage0.md", "licenses.md", "providers.md"),
         files=("uv.lock", "LICENSE"),
     ),
+    1: Stage(
+        suites=("fast", "gpu", "e2e"),
+        optional_suites=("live",),
+        required_tests=(
+            # 1.1 registry
+            "tests.test_l1::test_two_languages_are_discovered",
+            "tests.test_l1::test_windows_locale_suggests_a_language",
+            "tests.test_l1::test_a_third_language_is_added_by_files_only",
+            "tests.test_l1::test_every_language_has_its_files",
+            "tests.test_l1::test_core_messages_complete",
+            # 1.2 window strings: completeness 100 % for both languages
+            "tests.test_i18n::test_every_learner_language_has_a_string_file",
+            "tests.test_i18n::test_key_sets_are_identical",
+            "tests.test_i18n::test_values_have_the_same_shape",
+            "tests.test_i18n::test_no_empty_strings",
+            "tests.test_i18n::test_completeness_is_100_percent",
+            "tests.test_i18n::test_strings_are_in_their_language",
+            "tests.test_i18n::test_spanish_variety_is_latin_american",
+            "tests.test_i18n::test_portuguese_variety_is_brazilian",
+            # 1.3 prompts
+            "tests.test_prompts::test_corrector_prompt_names_the_language_and_marks_keys",
+            "tests.test_prompts::test_corrector_example_per_language",
+            "tests.test_prompts::test_helper_and_summary_prompts_take_the_language",
+            "tests.test_prompts::test_tutor_prompt_is_language_neutral_and_stable",
+            # 1.4 note_l1 and migration
+            "tests.test_storage::test_migration_note_l1",
+            "tests.test_storage::test_session_records_its_language",
+            "tests.test_storage::test_builtin_titles_follow_the_language",
+            # 1.5 language guard
+            "tests.test_lang_guard::test_english_with_names_and_places_passes",
+            "tests.test_lang_guard::test_spanish_is_caught",
+            "tests.test_lang_guard::test_portuguese_is_caught",
+            "tests.test_lang_guard::test_counts_cover_the_plan",
+            "tests.test_stage2_logic::test_synthesis_service_rejects_learner_language_before_any_model_work",
+            "tests.gpu.test_speech::test_synthesis_rejects_learner_language",
+            # 1.6 scenarios
+            "tests.test_scenarios::test_ids_exactly_as_in_spec",
+            "tests.test_scenarios::test_titles_and_descriptions_in_every_learner_language",
+            "tests.test_scenarios::test_english_fields_are_english",
+            "tests.test_scenarios::test_no_erp_or_document_workflow",
+            "tests.test_scenarios::test_interviews_follow_the_backend_structure",
+            # 1.7 mistake keys
+            "tests.test_patterns::test_key_set_equals_spec",
+            "tests.test_patterns::test_language_marks_match_spec",
+            "tests.test_patterns::test_every_key_marked_for_a_language_has_a_name_and_hint_in_it",
+            # 1.8 corrector sets
+            "tests.test_corrector_sets::test_set_composition",
+            "tests.test_corrector_sets::test_cases_are_well_formed",
+            # 1.9 window: a conversation in each language, English stays English
+            "tests.e2e.test_conversation::test_conversation_turn",
+            "tests.e2e.test_languages::test_language_switch_and_portuguese_conversation",
+            "tests.e2e.test_stage2_ui::test_helpers_summary_and_vocab",
+            # 1.10 Russian locale gone
+            "tests.test_hygiene::test_cyrillic_only_in_allowed_paths",
+            "tests.test_hygiene::test_cyrillic_allowlist_is_not_stale",
+        ),
+        reports=("stage1.md",),
+        files=("web/i18n/es-419.js", "web/i18n/pt-BR.js"),
+    ),
 }
 
 

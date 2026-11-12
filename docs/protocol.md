@@ -66,7 +66,7 @@ Limits: a turn is 0.3–60 s; a text frame up to 256 KB; a binary frame up to 8 
 | `tutor.done` | `turn_id`, `text`, `interrupted: bool` | The reply is finished; `text` is the cleaned text that was spoken or sent |
 | `corrections` | `turn_id`, `status: "ok" \| "empty" \| "failed" \| "disabled"`, `items: [{id, quote, start, end, fix, type, note_l1, pattern}]`, `better` | Corrections. `start` and `end` are character positions of `quote` in `text`; `null` when the fragment is not found |
 | `pron.flags` | `turn_id`, `items: [{word_index, expected, heard, tip_l1}]` | Pronunciation marks in conversation |
-| `helper.result` | `request_id`, `kind: "hint" \| "translate" \| "how_to_say" \| "exercise"`, `data` | Helper answer; `data` schemas are pydantic models in `voicetutor/protocol.py` |
+| `helper.result` | `request_id`, `kind: "hint" \| "translate" \| "how_to_say" \| "exercise"`, `data` | Helper answer. `hint`: `{options: [{en}]}`; `translate`: `{translation_l1, turn_id}`; `how_to_say`: `{en, alt, note_l1}`; `exercise`: `{correct, note_l1, answer_en, heard}` |
 | `summary` | `session_id`, `key_takeaway`, `exercise`, `corrections`, `patterns`, `sounds`, `phrases` | Session summary |
 | `timing` | `turn_id`, `stt_ms`, `llm_first_sentence_ms`, `tts_first_ms`, `first_audio_ms` | Core timings of a turn. `first_audio_ms` runs from receiving `turn.audio` to sending the first `tutor.sentence` |
 | `error` | `code`, `message_l1`, `retryable: bool`, `turn_id?`, `request_id?` | Error. Afterwards the core is `idle` |
@@ -120,7 +120,7 @@ All routes are under `/api`, bodies and answers are JSON unless noted. Error: st
 
 ### Connections
 
-Connection object in answers: `{id, name, base_url, model, extra_params, key_last4, is_active, last_test: {ok, latency_ms, message_l1, at} | null}`. A field with the full key does not exist in any answer.
+Connection object in answers: `{id, name, base_url, model, extra_params, json_format, key_last4, is_active, last_test: {ok, latency_ms, message_l1, at} | null}`. A field with the full key does not exist in any answer. `json_format` is `json_object`, `json_schema` or `none` (`docs/reports/providers.md`). `api_key` may be empty only for `http://127.0.0.1` and `http://localhost` URLs (local model servers); then no `Authorization` header is sent.
 
 | Method and path | Body | Action |
 | --- | --- | --- |
@@ -139,7 +139,8 @@ Connection object in answers: `{id, name, base_url, model, extra_params, key_las
 
 | Method and path | Action |
 | --- | --- |
-| `GET /api/settings`, `PATCH /api/settings` | All settings as one object |
+| `GET /api/settings`, `PATCH /api/settings` | All settings as one object; `l1` is the learner language code (`es-419`, `pt-BR`) or empty until confirmed |
+| `GET /api/languages` | `{current, confirmed, available: [{code, name_native, name_en, html_lang}]}` — learner languages found in `voicetutor/data/l1/`; `current` is the setting or the Windows-locale suggestion |
 | `GET /api/voices` | American Kokoro voices to choose from |
 | `POST /api/voices/preview` | `{voice, speed}` → a short phrase in the chosen voice, `audio/wav` |
 | `GET /api/scenarios`, `POST /api/scenarios`, `PATCH /api/scenarios/{id}`, `DELETE /api/scenarios/{id}` | Scenarios; built-in ones cannot be deleted |
@@ -197,6 +198,10 @@ Attempt analysis (shortened):
 - `POST /api/pron/feedback` answers `{phone, sensitivity_offset, attempt}`: the updated attempt with the mark removed.
 - Errors: `pron_no_speech` (no speech heard), `pron_bad_audio`, `pron_no_text`, `audio_too_short`, `audio_too_long` — status `422`; `pron_unavailable` — `503`.
 - `pron.flags` in conversation: `expected` and `heard` are sound symbols, `word_index` is the word number in `user.transcript.words`.
+
+## Learner language
+
+Texts in the learner's language travel in fields ending in `_l1` (`note_l1`, `message_l1`, `tip_l1`, `title_l1`, `translation_l1`, ...). The core writes them in the current learner language (`GET /api/languages`); a session stores the language it was held in (`l1` in `GET /api/sessions`), and its corrections keep that language when the setting changes later. English fields (`quote`, `fix`, `better`, `en`, tutor text) never contain learner-language text: the language guard (`voicetutor/lang_guard.py`) checks LLM answers and every sentence before speech synthesis.
 
 ## What the core sends to the LLM provider
 

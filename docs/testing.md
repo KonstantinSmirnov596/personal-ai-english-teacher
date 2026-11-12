@@ -127,7 +127,7 @@ Measurement points match the fields of the `timing` message in `docs/protocol.md
 
 ## Corrector quality (`live` suite)
 
-Evaluation sets in `voicetutor/data/` hold phrases with the expected result. The test runs them through the real prompt and the active connection.
+Evaluation sets `voicetutor/data/l1/<code>/corrector_eval.jsonl` hold 40 phrases per learner language: 28 with mistakes typical for its speakers, 8 correct ones (including colloquial forms and fillers) and 4 with low-confidence words. The test runs each set through the real prompt in that language and the active connection; at most 80 requests per language.
 
 | Metric | Threshold |
 | --- | --- |
@@ -136,7 +136,7 @@ Evaluation sets in `voicetutor/data/` hold phrases with the expected result. The
 | Correct phrases (`expect: []`) stay without corrections | ≥ 80 % of phrases |
 | A phrase with an error gets the expected `pattern` key | ≥ 70 % of phrases |
 | Words from `low_conf` never get into `quote` | 100 % |
-| The explanation is in the learner language and at most 25 words | 100 % |
+| `note_l1` is in the learner language (language guard) and at most 25 words | 100 % |
 
 If a threshold is missed, the prompt in the code is changed and the result and the new text go into the stage report. Without a key this check is deferred to `docs/HUMAN_TASKS.md`.
 

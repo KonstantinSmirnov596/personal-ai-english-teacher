@@ -6,6 +6,7 @@ on machines that are neither es-* nor pt-*); `test_conversation.py` covers a who
 
 from __future__ import annotations
 
+import time
 from collections.abc import Iterator
 
 import pytest
@@ -24,6 +25,14 @@ def env(tmp_path_factory: pytest.TempPathFactory) -> Iterator[E2E]:
 
 def nav_text(page) -> str:
     return page.locator("nav.nav").inner_text()
+
+
+def wait_html_lang(page, lang: str, timeout: float = 10.0) -> None:
+    """Poll from Python: the window's CSP forbids Playwright's string predicates."""
+    deadline = time.monotonic() + timeout
+    while page.get_attribute("html", "lang") != lang:
+        assert time.monotonic() < deadline, page.get_attribute("html", "lang")
+        time.sleep(0.05)
 
 
 def test_language_switch_and_portuguese_conversation(env: E2E) -> None:
@@ -46,7 +55,7 @@ def test_language_switch_and_portuguese_conversation(env: E2E) -> None:
     page.goto(env.lp.base + "/#/settings/language")
     page.evaluate("window.__noReload = 1")
     page.click("[data-testid=language-switch] [data-lang=pt-BR]")
-    page.wait_for_function("document.documentElement.lang === 'pt-BR'")
+    wait_html_lang(page, "pt-BR")
     assert page.evaluate("window.__noReload") == 1
     assert "Conversa" in nav_text(page) and "Leitura" in nav_text(page)
     assert page.locator("h1").first.inner_text() == "Idioma"
@@ -91,7 +100,7 @@ def test_language_switch_and_portuguese_conversation(env: E2E) -> None:
     # Back to Spanish: the past session keeps its own language in the history
     page.goto(env.lp.base + "/#/settings/language")
     page.click("[data-testid=language-switch] [data-lang=es-419]")
-    page.wait_for_function("document.documentElement.lang === 'es-419'")
+    wait_html_lang(page, "es-419")
     assert "Conversación" in nav_text(page)
     with env.http() as c:
         sessions = c.get("/api/sessions").json()
