@@ -9,6 +9,7 @@ import numpy as np
 
 from voicetutor.hardware import GpuInfo, HardwareInfo
 from voicetutor.speech.stt import Transcript
+from voicetutor.speech.tts import Synthesis
 
 
 def machine(
@@ -72,6 +73,24 @@ class FakeSTT:
 @dataclass
 class FakePhonemeModel:
     loaded: bool = True
+
+    def unload(self) -> None:
+        self.loaded = False
+
+
+@dataclass
+class FakeTTS:
+    """Speech synthesizer double: a short silence per sentence."""
+
+    loaded: bool = True
+    spoken: list[str] = field(default_factory=list)
+
+    def synthesize(self, text: str, voice: str = "af_heart", speed: float = 1.0) -> Synthesis:
+        self.spoken.append(text)
+        return Synthesis(audio=np.zeros(2400, dtype=np.float32), sample_rate=24000, elapsed_ms=1.0)
+
+    def load(self) -> None:
+        self.loaded = True
 
     def unload(self) -> None:
         self.loaded = False

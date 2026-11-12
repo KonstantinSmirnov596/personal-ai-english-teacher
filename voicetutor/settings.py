@@ -49,6 +49,8 @@ class Settings(BaseModel):
     profile: ProfileSetting = "auto"
     wizard_done: bool = False
     vad_threshold: float = Field(default=0.5, ge=0.2, le=0.9)
+    # Settings -> Data: also write the text of each turn to the log (for a bug report).
+    verbose_log: bool = False
 
     @field_validator("voice")
     @classmethod
@@ -85,6 +87,7 @@ class SettingsPatch(BaseModel):
     profile: ProfileSetting | None = None
     wizard_done: bool | None = None
     vad_threshold: float | None = Field(default=None, ge=0.2, le=0.9)
+    verbose_log: bool | None = None
 
     @field_validator("l1")
     @classmethod

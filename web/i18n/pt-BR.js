@@ -261,6 +261,8 @@ export default {
     deleteHint: 'São excluídos sessões, correções, estatísticas, vocabulário e gravações. As configurações continuam.',
     includeKeys: 'Excluir também as conexões de API e as chaves',
     deleteConfirm: 'Excluir todos os dados? Não dá para desfazer.',
+    verboseLog: 'Registro detalhado: gravar também o texto das conversas no registro',
+    verboseLogWarning: 'Ative só para relatar um erro: o texto das suas conversas fica no registro do seu computador. Desative depois de enviar o relato.',
     deleted: 'Dados excluídos',
   },
   wizard: {

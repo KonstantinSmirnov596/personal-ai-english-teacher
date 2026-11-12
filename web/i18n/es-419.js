@@ -261,6 +261,8 @@ export default {
     deleteHint: 'Se eliminan sesiones, correcciones, estadísticas, vocabulario y grabaciones. La configuración se conserva.',
     includeKeys: 'Eliminar también las conexiones de API y sus claves',
     deleteConfirm: '¿Eliminar todos los datos? Esta acción no se puede deshacer.',
+    verboseLog: 'Registro detallado: guardar también el texto de las conversaciones en el registro',
+    verboseLogWarning: 'Activa esto solo para reportar un error: el texto de tus conversaciones queda en el registro de tu computadora. Desactívalo después de enviar el reporte.',
     deleted: 'Datos eliminados',
   },
   wizard: {

@@ -294,6 +294,12 @@ export class SettingsView {
         this.status.textContent = e.message;
       }
     });
+    const verboseHint = el('p', { class: 'form-error', 'data-testid': 'verbose-log-warning', text: D.verboseLogWarning });
+    verboseHint.classList.toggle('hidden', !this.settings.verbose_log);
+    const verbose = this.checkbox('verbose-log', D.verboseLog, this.settings.verbose_log, (v) => {
+      verboseHint.classList.toggle('hidden', !v);
+      this.save({ verbose_log: v });
+    });
     return el('div', { class: 'settings-group' }, [
       this.field(D.retention, retention),
       el('p', { class: 'muted small', text: D.retentionHint }),
@@ -305,6 +311,8 @@ export class SettingsView {
       el('p', { class: 'muted small', text: D.deleteHint }),
       el('label', { class: 'check', for: 'include-keys' }, [includeKeys, el('span', { text: D.includeKeys })]),
       el('div', { class: 'form-actions' }, [del]),
+      verbose,
+      verboseHint,
     ]);
   }
 }

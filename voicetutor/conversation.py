@@ -72,6 +72,9 @@ from voicetutor.speech.sentences import (
 from voicetutor.storage.repo import new_id
 
 log = logging.getLogger(__name__)
+# Text of the conversation goes only here, and only with Settings -> Data -> "Detailed log"
+# (verbose_log); scripts/collect_diagnostics.ps1 drops this logger's lines.
+turn_log = logging.getLogger("voicetutor.turns")
 
 CORRECTOR_WAIT_ON_END_S = 15.0
 
@@ -347,6 +350,7 @@ class Conversation:
         low_conf = [i for i, w in enumerate(transcript.words) if w.p < threshold]
         text = transcript.text.strip()
         await self.send(UserTranscript(turn_id=turn_id, text=text, words=words, low_conf=low_conf))
+        self._log_text("learner", text)
         if not text:
             await self.set_state("idle")
             return
@@ -570,11 +574,16 @@ class Conversation:
                         )
                     )
 
+    def _log_text(self, who: str, text: str) -> None:
+        if text and self.core.settings.get().verbose_log:
+            turn_log.info("%s: %s", who, text)
+
     async def _finish_reply(self, session: SessionCtx, reply: ReplyCtx, interrupted: bool) -> None:
         full = clean_for_display("".join(reply.text_parts))
         text = " ".join(reply.sentences_sent) if interrupted else full
         reply.finished = True
         await self.send(TutorDone(turn_id=reply.turn_id, text=text, interrupted=interrupted))
+        self._log_text("tutor", text)
         self._record_tutor_turn(session, reply, text, interrupted)
         if not reply.sentences_sent:
             await self.set_state("idle")
