@@ -248,3 +248,26 @@ def test_pron_routes_without_model(tmp_path: Path) -> None:
             ctx.client.get("/api/pron/reference?text=Hola%2C%20%C2%BFqu%C3%A9%20tal%3F").status_code
             == 422
         )
+
+
+def test_one_vowel_between_words_is_one_mistake() -> None:
+    """Portuguese: a vowel between "should" and "start" is either added after /d/ or before
+    /s/ (both catalogued); it is reported once, where the evidence is stronger."""
+    source = ["should", "start"]
+    ref = build_reference(source, "pt-BR")
+    d = phones_of(ref, "should")[-1]
+    s = phones_of(ref, "start")[0]
+    after = next(v for v in d.competitors if len(v) == 2 and v[0] == "d")
+    before = next(v for v in s.competitors if len(v) == 2 and v[1] == "s")
+    phones = []
+    for p in ref.phones:
+        llr = {c: -5.0 for c in p.competitors}
+        if p is d:
+            llr[after] = 3.0
+        if p is s:
+            llr[before] = 6.0
+        phones.append(ev(llr))
+    res = build_result(ref, Evidence(phones, [], 1.0, 1.0), source)
+    levels = {w["w"]: w["level"] for w in res["words"]}
+    assert levels == {"should": "ok", "start": "error"}
+    assert res["words"][1]["tip"]["catalog_id"] == "s_cluster_epenthesis"

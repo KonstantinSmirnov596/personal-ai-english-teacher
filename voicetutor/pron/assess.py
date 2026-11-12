@@ -103,6 +103,31 @@ def heard_of(p: RefPhone, j: Judgement) -> str:
     return catalog.heard_display(j.entry, p, j.heard)
 
 
+def one_insertion_per_gap(judgements: list[Judgement]) -> None:
+    """One vowel between two consonants is one mistake, not two.
+
+    A vowel heard between "should" and "start" fits both "added after the final /d/" and
+    "added before the /s/ cluster" (both are in the Portuguese catalog). When neighbouring
+    phones carry an insertion after and an insertion before, only the stronger stays.
+    """
+    for i in range(len(judgements) - 1):
+        a, b = judgements[i], judgements[i + 1]
+        if (
+            a.level != "ok"
+            and b.level != "ok"
+            and a.entry is not None
+            and b.entry is not None
+            and a.entry.detect == "insertion"
+            and b.entry.detect == "insertion"
+            and a.entry.insert_where == "after"
+            and b.entry.insert_where == "before"
+        ):
+            if a.llr >= b.llr:
+                judgements[i + 1] = Judgement("ok", None, None, b.llr, b.gop)
+            else:
+                judgements[i] = Judgement("ok", None, None, a.llr, a.gop)
+
+
 def build_result(
     ref: Reference,
     evidence: Evidence,
@@ -120,6 +145,7 @@ def build_result(
         judge(p, e, th, offsets.get(p.cls, 0.0), strict)
         for p, e in zip(ref.phones, evidence.phones, strict=True)
     ]
+    one_insertion_per_gap(judgements)
     by_source: dict[int, list[int]] = {}
     for wi, w in enumerate(ref.words):
         by_source.setdefault(w.source_index, []).append(wi)

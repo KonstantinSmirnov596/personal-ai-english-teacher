@@ -2,14 +2,14 @@
   "goal_s": 20.0,
   "runs": [
     {
-      "server_s": 1.59,
-      "window_s": 2.03,
-      "models_ready_s": 13.81
+      "server_s": 1.67,
+      "window_s": 2.11,
+      "models_ready_s": 17.11
     },
     {
-      "server_s": 1.63,
-      "window_s": 2.08,
-      "models_ready_s": 13.96
+      "server_s": 1.81,
+      "window_s": 2.29,
+      "models_ready_s": 17.69
     }
   ]
 }

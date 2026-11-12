@@ -6669,7 +6669,7 @@
     ]
   },
   "timing": {
-    "analysis_s_median_for_5s_phrase": 0.05,
-    "analysis_s_max": 9.38
+    "analysis_s_median_for_5s_phrase": 0.062,
+    "analysis_s_max": 11.572
   }
 }
