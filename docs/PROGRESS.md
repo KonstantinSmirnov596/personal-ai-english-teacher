@@ -5,7 +5,7 @@ Maintained by Claude Code. Read at the start of every session, updated after eve
 ## State
 
 - Current stage: 4
-- Current item: 4.1–4.7 in progress (installer, release, privacy, docs, GitHub files, diagnostics written; manifest, screenshots and clean install pending)
+- Current item: 4.8 Final regression (`check_stage.ps1 4` from a clean worktree)
 - Last stage check: `check_stage.ps1 3` — exit 0, 2026-11-12, worktree of `7a1f328` (fast 291, gpu 29, e2e 18, gpu@compacto 29, e2e@compacto 18, live skipped: no key)
 
 ## Plan items
@@ -59,13 +59,13 @@ Mark `[x]` only after the item's check passed.
 
 ### Stage 4
 
-- [ ] 4.1 Installer
-- [ ] 4.2 Release packaging
-- [ ] 4.3 Privacy hardening
-- [ ] 4.4 Documentation
-- [ ] 4.5 Screenshots
-- [ ] 4.6 GitHub files
-- [ ] 4.7 Diagnostics
+- [x] 4.1 Installer
+- [x] 4.2 Release packaging
+- [x] 4.3 Privacy hardening
+- [x] 4.4 Documentation
+- [x] 4.5 Screenshots
+- [x] 4.6 GitHub files
+- [x] 4.7 Diagnostics
 - [ ] 4.8 Final regression
 
 ## Decisions
@@ -143,6 +143,11 @@ Format: date, item, decision, reason. Deviations from SPEC, PLAN or `docs/design
 | 2026-11-12 | 4.6 | CI runs on `windows-latest` with `setup.ps1 -NoHardwareCheck -SkipModels`, then `ci_local.ps1`; `actions/checkout` pinned to the v7.0.1 commit `3d3c42e5…`; no secrets | GitHub runners have no NVIDIA GPU; gpu and e2e run locally in `check_release.ps1` |
 | 2026-11-12 | 4.7 | Diagnostics are built in Python (`voicetutor/diagnostics.py`): saved keys are read from the Credential Manager only to remove exact matches, plus key-like patterns; the Windows user name in paths becomes `<user>` | The strongest guarantee that a key cannot slip through a pattern |
 | 2026-11-12 | 3.8 | Reading fixture "estart" → "es-TART" (`[start](/ɛsˈtɑɹt/)`); e2e recordings are armed right after a phrase ended; generated fixtures are rebuilt when their spec changes | The reading e2e test failed in 3 of 6 full runs: the old fixture's inserted vowel scored 1.4–4.2 nats through Edge's microphone path against the 2.0 error margin (3.3 on the file itself); "es-TART" scores 7.0. Waiting for any 1 s of silence could also end just before the looping file restarted. The check is unchanged: both words must be errors |
+| 2026-11-12 | 4.1 | Shortcuts are written and read through `IShellLinkW` (`scripts/shortcut.ps1`, a C# helper loaded with `Add-Type`) instead of `WScript.Shell` | The clean install into "José Ñ" failed: WScript.Shell goes through the ANSI code page, could not save the shortcut and reported its target mangled |
+| 2026-11-12 | 4.1 | `setup.ps1` installs the test tools only with `-Dev` (CI, developers); `install.cmd` runs `uv sync --no-dev` | Users do not need pytest, ruff or Playwright |
+| 2026-11-12 | 4.1 | The `.cmd` wrappers clear `PSModulePath`; the installer hashes, downloads and unzips through .NET | Windows PowerShell started from a PowerShell 7 terminal inherited PS7's module path and could not load `Get-FileHash` |
+| 2026-11-12 | 4.1 | `.gitattributes` keeps CRLF for `.cmd`, `.bat`, `.ps1` | `* text=auto eol=lf` would give batch files LF endings on checkout, which cmd.exe can misread |
+| 2026-11-12 | 4.5 | Of two neighbouring insertions "added after" and "added before" (the same vowel between two words) only the one with the larger margin is reported | The Portuguese README screenshot showed a false mark on "should" before "es-TART"; the stage 2 metrics of both languages are unchanged |
 ## Failed checks
 
 Format: check, what was tried, what was seen, next step.
@@ -178,3 +183,7 @@ Latest values of the targets in `docs/PLAN.md`.
 | STT of a 10 s phrase, `completo` / `compacto` | ≤ 0.4 s | 0.367 s / 0.323 s (acceptance run) | 2026-11-12 |
 | WER TTS → STT loop, `completo` / `compacto` | ≤ 10 %, delta ≤ 2 pp | 0.0 % / 0.0 % | 2026-11-12 |
 | Wizard benchmark, first audio without LLM | ≤ 1.2 s keeps `completo` | 0.39–0.41 s | 2026-11-12 |
+| Clean install from the release archive (accented folder, empty LOCALAPPDATA/TEMP) | passes | passed: 241 s with cached packages, about 5 min with all downloads; app start, speech, reading, uninstall | 2026-11-12 |
+| Release archive | no models, environment or binaries | 0.5 MB, `SHA256SUMS.txt` | 2026-11-12 |
+| Input tokens per answer (mock, 0.3 tokens/char) | measured | tutor 850 → 1300 over 10 answers, correction about 1450; session about 26,000 | 2026-11-12 |
+| `ci_local.ps1` | green | green: ruff clean, 326 fast tests | 2026-11-12 |
