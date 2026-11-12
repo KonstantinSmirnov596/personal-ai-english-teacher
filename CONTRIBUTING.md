@@ -13,7 +13,7 @@ Use the issue templates (bug report or feature request, in English, Spanish or P
 Requirements: Windows 10 22H2 or 11, an NVIDIA GPU of the Turing generation or newer with driver 572.61 or newer, and Git. Python is not needed: the setup installs its own.
 
 ```powershell
-scripts\setup.ps1              # uv, Python 3.12, packages from uv.lock, models, fonts, voice detector
+scripts\setup.ps1 -Dev         # uv, Python 3.12, packages and test tools from uv.lock, models, fonts
 scripts\run.ps1                # start the app from a terminal
 scripts\test.ps1 fast          # tests without a GPU (about a minute)
 scripts\test.ps1 gpu           # models on the GPU
@@ -21,7 +21,7 @@ scripts\test.ps1 e2e           # the whole window in Edge with a fake microphone
 scripts\ci_local.ps1           # the CI steps
 ```
 
-`scripts\setup.ps1 -NoHardwareCheck -SkipModels` prepares only the Python environment on a machine without an NVIDIA GPU (enough for `fast` and `ruff`). The `live` suite calls a real LLM provider with your own key and costs money; it is never required for a pull request.
+`scripts\setup.ps1 -Dev -NoHardwareCheck -SkipModels` prepares only the Python environment on a machine without an NVIDIA GPU (enough for `fast` and `ruff`). The `live` suite calls a real LLM provider with your own key and costs money; it is never required for a pull request.
 
 How the app is built: `docs/design.md` (architecture), `docs/protocol.md` (window ↔ core contract), `docs/testing.md` (how everything is tested without a person).
 

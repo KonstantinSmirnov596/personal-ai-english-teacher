@@ -48,10 +48,10 @@ if ($deleteData -and (Test-Path $VenvPython)) {
 }
 
 # Shortcuts that point to this app.
-$shell = New-Object -ComObject WScript.Shell
+. "$PSScriptRoot\shortcut.ps1"
 foreach ($link in @((Get-VtShortcutPaths) + (Join-Path $RepoRoot 'Voice Tutor.lnk'))) {
     if (Test-Path $link) {
-        $target = $shell.CreateShortcut($link).TargetPath
+        $target = Get-VtShortcutTarget $link
         if ($target -and $target.StartsWith($VenvDir, [StringComparison]::OrdinalIgnoreCase)) {
             Remove-Item -Force $link
         }

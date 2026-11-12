@@ -25,18 +25,13 @@ if ($OutDir) {
     if ($StartMenu) { $targets += [Environment]::GetFolderPath('Programs') }
 }
 
-$shell = New-Object -ComObject WScript.Shell
+. "$PSScriptRoot\shortcut.ps1"
+$iconPath = ''
+if (Test-Path $icon) { $iconPath = $icon }
 foreach ($dir in $targets) {
     if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Force $dir | Out-Null }
     $path = Join-Path $dir "$name.lnk"
-    $link = $shell.CreateShortcut($path)
-    $link.TargetPath = $pythonw
-    $link.Arguments = '-m voicetutor.launcher'
-    $link.WorkingDirectory = $RepoRoot
-    $link.Description = 'Voice Tutor'
-    if (Test-Path $icon) { $link.IconLocation = "$icon,0" }
-    $link.WindowStyle = 1
-    $link.Save()
+    New-VtShortcut -Path $path -Target $pythonw -Arguments '-m voicetutor.launcher' -WorkDir $RepoRoot -Icon $iconPath
     Write-Host "shortcut: $path"
 }
 exit 0

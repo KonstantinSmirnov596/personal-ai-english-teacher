@@ -1,7 +1,7 @@
 """Clean installation from the release archive (plan item 4.1).
 
 1. ``make_release`` builds ``VoiceTutor-<version>.zip``; it is extracted into a folder whose path
-   has spaces and accents.
+   has a space and accents (and stays under the installer's 80-character limit).
 2. ``LOCALAPPDATA`` and ``TEMP`` point to new empty folders (also with spaces and an accent), so
    nothing from this machine is reused: uv, Python, packages and models are downloaded and
    verified again by ``install.cmd -Shortcuts no -NoLaunch``.
@@ -127,7 +127,7 @@ def main() -> int:
     try:
         step("release archive")
         archive = make_release.build(root / "dist")
-        target = root / "Usuário José" / "Mis programas"
+        target = root / "José Ñ"  # accents and a space, short enough for the path check
         with zipfile.ZipFile(archive) as z:
             z.extractall(target)
             app = target / z.namelist()[0].split("/", 1)[0]

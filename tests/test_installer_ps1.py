@@ -146,6 +146,7 @@ def test_setup_order_and_pins() -> None:
     positions = [setup.index(x) for x in order]
     assert positions == sorted(positions), list(zip(order, positions, strict=True))
     assert "--no-bin --no-registry" in setup
+    assert "sync --locked --no-dev" in setup  # users get no test tools
     installer = (SCRIPTS / "installer.ps1").read_text(encoding="ascii")
     assert "$script:VtUvVersion = '0.13.7'" in installer
     assert "0cdc5b38fe5a8168ed6a25814f5ba43c21d313dd3187314fccb37b7cec46e021" in installer
@@ -188,3 +189,35 @@ def test_every_script_parses_in_windows_powershell() -> None:
         check=False,
     )
     assert proc.returncode == 0 and proc.stdout.strip() == "ok", proc.stdout + proc.stderr
+
+
+def test_shortcuts_in_accented_folders(tmp_path: Path) -> None:
+    """WScript.Shell cannot save a shortcut under "José Ñ"; the Unicode helper can, and the
+    target reads back unchanged (scripts/shortcut.ps1)."""
+    folder = tmp_path / "José Ñ" / "Voice Tutor"
+    folder.mkdir(parents=True)
+    target = folder / "pythonw.exe"
+    target.write_bytes(b"")
+    link = folder / "Voice Tutor.lnk"
+    code = (
+        f". '{SCRIPTS / 'shortcut.ps1'}'; "
+        f"New-VtShortcut -Path '{link}' -Target '{target}' -Arguments '-m voicetutor.launcher' "
+        f"-WorkDir '{folder}' -Icon ''; "
+        f"Get-VtShortcutTarget '{link}'"
+    )
+    runner = tmp_path / "runner.ps1"
+    runner.write_text(code, encoding="utf-8-sig")
+    proc = subprocess.run(
+        [
+            *("powershell.exe", "-NoProfile", "-NonInteractive"),
+            *("-ExecutionPolicy", "Bypass", "-File", str(runner)),
+        ],
+        capture_output=True,
+        timeout=120,
+        check=False,
+        env={k: v for k, v in os.environ.items() if k != "PSModulePath"},
+    )
+    out = proc.stdout.decode("utf-8", "replace").strip()
+    assert proc.returncode == 0, proc.stderr.decode("utf-8", "replace")
+    assert link.exists()
+    assert out.splitlines()[-1] == str(target), out

@@ -65,7 +65,7 @@ Pinned in `uv.lock`; facts and links in `docs/reports/stage0.md`.
 
 ## Commands
 
-- `scripts/setup.ps1` — environment, dependencies, models, fonts, VAD. Safe to run again.
+- `scripts/setup.ps1 -Dev` — environment with test tools, dependencies, models, fonts, VAD. Safe to run again (`install.cmd` runs it without `-Dev` for users).
 - `scripts/run.ps1` — start the app from a terminal.
 - `scripts/test.ps1 fast|gpu|e2e|live|all` — test suites. `live` costs the owner money: only on the owner's word.
 - `scripts/check_stage.ps1 <N>` — stage acceptance (suites of stage N and earlier, required tests, reports).

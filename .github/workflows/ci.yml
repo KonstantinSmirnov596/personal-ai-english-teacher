@@ -27,7 +27,7 @@ jobs:
 
       - name: Set up uv, Python and packages (no hardware check, no models)
         shell: powershell
-        run: scripts\setup.ps1 -NoHardwareCheck -SkipModels -Shortcuts no -NoLaunch
+        run: scripts\setup.ps1 -Dev -NoHardwareCheck -SkipModels -Shortcuts no -NoLaunch
 
       - name: Lint and fast tests
         shell: powershell

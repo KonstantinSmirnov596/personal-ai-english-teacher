@@ -15,11 +15,13 @@
 #   -SkipModels       do not download models
 #   -Shortcuts ask|yes|no  Desktop and Start menu shortcuts (ask: a question in the console)
 #   -NoLaunch         do not start the app at the end
+#   -Dev              also install the developer tools (pytest, ruff, Playwright) for the tests
 param(
     [switch]$SkipModels,
     [switch]$NoHardwareCheck,
     [ValidateSet('ask', 'yes', 'no')][string]$Shortcuts = 'ask',
-    [switch]$NoLaunch
+    [switch]$NoLaunch,
+    [switch]$Dev
 )
 . "$PSScriptRoot\_common.ps1"
 . "$PSScriptRoot\requirements.ps1"
@@ -72,7 +74,12 @@ try {
     Write-Step (Say 'step_packages')
     Push-Location $RepoRoot
     try {
-        Invoke-Checked $uv sync --locked --python $python.Trim()
+        # Users get the app's packages only; developers add the test tools with -Dev.
+        if ($Dev) {
+            Invoke-Checked $uv sync --locked --python $python.Trim()
+        } else {
+            Invoke-Checked $uv sync --locked --no-dev --python $python.Trim()
+        }
     } finally {
         Pop-Location
     }

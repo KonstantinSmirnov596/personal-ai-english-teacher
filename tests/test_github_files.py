@@ -25,7 +25,7 @@ def test_workflow_is_minimal_and_pinned() -> None:
     uses = [s["uses"] for s in steps if "uses" in s]
     assert uses and all(re.fullmatch(r"[\w.-]+/[\w.-]+@[0-9a-f]{40}", u) for u in uses), uses
     runs = " ".join(s.get("run", "") for s in steps)
-    assert "ci_local.ps1" in runs and "-NoHardwareCheck" in runs
+    assert "ci_local.ps1" in runs and "-NoHardwareCheck" in runs and "-Dev" in runs
     text = (GH / "workflows" / "ci.yml").read_text(encoding="utf-8")
     assert "secrets." not in text  # CI never needs a key
 
