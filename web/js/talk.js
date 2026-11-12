@@ -81,6 +81,20 @@ export class TalkView {
     const col = clear(this.feedColumn);
     const wrap = el('section', { class: 'start' });
     col.append(wrap);
+    // Hardware and model problems come first: without them nothing else can work.
+    for (const problem of this.app.problems || []) {
+      wrap.append(
+        el('div', { class: 'notice', role: 'alert', 'data-testid': 'problem-banner', 'data-code': problem.code }, [
+          el('h2', { text: L.problems.title }),
+          el('p', { text: L.problems[problem.code] || problem.message_l1 }),
+          problem.code === 'unsupported_hardware' || problem.code === 'models_missing'
+            ? el('div', { class: 'form-actions' }, [
+                el('a', { class: 'btn', href: problem.code === 'models_missing' ? '#/wizard/models' : '#/wizard/hardware', 'data-testid': 'problem-details', text: L.problems.details }),
+              ])
+            : null,
+        ]),
+      );
+    }
     if (!this.app.activeConnection) {
       wrap.append(
         el('div', { class: 'notice' }, [
@@ -92,14 +106,6 @@ export class TalkView {
         ]),
       );
       return;
-    }
-    for (const problem of this.app.problems || []) {
-      wrap.append(
-        el('div', { class: 'notice', role: 'alert', 'data-testid': 'problem-banner', 'data-code': problem.code }, [
-          el('h2', { text: L.problems.title }),
-          el('p', { text: L.problems[problem.code] || problem.message_l1 }),
-        ]),
-      );
     }
     if (this.micState === 'denied') wrap.append(this.micDeniedNotice());
     try {
@@ -468,9 +474,9 @@ export class TalkView {
     const listen = wanted && (!busy || s.headphones === true) && !(this.autoTurn && this.coreState === 'transcribing');
     try {
       if (listen) {
-        if (!this.auto.vad) await this.auto.start(s.pause_ms || 1500);
+        if (!this.auto.vad) await this.auto.start(s.pause_ms || 1500, s.vad_threshold || 0.5);
         else {
-          this.auto.setPause(s.pause_ms || 1500);
+          this.auto.setPause(s.pause_ms || 1500, s.vad_threshold || 0.5);
           await this.auto.resume();
         }
       } else {

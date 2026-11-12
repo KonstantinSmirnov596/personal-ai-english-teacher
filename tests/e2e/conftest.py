@@ -20,6 +20,7 @@ import pytest
 from tests.fixtures.make_fixtures import ensure_turns
 from tests.launcher_proc import LauncherProcess
 from tests.mock_llm import MockLLM
+from tests.profile_opt import apply_profile
 from voicetutor.server.guard import COOKIE_NAME
 
 ARTIFACTS = Path(__file__).resolve().parents[2] / "test-results" / "e2e"
@@ -86,7 +87,11 @@ def e2e(tmp_path_factory: pytest.TempPathFactory) -> Iterator[E2E]:
     yield from open_env(tmp_path_factory, "turn_basic")
 
 
-def open_env(tmp_path_factory: pytest.TempPathFactory, wav_name: str) -> Iterator[E2E]:
+def open_env(
+    tmp_path_factory: pytest.TempPathFactory, wav_name: str, *, wizard_done: bool = True
+) -> Iterator[E2E]:
+    """``wizard_done``: mark the first-run wizard as finished through the settings API (what
+    the wizard's last step does), so tests of other screens start on the conversation."""
     from playwright.sync_api import sync_playwright
 
     key = "sk-test-" + secrets.token_urlsafe(24)
@@ -100,7 +105,12 @@ def open_env(tmp_path_factory: pytest.TempPathFactory, wav_name: str) -> Iterato
             env = E2E(lp, mock, key, context)
             page = env.new_page()
             page.goto(lp.url)  # one-time token -> cookie -> redirect to /
-            page.wait_for_url(lp.base + "/")
+            page.wait_for_url(lp.base + "/**")
+            if wizard_done:
+                with env.http() as c:
+                    c.patch("/api/settings", json={"wizard_done": True}).raise_for_status()
+                    apply_profile(c)  # pytest --vt-profile (already seeded: a check)
+                page.goto(lp.base + "/#/talk")
             yield env
             context.close()
     finally:

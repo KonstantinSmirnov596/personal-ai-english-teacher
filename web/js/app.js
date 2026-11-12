@@ -1,7 +1,7 @@
 // Window shell: header, hash router, shared state, WebSocket to the core.
 
 import { L } from './i18n.js';
-import { get } from './api.js';
+import { get, post } from './api.js';
 import { AudioEngine } from './audio.js';
 import { ConnectionsView } from './connections.js';
 import { clear, el, icons } from './dom.js';
@@ -9,6 +9,7 @@ import { HistoryView } from './history.js';
 import { ReadingView } from './reading.js';
 import { SettingsView } from './settings.js';
 import { VocabView } from './vocab.js';
+import { WizardView } from './wizard.js';
 import { TalkView } from './talk.js';
 import { CoreSocket } from './ws.js';
 
@@ -32,9 +33,12 @@ export class App {
     this.vocab = new VocabView(this);
     this.reading = new ReadingView(this);
     this.settingsView = new SettingsView(this);
+    this.wizard = new WizardView(this);
+    this.notices = [];
     this.header = el('header', { class: 'header' });
+    this.noticeBar = el('div', { class: 'notice-bar', 'data-testid': 'notice-bar' });
     this.body = el('div', { class: 'app-body' });
-    root.append(this.header, this.body);
+    root.append(this.header, this.noticeBar, this.body);
     window.addEventListener('hashchange', () => this.route());
   }
 
@@ -47,7 +51,30 @@ export class App {
     }
     await this.refreshActiveConnection();
     this.socket.connect();
+    // First run: the wizard opens before anything else (SPEC 7).
+    if (this.settings && !this.settings.wizard_done && !location.hash.startsWith('#/wizard')) {
+      history.replaceState(null, '', '#/wizard/language');
+    }
     this.route();
+  }
+
+  // Battery and changed-hardware notices (hello.hardware.notices), once per run.
+  renderNotices() {
+    const bar = clear(this.noticeBar);
+    if (this.current === 'wizard') return;
+    for (const id of this.notices) {
+      const text = L.notices[id];
+      if (!text) continue;
+      const close = el('button', { type: 'button', class: 'btn btn-small btn-ghost', 'data-testid': 'notice-dismiss', text: L.notices.dismiss });
+      close.addEventListener('click', async () => {
+        this.notices = this.notices.filter((n) => n !== id);
+        this.renderNotices();
+        await post(`/api/hardware/notices/${id}/dismiss`).catch(() => {});
+      });
+      const actions = [close];
+      if (id === 'hardware_changed') actions.unshift(el('a', { class: 'btn btn-small', href: '#/wizard/hardware', text: L.notices.recheck }));
+      bar.append(el('div', { class: 'banner', role: 'status', 'data-testid': 'hardware-notice', 'data-notice': id }, [el('p', { text }), el('div', { class: 'banner-actions' }, actions)]));
+    }
   }
 
   async refreshActiveConnection() {
@@ -94,7 +121,9 @@ export class App {
       this.settings = msg.settings;
       this.activeConnection = msg.active_connection;
       this.modelsReady = msg.models_ready;
+      this.notices = (msg.hardware && msg.hardware.notices) || [];
       this.renderHeader();
+      this.renderNotices();
       if (!this.modelsReady) this.pollModels();
     }
     this.talk.onMessage(msg, binary);
@@ -130,7 +159,12 @@ export class App {
     const [, section, sub] = hash.split('/');
     clear(this.body);
     let current = 'talk';
-    if (section === 'settings') {
+    if (section !== 'wizard') this.wizard.stopTimers();
+    if (section === 'wizard') {
+      current = 'wizard';
+      this.current = current;
+      this.body.append(this.wizard.render(sub));
+    } else if (section === 'settings') {
       current = 'settings';
       this.body.append(sub && sub !== 'connections' ? this.settingsView.render(sub) : this.connections.render());
     } else if (section === 'reading') {
@@ -148,11 +182,17 @@ export class App {
     }
     this.current = current;
     this.renderHeader();
+    this.renderNotices();
     this.talk.syncAuto(); // the detector listens only while the conversation is on screen
   }
 
   renderHeader() {
     const h = clear(this.header);
+    if (this.current === 'wizard' && this.settings && !this.settings.wizard_done) {
+      // First run: no sections to wander into before the setup is done.
+      h.append(el('div', { class: 'brand', text: L.appTitle }));
+      return;
+    }
     const navLink = (key, href) =>
       el('a', { href, 'aria-current': this.current === key ? 'page' : null, text: L.nav[key] });
     h.append(el('nav', { class: 'nav', 'aria-label': L.nav.sections }, [navLink('talk', '#/talk'), navLink('reading', '#/reading'), navLink('vocab', '#/vocab'), navLink('history', '#/history')]));

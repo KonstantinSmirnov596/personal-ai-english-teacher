@@ -15,6 +15,7 @@ export class Wave {
     this.lowSince = performance.now();
     this.onSilence = null; // (silent: boolean) => void
     this.silent = false;
+    this.stopped = false;
     this.timer = setInterval(() => this.sample(), SAMPLE_MS);
     this.draw = this.draw.bind(this);
     requestAnimationFrame(this.draw);
@@ -45,7 +46,13 @@ export class Wave {
     }
   }
 
+  stop() {
+    this.stopped = true;
+    clearInterval(this.timer);
+  }
+
   draw() {
+    if (this.stopped) return;
     if (!this.colors.faint) this.readColors();
     const c = this.canvas;
     const ratio = window.devicePixelRatio || 1;

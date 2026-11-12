@@ -4,8 +4,9 @@
 import { L, currentLanguage, languages, setLanguage } from './i18n.js';
 import { api, get, patch } from './api.js';
 import { clear, el } from './dom.js';
+import { gb } from './wizard.js';
 
-const SECTIONS = ['connections', 'language', 'sound', 'conversation', 'corrections', 'data'];
+const SECTIONS = ['connections', 'language', 'sound', 'conversation', 'corrections', 'performance', 'data'];
 
 export function settingsNav(current) {
   return el('nav', { class: 'settings-nav', 'aria-label': L.settings.title }, [
@@ -44,6 +45,7 @@ export class SettingsView {
     else if (this.section === 'conversation') m.append(this.conversationSection());
     else if (this.section === 'corrections') m.append(this.correctionsSection());
     else if (this.section === 'data') m.append(this.dataSection());
+    else if (this.section === 'performance') m.append(await this.performanceSection());
     m.append(this.status);
   }
 
@@ -217,6 +219,63 @@ export class SettingsView {
     }
     const pron = this.checkbox('pron-conv', L.reading.inConversation, this.settings.pron_in_conversation, (v) => this.save({ pron_in_conversation: v }));
     return el('div', { class: 'settings-group' }, [list, pron]);
+  }
+
+  // Settings → Performance: the model profile (SPEC 7), the last measurement, the wizard.
+  async performanceSection() {
+    const P = L.performance;
+    const W = L.wizard;
+    let hw = null;
+    try {
+      hw = await get('/api/hardware');
+    } catch {
+      hw = null;
+    }
+    const current = hw ? hw.profile : '';
+    const choice = el('select', { class: 'select', id: 'set-profile', 'data-testid': 'profile-select' });
+    for (const p of ['auto', 'completo', 'compacto']) {
+      const o = el('option', { value: p, text: P.choice[p] });
+      if (p === this.settings.profile) o.selected = true;
+      choice.append(o);
+    }
+    const effective = el('div', { class: `verdict verdict-${current}`, 'data-testid': 'profile-current', 'data-profile': current }, [
+      el('strong', { text: W.profileName[current] || current }),
+      el('p', { text: W.profileText[current] || '' }),
+    ]);
+    choice.disabled = current === 'unsupported';
+    choice.addEventListener('change', async () => {
+      await this.save({ profile: choice.value });
+      await this.load();
+    });
+    const stored = hw && hw.stored;
+    const rows = [];
+    if (stored) {
+      const m = stored.measurements || {};
+      const ms = (v) => (v === undefined || v < 0 ? '—' : `${Math.round(v)} ms`);
+      rows.push(
+        [P.measuredAt, new Date(stored.created_at).toLocaleString(document.documentElement.lang)],
+        [W.checks.gpu, stored.gpu_name],
+        [W.checks.driver, stored.driver],
+        [W.bench.firstAudio, ms(m.first_audio_ms)],
+        [W.bench.stt(m.stt_audio_s || 10), ms(m.stt_ms)],
+        [W.bench.vramFree, m.vram_free_after_load_mb === undefined ? '—' : gb(m.vram_free_after_load_mb)],
+        [P.measuredProfile, W.profileName[stored.profile] || stored.profile],
+      );
+    }
+    const table = stored
+      ? el('table', { class: 'table check-table', 'data-testid': 'last-measurement' }, [el('tbody', {}, rows.map(([k, v]) => el('tr', {}, [el('th', { scope: 'row', text: k }), el('td', { class: 'mono', text: v })])))])
+      : el('p', { class: 'muted', text: P.noMeasurement });
+    return el('div', { class: 'settings-group' }, [
+      effective,
+      this.field(P.profile, choice),
+      el('p', { class: 'muted small', text: P.profileHint }),
+      el('h2', { text: P.lastMeasurement }),
+      table,
+      el('div', { class: 'form-actions' }, [
+        el('a', { class: 'btn', href: '#/wizard/hardware', 'data-testid': 'rerun-hardware', text: P.recheck }),
+        el('a', { class: 'btn', href: '#/wizard/language', 'data-testid': 'rerun-wizard', text: P.rerunWizard }),
+      ]),
+    ]);
   }
 
   dataSection() {
