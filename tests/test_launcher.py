@@ -38,3 +38,23 @@ def test_launcher_keeps_running_before_first_window(tmp_path: Path) -> None:
         assert lp.wait_exit(timeout=3) is None
     finally:
         lp.stop()
+
+
+def test_exit_watchdog_ends_a_process_with_a_stuck_thread(tmp_path: Path) -> None:
+    """A worker thread that never finishes must not keep a windowless core (and its VRAM) alive.
+
+    The predecessor logged "exiting" after the window closed but the process stayed for hours.
+    """
+    import subprocess
+    import sys
+
+    code = (
+        "import threading, time\n"
+        "from voicetutor import launcher\n"
+        "threading.Thread(target=lambda: time.sleep(3600), daemon=False).start()\n"
+        "launcher.exit_watchdog(1.0, code=7)\n"
+    )
+    started = time.monotonic()
+    proc = subprocess.run([sys.executable, "-c", code], timeout=30, check=False)
+    assert proc.returncode == 7
+    assert time.monotonic() - started < 15

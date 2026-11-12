@@ -16,11 +16,19 @@ import os
 import socket
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 
 DEFAULT_PORTS = tuple(range(47613, 47623))
 IDLE_EXIT_S = 10.0
+# uvicorn's graceful shutdown may wait for a connection that never closes; after this many
+# seconds open connections are dropped.
+GRACEFUL_SHUTDOWN_S = 5.0
+# Last resort: once the core decided to exit, the process ends after this many seconds even if a
+# worker thread (GPU queue, model loading) is stuck. Without it a windowless core could keep
+# holding VRAM for hours.
+HARD_EXIT_S = 30.0
 
 log = logging.getLogger("voicetutor.launcher")
 
@@ -45,6 +53,25 @@ def pick_port(requested: int | None) -> int:
         if port_free(port):
             return port
     raise SystemExit("no free port in the default range")
+
+
+def exit_watchdog(seconds: float, root: Path | None = None, code: int = 0) -> threading.Thread:
+    """Start a daemon thread that ends the process if it is still alive after ``seconds``."""
+
+    def _run() -> None:
+        time.sleep(seconds)
+        log.warning("shutdown did not finish in %.0f s: forcing exit", seconds)
+        if root is not None:
+            from voicetutor import instance
+
+            with contextlib.suppress(OSError):
+                instance.clear_info(root)
+        logging.shutdown()
+        os._exit(code)
+
+    thread = threading.Thread(target=_run, name="exit-watchdog", daemon=True)
+    thread.start()
+    return thread
 
 
 def find_edge() -> Path | None:
@@ -128,6 +155,7 @@ async def serve(args: argparse.Namespace) -> int:
         ws_max_size=MAX_BINARY_FRAME + 64 * 1024,
         ws_ping_interval=20.0,
         lifespan="on",
+        timeout_graceful_shutdown=GRACEFUL_SHUTDOWN_S,
     )
     server = uvicorn.Server(config)
     url = f"http://127.0.0.1:{port}/?t={keys.launch_token}"
@@ -155,6 +183,7 @@ async def serve(args: argparse.Namespace) -> int:
                 and time.monotonic() - core.ws_last_change > idle_exit
             ):
                 log.info("window closed and not reconnected for %.0f s: exiting", idle_exit)
+                exit_watchdog(HARD_EXIT_S, root)
                 server.should_exit = True
 
     watcher = asyncio.create_task(after_start())
@@ -209,9 +238,12 @@ def main(argv: list[str] | None = None) -> int:
             return 3
     setup_logging(root / "logs")
     try:
-        return asyncio.run(serve(args))
+        code = asyncio.run(serve(args))
     except KeyboardInterrupt:
-        return 0
+        code = 0
+    # A non-daemon worker thread left behind would keep the process (and its VRAM) alive.
+    exit_watchdog(HARD_EXIT_S, root, code)
+    return code
 
 
 if __name__ == "__main__":
