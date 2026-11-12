@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import contextlib
 import json
+import os
 import time
 import uuid
 from collections.abc import Iterator
@@ -50,7 +51,7 @@ def env(tmp_path_factory: pytest.TempPathFactory) -> Iterator[dict[str, Any]]:
 
         for i in range(1, 5):
             with contextlib.suppress(Exception):
-                keyring.delete_password("VoiceTutor-test", f"connection-{i}")
+                keyring.delete_password(os.environ["VOICETUTOR_KEYRING_SERVICE"], f"connection-{i}")
 
 
 def start_session(client: WSClient) -> str:

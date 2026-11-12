@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import contextlib
 import json
+import os
 import secrets
 import time
 from pathlib import Path
@@ -42,6 +43,8 @@ def test_core_talks_only_to_localhost_and_the_llm(tmp_path: Path) -> None:
                 json={"name": "Mock", "base_url": mock.base_url, "model": "m", "api_key": key},
             ).json()
             assert http.post(f"/api/connections/{conn['id']}/test").json()["ok"] is True
+            # every feature that can talk to the outside, in both profiles
+            http.patch("/api/settings", json={"pron_in_conversation": True}).raise_for_status()
             deadline = time.monotonic() + 180
             while http.get("/api/health").json()["status"] != "ok":
                 assert time.monotonic() < deadline
@@ -81,7 +84,7 @@ def test_core_talks_only_to_localhost_and_the_llm(tmp_path: Path) -> None:
         mock.stop()
         for i in range(1, 3):
             with contextlib.suppress(keyring.errors.PasswordDeleteError):
-                keyring.delete_password("VoiceTutor-test", f"connection-{i}")
+                keyring.delete_password(os.environ["VOICETUTOR_KEYRING_SERVICE"], f"connection-{i}")
 
     events = [json.loads(line) for line in audit.read_text(encoding="utf-8").splitlines()]
     assert events, "the audit recorded nothing: interception is broken"

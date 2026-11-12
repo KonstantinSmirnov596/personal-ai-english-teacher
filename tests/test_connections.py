@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 
 import keyring
@@ -33,7 +34,9 @@ def test_create_stores_key_in_keyring_only(tmp_path: Path, test_key: str) -> Non
         assert data["is_active"] is True
         assert "api_key" not in data
         assert test_key not in r.text
-        stored = keyring.get_password("VoiceTutor-test", f"connection-{data['id']}")
+        stored = keyring.get_password(
+            os.environ["VOICETUTOR_KEYRING_SERVICE"], f"connection-{data['id']}"
+        )
         assert stored == test_key
         listing = ctx.client.get("/api/connections")
         assert test_key not in listing.text
@@ -61,7 +64,10 @@ def test_delete_removes_key_and_protects_active(tmp_path: Path, test_key: str) -
         assert r.json()["error"]["code"] == "conflict"
         r = ctx.client.delete(f"/api/connections/{b['id']}", headers=ctx.auth_headers)
         assert r.status_code == 204
-        assert keyring.get_password("VoiceTutor-test", f"connection-{b['id']}") is None
+        assert (
+            keyring.get_password(os.environ["VOICETUTOR_KEYRING_SERVICE"], f"connection-{b['id']}")
+            is None
+        )
         assert len(ctx.client.get("/api/connections").json()) == 1
 
 
@@ -159,7 +165,9 @@ def test_unsaved_connection_test_stores_nothing(
         )
         assert r.json()["ok"] is True
         assert ctx.client.get("/api/connections").json() == []
-        assert keyring.get_password("VoiceTutor-test", "connection-1") is None
+        assert (
+            keyring.get_password(os.environ["VOICETUTOR_KEYRING_SERVICE"], "connection-1") is None
+        )
 
 
 def test_log_filter_redacts_keys() -> None:

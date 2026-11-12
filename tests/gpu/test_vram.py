@@ -9,6 +9,7 @@ never dies, and everything works again once the memory is released.
 from __future__ import annotations
 
 import contextlib
+import os
 import secrets
 import time
 from collections.abc import Iterator
@@ -53,7 +54,7 @@ def core(tmp_path: Path) -> Iterator[dict[str, Any]]:
 
         for i in range(1, 3):
             with contextlib.suppress(Exception):
-                keyring.delete_password("VoiceTutor-test", f"connection-{i}")
+                keyring.delete_password(os.environ["VOICETUTOR_KEYRING_SERVICE"], f"connection-{i}")
 
 
 def fill_video_memory() -> list[Any]:

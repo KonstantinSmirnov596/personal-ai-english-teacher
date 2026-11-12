@@ -73,7 +73,7 @@ Pinned in `uv.lock`; facts and links in `docs/reports/stage0.md`.
 
 ## Test isolation
 
-Tests never touch the real data directory or real keys: `VOICETUTOR_DATA_DIR` (temp dir), `VOICETUTOR_KEYRING_SERVICE` (`VoiceTutor-test`), `VOICETUTOR_MODELS_DIR` (shared real models dir so models are not downloaded again).
+Tests never touch the real data directory or real keys: `VOICETUTOR_DATA_DIR` (temp dir), `VOICETUTOR_KEYRING_SERVICE` (`VoiceTutor-test-<pid>`, one per test session), `VOICETUTOR_MODELS_DIR` (shared real models dir so models are not downloaded again).
 
 ## Code
 

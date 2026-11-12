@@ -42,7 +42,7 @@ def main() -> int:
 
     # real models, temporary data
     os.environ.setdefault("VOICETUTOR_MODELS_DIR", str(paths.models_dir()))
-    os.environ["VOICETUTOR_KEYRING_SERVICE"] = "VoiceTutor-test"
+    os.environ["VOICETUTOR_KEYRING_SERVICE"] = f"VoiceTutor-test-{os.getpid()}"
     import keyring
     import keyring.errors
 
@@ -54,7 +54,9 @@ def main() -> int:
     key = "sk-test-" + secrets.token_urlsafe(24)
     mock = MockLLM(key).start()
     data = Path(tempfile.mkdtemp(prefix="bench-turn-"))
-    lp = LauncherProcess(data, env={"VOICETUTOR_KEYRING_SERVICE": "VoiceTutor-test"})
+    lp = LauncherProcess(
+        data, env={"VOICETUTOR_KEYRING_SERVICE": os.environ["VOICETUTOR_KEYRING_SERVICE"]}
+    )
     wav = ensure_turns()["turn_basic"]
     result: dict[str, Any] = {
         "date": datetime.now(UTC).isoformat(timespec="seconds"),
@@ -122,7 +124,7 @@ def main() -> int:
         mock.stop()
         for i in range(1, 3):
             with contextlib.suppress(keyring.errors.PasswordDeleteError):
-                keyring.delete_password("VoiceTutor-test", f"connection-{i}")
+                keyring.delete_password(os.environ["VOICETUTOR_KEYRING_SERVICE"], f"connection-{i}")
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(result, indent=2), encoding="utf-8")

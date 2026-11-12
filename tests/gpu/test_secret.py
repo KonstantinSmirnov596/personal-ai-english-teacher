@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import contextlib
+import os
 import secrets
 import time
 from pathlib import Path
@@ -93,11 +94,14 @@ def test_key_marker_stays_in_keyring(tmp_path: Path) -> None:
         assert marker not in "".join(lp.output)
 
         # Where the marker is allowed: the test keyring service and the provider requests.
-        assert keyring.get_password("VoiceTutor-test", f"connection-{good_id}") == marker
+        assert (
+            keyring.get_password(os.environ["VOICETUTOR_KEYRING_SERVICE"], f"connection-{good_id}")
+            == marker
+        )
         assert any(r["authorization"] == f"Bearer {marker}" for r in mock.requests)
     finally:
         lp.stop()
         mock.stop()
         for i in range(1, 4):
             with contextlib.suppress(keyring.errors.PasswordDeleteError):
-                keyring.delete_password("VoiceTutor-test", f"connection-{i}")
+                keyring.delete_password(os.environ["VOICETUTOR_KEYRING_SERVICE"], f"connection-{i}")

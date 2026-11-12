@@ -212,7 +212,7 @@ def main() -> int:
     from voicetutor import paths, profiles
 
     os.environ.setdefault("VOICETUTOR_MODELS_DIR", str(paths.models_dir()))
-    os.environ["VOICETUTOR_KEYRING_SERVICE"] = "VoiceTutor-test"
+    os.environ["VOICETUTOR_KEYRING_SERVICE"] = f"VoiceTutor-test-{os.getpid()}"
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     import keyring
     import keyring.errors
@@ -231,7 +231,7 @@ def main() -> int:
             print(f"--- {profile}: full scenario", flush=True)
             result["profiles"][profile] = run_profile(profile, key, mock)
             with contextlib.suppress(keyring.errors.PasswordDeleteError):
-                keyring.delete_password("VoiceTutor-test", "connection-1")
+                keyring.delete_password(os.environ["VOICETUTOR_KEYRING_SERVICE"], "connection-1")
     finally:
         mock.stop()
     for profile in PROFILES:

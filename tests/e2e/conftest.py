@@ -6,6 +6,7 @@ one-time token, so one persistent browser context is shared by the tests of a mo
 
 from __future__ import annotations
 
+import os
 import secrets
 import shutil
 import tempfile
@@ -124,4 +125,4 @@ def open_env(
 
         for i in range(1, 6):
             with contextlib.suppress(keyring.errors.PasswordDeleteError):
-                keyring.delete_password("VoiceTutor-test", f"connection-{i}")
+                keyring.delete_password(os.environ["VOICETUTOR_KEYRING_SERVICE"], f"connection-{i}")

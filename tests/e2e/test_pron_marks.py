@@ -27,6 +27,8 @@ def test_pronunciation_mark_in_conversation(env: E2E) -> None:
             "/api/connections",
             json={"name": "Mock", "base_url": env.mock.base_url, "model": "m", "api_key": env.key},
         )
+        # on by default only in `completo`; a user of `compacto` turns it on in Settings
+        c.patch("/api/settings", json={"pron_in_conversation": True}).raise_for_status()
     env.wait_models()
     page = env.new_page()
     start_session(page, env)

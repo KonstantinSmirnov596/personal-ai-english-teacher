@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import contextlib
 import json
+import os
 import secrets
 import time
 from collections.abc import Iterator
@@ -115,7 +116,7 @@ def env(tmp_path_factory: pytest.TempPathFactory) -> Iterator[dict[str, Any]]:
         mock.stop()
         for i in range(1, 4):
             with contextlib.suppress(keyring.errors.PasswordDeleteError):
-                keyring.delete_password("VoiceTutor-test", f"connection-{i}")
+                keyring.delete_password(os.environ["VOICETUTOR_KEYRING_SERVICE"], f"connection-{i}")
 
 
 def wav_of(path: Path, trim_tail_s: float = 0.0) -> bytes:
@@ -248,8 +249,13 @@ def test_reference_audio(env: dict[str, Any]) -> None:
 
 
 def test_conversation_marks_only_clear_errors(env: dict[str, Any]) -> None:
-    """Free conversation: "video" said with /b/ (Spanish speakers) is flagged; nothing else is."""
+    """Free conversation: "video" said with /b/ (Spanish speakers) is flagged; nothing else is.
+
+    The marks are switched on as a user would (the `compacto` profile has them off by default,
+    which tests/test_profiles.py covers)."""
     lp: LauncherProcess = env["lp"]
+    with lp.http() as http:
+        http.patch("/api/settings", json={"pron_in_conversation": True}).raise_for_status()
     with lp.ws_connect() as ws:
         client = WSClient(ws)
         client.recv()

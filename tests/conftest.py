@@ -20,7 +20,10 @@ _REAL_MODELS = paths.models_dir()
 REAL_DATA_DIR = paths.data_dir()  # read only by the live suite (owner's active connection)
 os.environ.setdefault("VOICETUTOR_MODELS_DIR", str(_REAL_MODELS))
 os.environ["VOICETUTOR_DATA_DIR"] = str(Path(tempfile.mkdtemp(prefix="voicetutor-test-data-")))
-os.environ["VOICETUTOR_KEYRING_SERVICE"] = "VoiceTutor-test"
+# One credential service per test session: two sessions running at once (or a bench script)
+# never delete each other's keys. Launchers started by tests inherit it.
+os.environ["VOICETUTOR_KEYRING_SERVICE"] = f"VoiceTutor-test-{os.getpid()}"
+TEST_SERVICE = os.environ["VOICETUTOR_KEYRING_SERVICE"]
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
 
 from tests.mock_llm import MockLLM  # noqa: E402  (after the environment is isolated)
@@ -56,7 +59,7 @@ def mock_llm(test_key: str) -> Iterator[MockLLM]:
 
 @pytest.fixture(autouse=True)
 def _clean_test_keyring(request: pytest.FixtureRequest) -> Iterator[None]:
-    """Remove every key the test stored in the VoiceTutor-test service.
+    """Remove every key the test stored in this session's test service.
 
     GPU and e2e modules share one running core per module and clean up their own keys.
     """
@@ -64,7 +67,17 @@ def _clean_test_keyring(request: pytest.FixtureRequest) -> Iterator[None]:
     if request.node.get_closest_marker("gpu") or request.node.get_closest_marker("e2e"):
         return
     service = os.environ["VOICETUTOR_KEYRING_SERVICE"]
-    assert service == "VoiceTutor-test"
+    assert service.startswith("VoiceTutor-test-")
     for i in range(1, 11):
         with contextlib.suppress(keyring.errors.PasswordDeleteError):
             keyring.delete_password(service, f"connection-{i}")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _sweep_session_keyring() -> Iterator[None]:
+    """At the end of the session no test key is left in the Credential Manager."""
+    yield
+    assert TEST_SERVICE.startswith("VoiceTutor-test-")
+    for i in range(1, 51):
+        with contextlib.suppress(keyring.errors.PasswordDeleteError):
+            keyring.delete_password(TEST_SERVICE, f"connection-{i}")

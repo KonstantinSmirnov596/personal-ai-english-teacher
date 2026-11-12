@@ -323,13 +323,23 @@ def test_delete_all_data_keeps_keys_without_flag(tmp_path: Path, test_key: str) 
         assert ctx.client.get("/api/patterns").json() == []
         assert not (tmp_path / "audio").exists()
         assert len(ctx.client.get("/api/connections").json()) == 1
-        assert keyring.get_password("VoiceTutor-test", f"connection-{conn['id']}") == test_key
+        assert (
+            keyring.get_password(
+                os.environ["VOICETUTOR_KEYRING_SERVICE"], f"connection-{conn['id']}"
+            )
+            == test_key
+        )
         r = ctx.client.request(
             "DELETE", "/api/data", json={"confirm": "DELETE", "include_keys": True}, headers=h
         )
         assert r.json()["removed_keys"] == 1
         assert ctx.client.get("/api/connections").json() == []
-        assert keyring.get_password("VoiceTutor-test", f"connection-{conn['id']}") is None
+        assert (
+            keyring.get_password(
+                os.environ["VOICETUTOR_KEYRING_SERVICE"], f"connection-{conn['id']}"
+            )
+            is None
+        )
 
 
 def test_export_all(tmp_path: Path) -> None:
@@ -342,7 +352,8 @@ def test_export_all(tmp_path: Path) -> None:
 
 
 @pytest.mark.skipif(
-    os.environ.get("VOICETUTOR_KEYRING_SERVICE") != "VoiceTutor-test", reason="isolation"
+    not os.environ.get("VOICETUTOR_KEYRING_SERVICE", "").startswith("VoiceTutor-test-"),
+    reason="isolation",
 )
 def test_delete_all_direct_call(tmp_path: Path) -> None:
     with make_app(tmp_path) as ctx:

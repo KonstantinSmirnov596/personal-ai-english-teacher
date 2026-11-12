@@ -36,7 +36,7 @@ Tests never use the real data directory or real keys.
 | Environment variable | Purpose | Value in tests |
 | --- | --- | --- |
 | `VOICETUTOR_DATA_DIR` | Data directory | A temporary directory |
-| `VOICETUTOR_KEYRING_SERVICE` | keyring service name | `VoiceTutor-test` |
+| `VOICETUTOR_KEYRING_SERVICE` | keyring service name | `VoiceTutor-test-<pid>`: one per test session, so sessions running at once never delete each other's keys; swept at the end of the session |
 | `VOICETUTOR_MODELS_DIR` | Models directory | The shared real directory, so models are not downloaded again |
 
 This is ordinary configuration, not a security bypass. Routes, flags and variables that disable the cookie, `Origin` or `Host` checks, substitute text for recognition, or otherwise change core behaviour "for tests only" are forbidden. Hardware fakes (stage 3) are injected through dependency injection in unit tests, never through the running app.
@@ -122,7 +122,7 @@ Check "learner language only in cards": elements with `lang="en"` contain no lea
 - Reusing the launch token → `403`.
 - No response contains `Access-Control-*` headers.
 - HTML is served with a CSP header; files in `web/` contain no `http://` or `https://` addresses except license comments.
-- **Secret.** The test saves a connection with a marker key, runs a turn and a connection test with a 401 from the mock, then searches for the marker in the database file, logs, export, the answers of all `GET` routes and the core's stdout. The marker may only be in the `VoiceTutor-test` keyring service and in the requests recorded by the mock.
+- **Secret.** The test saves a connection with a marker key, runs a turn and a connection test with a 401 from the mock, then searches for the marker in the database file, logs, export, the answers of all `GET` routes and the core's stdout. The marker may only be in the session's `VoiceTutor-test-<pid>` keyring service and in the requests recorded by the mock.
 - **Network.** The test intercepts connection creation in the core process during a full scenario and checks the addresses: only `127.0.0.1` and the host of the active connection. In the test the active connection is the mock, so any external address is a failure.
 
 ## Latency measurements
