@@ -221,3 +221,9 @@ def test_shortcuts_in_accented_folders(tmp_path: Path) -> None:
     assert proc.returncode == 0, proc.stderr.decode("utf-8", "replace")
     assert link.exists()
     assert out.splitlines()[-1] == str(target), out
+
+
+def test_stage_check_runs_the_developer_setup() -> None:
+    """The acceptance run must neither drop the test tools nor touch the Desktop."""
+    text = (SCRIPTS / "check_stage.ps1").read_text(encoding="ascii")
+    assert "setup.ps1') -Dev -Shortcuts no -NoLaunch" in text

@@ -7,9 +7,10 @@ param(
 
 $setupOk = $true
 if ($Stage -ge 0) {
-    # Stage 0 criterion: a repeated setup run finishes without errors.
+    # Stage 0 criterion: a repeated setup run finishes without errors. Developer flavour: test
+    # tools included, no Desktop or Start menu shortcuts, the app is not started.
     Write-Host '=== repeated setup run ===' -ForegroundColor Cyan
-    & (Join-Path $PSScriptRoot 'setup.ps1')
+    & (Join-Path $PSScriptRoot 'setup.ps1') -Dev -Shortcuts no -NoLaunch
     if ($LASTEXITCODE -ne 0) { $setupOk = $false }
 }
 
