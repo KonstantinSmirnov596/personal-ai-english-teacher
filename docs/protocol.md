@@ -156,7 +156,7 @@ Connection object in answers: `{id, name, base_url, model, extra_params, json_fo
 | `DELETE /api/data` | `{confirm: "DELETE", include_keys: bool}` — delete all data |
 | `GET /api/health` | `{status, gpu: {name, vram_used_mb, vram_total_mb}, models: {stt, tts, phoneme}, active_connection, problems}`; `status` is `ok` once the models are loaded and warmed up; `problems` lists startup problems (`unsupported_hardware`, `no_gpu`, `models_missing`, `model_load_failed`) with a localized message |
 
-Settings added in stage 3: `profile` (`auto`, `completo`, `compacto`; changing it switches the running core), `wizard_done` (the first-run wizard opens while it is false), `vad_threshold` (0.2–0.9, set by the wizard's microphone check).
+Settings added in stage 3: `profile` (`auto`, `completo`, `compacto`; changing it switches the running core), `wizard_done` (the first-run wizard opens while it is false), `vad_threshold` (0.2–0.9, set by the wizard's microphone check). Stage 4: `verbose_log` (Settings → Data → "Detailed log": the text of each turn is also written to the log, logger `voicetutor.turns`; off by default).
 
 ### Hardware, profile and first-run wizard
 

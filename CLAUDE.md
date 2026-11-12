@@ -69,7 +69,11 @@ Pinned in `uv.lock`; facts and links in `docs/reports/stage0.md`.
 - `scripts/run.ps1` — start the app from a terminal.
 - `scripts/test.ps1 fast|gpu|e2e|live|all` — test suites. `live` costs the owner money: only on the owner's word.
 - `scripts/check_stage.ps1 <N>` — stage acceptance (suites of stage N and earlier, required tests, reports).
-- `scripts/ci_local.ps1` — the CI steps, locally (from stage 4).
+- `scripts/ci_local.ps1` — the CI steps, locally (ruff, fast suite).
+- `scripts/check_release.ps1` — gpu and e2e under both profiles (what CI cannot run).
+- `install.cmd` / `uninstall.cmd` — the user's installer and uninstaller (`scripts/setup.ps1`, `scripts/uninstall.ps1`).
+- `scripts/make_release.ps1` — `dist/VoiceTutor-<version>.zip` and `SHA256SUMS.txt`. Nothing is uploaded.
+- `scripts/collect_diagnostics.ps1` — a bug-report archive without keys or conversation text.
 
 ## Test isolation
 

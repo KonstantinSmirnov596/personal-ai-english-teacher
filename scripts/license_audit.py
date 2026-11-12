@@ -154,11 +154,39 @@ def markdown(table: list[Row]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def notices_table(table: list[Row]) -> str:
+    """Runtime packages for THIRD_PARTY_NOTICES.md (installed on the user's machine)."""
+    lines = ["| Package | Version | License |", "| --- | --- | --- |"]
+    for r in table:
+        if r.group != "runtime":
+            continue
+        lic = r.license.replace("|", "/") or "not found"
+        lines.append(
+            f"| [{r.name}](https://pypi.org/project/{r.name}/{r.version}/) | {r.version} | {lic} |"
+        )
+    return "\n".join(lines) + "\n"
+
+
+NOTICES_START = "<!-- runtime-packages:start -->"
+NOTICES_END = "<!-- runtime-packages:end -->"
+
+
+def write_notices(path: Path, table: list[Row]) -> None:
+    text = path.read_text(encoding="utf-8")
+    head, rest = text.split(NOTICES_START, 1)
+    _old, tail = rest.split(NOTICES_END, 1)
+    body = f"{NOTICES_START}\n{notices_table(table)}{NOTICES_END}"
+    path.write_text(head + body + tail, encoding="utf-8")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--write", type=Path, help="write the table to this file")
+    ap.add_argument("--notices", type=Path, help="refresh the package list in THIRD_PARTY_NOTICES")
     args = ap.parse_args()
     table = rows()
+    if args.notices:
+        write_notices(args.notices, table)
     text = markdown(table)
     if args.write:
         args.write.write_text(text, encoding="utf-8")

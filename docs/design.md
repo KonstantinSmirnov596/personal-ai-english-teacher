@@ -193,11 +193,40 @@ Everything lives in one per-user folder, `%LOCALAPPDATA%\VoiceTutor`: SQLite dat
 | `vocab` | Phrase, translation, context, next review date |
 | `pron_attempt` | Reading attempt: text, audio, score, phoneme results |
 | `pron_sound` | Per-sound statistics: attempts, errors, sensitivity offset |
+| `hardware_profile` | First-run measurements: GPU, driver, memory, profile, timings |
 
 - No API keys in the database.
 - Turn audio is kept as files for 30 days by default; 0 disables storage. Old files are removed at start and every 6 hours.
 - Sessions and vocabulary export to JSON and CSV without keys.
 - A backup is a copy of the folder; on another computer keys are entered again.
+
+## Installation and distribution
+
+SPEC 8: no executable; a release archive with the source and a script that needs neither Python nor administrator rights.
+
+```mermaid
+flowchart LR
+  zip["VoiceTutor-x.y.z.zip<br/>code, docs, uv.lock"] --> cmd["install.cmd"]
+  cmd --> req["requirements and folders<br/>(nothing downloaded yet)"]
+  req --> uv["uv (GitHub release, SHA-256)"]
+  uv --> py["Python 3.12 into .tools<br/>(uv checks SHA-256)"]
+  py --> pkgs[".venv from uv.lock<br/>(hashes in the lock file)"]
+  pkgs --> models["models into LOCALAPPDATA<br/>(Range resume, SHA-256 manifest)"]
+  models --> assets["fonts, voice detector (sha512)"]
+  assets --> app["shortcuts, app, first-run wizard"]
+```
+
+| Piece | Where | Note |
+| --- | --- | --- |
+| `install.cmd` → `scripts/setup.ps1` | App folder | Safe to run again; continues where it stopped |
+| `scripts/requirements.ps1` | Installer | Same thresholds as `voicetutor/profiles.py`; messages in en, es, pt-BR |
+| `scripts/installer.ps1` | Installer | uv pin, folder checks (writable, ASCII short name for espeak-ng, length) |
+| `voicetutor/model_download.py` | Installer only | The app never downloads; `voicetutor/data/model_files.json` holds size and SHA-256 per file |
+| `uninstall.cmd` → `scripts/uninstall.ps1` | App folder | Data and keys only after a separate confirmation |
+| `scripts/make_release.ps1` | Developer | Archive without models, environment, binaries or tests; `SHA256SUMS.txt` |
+| `scripts/collect_diagnostics.ps1` | User | Versions, profile, logs; keys, user name and conversation text removed |
+
+Folders with accented letters work: espeak-ng, which reads its data through the ANSI file API, gets the folder's 8.3 short name (`voicetutor/espeak_path.py`).
 
 ## Security
 

@@ -1,0 +1,47 @@
+{
+  "date": "2026-11-12",
+  "tokens_per_char": 0.3,
+  "requests": {
+    "helper": 1,
+    "tutor": 10,
+    "corrector": 10,
+    "summary": 1
+  },
+  "tutor_input_tokens": [
+    844,
+    894,
+    943,
+    992,
+    1041,
+    1092,
+    1143,
+    1196,
+    1245,
+    1294
+  ],
+  "corrector_input_tokens": [
+    1440,
+    1447,
+    1446,
+    1446,
+    1446,
+    1449,
+    1448,
+    1450,
+    1447,
+    1447
+  ],
+  "summary_input_tokens": [
+    981
+  ],
+  "helper_input_tokens": [
+    281
+  ],
+  "max_output_tokens": {
+    "corrector": 800,
+    "tutor": 400,
+    "helper": 600,
+    "summary": 1200
+  },
+  "session_input_tokens": 26414
+}
