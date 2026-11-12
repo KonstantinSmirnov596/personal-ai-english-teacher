@@ -92,7 +92,10 @@ def ensure_turns(synth: _Synth | None = None) -> dict[str, Path]:
     for name, spec in load_spec()["turns"].items():
         path = GENERATED / f"{name}.wav"
         out[name] = path
-        if path.exists():
+        # A file is reused only while its spec is unchanged (the spec is stored next to it).
+        stamp = path.with_suffix(".spec.json")
+        wanted = json.dumps(spec, sort_keys=True, ensure_ascii=False)
+        if path.exists() and stamp.exists() and stamp.read_text(encoding="utf-8") == wanted:
             continue
         parts: list[np.ndarray] = []
         for seg in spec["segments"]:
@@ -107,6 +110,7 @@ def ensure_turns(synth: _Synth | None = None) -> dict[str, Path]:
             elif "pink_noise_s" in seg:
                 parts.append(_pink_noise(seg["pink_noise_s"], seg["level_db"]))
         _write(name, np.concatenate(parts))
+        stamp.write_text(wanted, encoding="utf-8")
     return out
 
 

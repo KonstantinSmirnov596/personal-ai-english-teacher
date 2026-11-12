@@ -89,10 +89,10 @@
     },
     "reading_p01_accent": {
       "voice": "am_michael",
-      "note": "phrase p01 with start -> estart and third -> tird (Spanish speakers; phoneme overrides)",
+      "note": "phrase p01 with start -> es-TART (the s closes an inserted first syllable, as Spanish speakers syllabify it) and third -> tird (phoneme overrides)",
       "segments": [
         {
-          "say": "I think we should [start](/ɛstˈɑɹt/) the [third](/tˈɜɹd/) project this week."
+          "say": "I think we should [start](/ɛsˈtɑɹt/) the [third](/tˈɜɹd/) project this week."
         },
         {
           "silence_s": 5.0
