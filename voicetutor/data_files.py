@@ -35,8 +35,9 @@ def reading_phrases() -> dict[str, Any]:
     return dict(load_json("reading_phrases.json"))
 
 
-def l1_catalog() -> dict[str, Any]:
-    return dict(load_json("l1_ru_catalog.json"))
+def l1_catalog(lang: str) -> dict[str, Any]:
+    """Pronunciation catalog of a learner language (voicetutor/data/l1/<code>/catalog.json)."""
+    return dict(json.loads((DATA_DIR / "l1" / lang / "catalog.json").read_text(encoding="utf-8")))
 
 
 def corrector_eval(lang: str) -> list[dict[str, Any]]:

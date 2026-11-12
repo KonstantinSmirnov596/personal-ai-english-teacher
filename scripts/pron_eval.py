@@ -1,12 +1,13 @@
-"""Stage 3 evaluation of pronunciation scoring on synthesized speech.
+"""Evaluation of pronunciation scoring on synthesized speech, per learner language (stage 2).
 
 1. False alarms: three American Kokoro voices read every reading phrase; share of phones that
-   get the level "error" (and "close"), overall and per sound.
-2. Substitutions: for the minimal pairs of the catalog the second word is spoken where the
-   first is expected; how often the target phone is flagged and the heard sound is named.
+   get the level "error" (and "close") when the reference uses the learner language's catalog.
+2. Catalog mistakes: every catalog pair is spoken as the learner would say it (Kokoro phoneme
+   override such as /ɛspˈik/ for "speak") inside carrier phrases; how often the target phone is
+   flagged "error" and the heard sound (substitution, deletion or insertion) is named.
 
-Writes docs/reports/data/pron_stage3.json and prints a summary.
-    .venv\\Scripts\\python.exe scripts\\pron_eval.py [--carrier "Say {word} for me."]
+Writes docs/reports/data/pron_stage2_<lang>.json and prints a summary.
+    .venv\\Scripts\\python.exe scripts\\pron_eval.py --lang es-419 [--carrier "Say {word} now."]
 """
 
 from __future__ import annotations
@@ -22,54 +23,45 @@ from typing import Any
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
 
-NAMED_PAIRS = (
-    ("think", "sink"),
-    ("west", "vest"),
-    ("sing", "sin"),
-    ("bad", "bat"),
-    ("ship", "sheep"),
-    ("then", "den"),
-)
+LANGS = ("es-419", "pt-BR")
+# An entry whose share of "error" judgements stays below this is listed as unreliable.
+RELIABLE = 0.5
 
 
-def target_position(
-    ref: Any, ref_actual: Any, word_index: int
-) -> tuple[int, list[tuple[str, ...]]]:
-    """Reference phone where the expected and the actually spoken word differ.
+def normalize_heard(key: str) -> str:
+    """Comparable form of a heard key: classes for sounds, '+class' for an insertion."""
+    from voicetutor.pron.catalog import split_sequence, to_class
 
-    Returns the phone index and the variants that count as a correct diagnosis.
-    """
-    from voicetutor.pron.align import needleman_wunsch
-
-    exp_ids = [pi for w in ref.words if w.source_index == word_index for pi in w.phones]
-    act_ids = [pi for w in ref_actual.words if w.source_index == word_index for pi in w.phones]
-    exp = ["+".join(ref.phones[i].canonical) for i in exp_ids]
-    act = ["+".join(ref_actual.phones[i].canonical) for i in act_ids]
-    pairs = needleman_wunsch(exp, act)
-    last_exp: int | None = None
-    for k, (ei, ai) in enumerate(pairs):
-        if ei is not None and ai is not None and exp[ei] != act[ai]:
-            actual = ref_actual.phones[act_ids[ai]]
-            return exp_ids[ei], list(actual.accept)
-        if ei is None and ai is not None:  # extra sound in the spoken word
-            anchor = last_exp if last_exp is not None else 0
-            base = ref.phones[exp_ids[anchor]].canonical
-            inserted = ref_actual.phones[act_ids[ai]].canonical
-            return exp_ids[anchor], [base + inserted]
-        if ei is not None and ai is None:
-            return exp_ids[ei], [()]
-        if ei is not None:
-            last_exp = ei
-        _ = k
-    return exp_ids[-1], []
+    if key.startswith("+"):
+        return "+" + to_class(key[1:])
+    return "".join(split_sequence(key))
 
 
-def evaluate(carriers: list[str] | None = None) -> dict[str, Any]:
+def target_phone(ref: Any, word_index: int, entry: Any, heard: str) -> int | None:
+    """First phone of the word where the catalog entry applies to the pair's heard sound."""
+    from voicetutor.pron import catalog
+
+    for w in ref.words:
+        if w.source_index != word_index:
+            continue
+        for pi in w.phones:
+            p = ref.phones[pi]
+            if p.scored and entry.expects(p.cls) and catalog.position_ok(entry.position, p):
+                if entry.detect != "substitution":
+                    return pi
+                want = normalize_heard(heard)
+                if any(exp == p.cls and "".join(v) == want for exp, v in entry.pairs):
+                    return pi
+    return None
+
+
+def evaluate(lang: str = "es-419", carriers: list[str] | None = None) -> dict[str, Any]:
     from tests.fixtures.make_fixtures import ensure_pairs, ensure_reading
     from voicetutor.gpu_env import prepare_cuda_dlls
 
     prepare_cuda_dlls()
-    from voicetutor.pron.assess import build_result, judge
+    from voicetutor.pron import catalog
+    from voicetutor.pron.assess import build_result, heard_of, judge
     from voicetutor.pron.engine import PronEngine
     from voicetutor.pron.phoneme_model import PhonemeModel
     from voicetutor.pron.reference import build_reference
@@ -91,12 +83,13 @@ def evaluate(carriers: list[str] | None = None) -> dict[str, Any]:
         source = text.split()
         audio = load(item["path"])
         started = time.perf_counter()
-        ref = build_reference(source)
-        evidence = engine.analyze(audio, ref)
-        result = build_result(ref, evidence, source)
+        ref = build_reference(source, lang=lang)
+        result = build_result(ref, engine.analyze(audio, ref), source)
         timings.append((len(audio) / STT_RATE, time.perf_counter() - started))
         for word in result["words"]:
             for ph in word["phones"]:
+                if not ph["scored"]:
+                    continue
                 total += 1
                 stat = per_sound[ph["cls"]]
                 stat["n"] += 1
@@ -115,37 +108,51 @@ def evaluate(carriers: list[str] | None = None) -> dict[str, Any]:
                             "expected": ph["expected"],
                             "heard": ph["heard"],
                             "level": ph["level"],
+                            "catalog_id": ph["catalog_id"],
                             "gop": ph["gop"],
                         }
                     )
 
-    # --- substitutions ------------------------------------------------------------------------
+    # --- catalog mistakes ---------------------------------------------------------------------
     cases: list[dict[str, Any]] = []
-    for item in ensure_pairs(carriers=carriers):
+    for item in ensure_pairs(lang, carriers=carriers):
+        entry = catalog.entry_by_id(item["entry_id"], lang)
+        if entry is None:
+            continue  # manual entries are not detected automatically
         source = item["reference_text"].split()
-        ref = build_reference(source)
-        ref_actual = build_reference(item["actual_text"].split())
-        ti, correct = target_position(ref, ref_actual, item["word_index"])
+        ref = build_reference(source, lang=lang)
+        ti = target_phone(ref, item["word_index"], entry, item["heard"])
+        if ti is None:
+            cases.append({"entry": entry.id, "skipped": "entry does not apply", **_meta(item)})
+            continue
         evidence = engine.analyze(load(item["path"]), ref)
-        j = judge(ref.phones[ti], evidence.phones[ti])
-        named = j.heard is not None and (
-            j.heard in correct or "".join(j.heard) in {"".join(c) for c in correct}
+        p = ref.phones[ti]
+        j = judge(p, evidence.phones[ti])
+        heard = heard_of(p, j) if j.heard is not None else None
+        # a pair may list several names for its mistake (catalog "names"): an American phoneme
+        # model hears a tap as the flap /t, d/, an inserted vowel as /ə/ or /ɛ/
+        accepted = {normalize_heard(n) for n in item.get("names") or [item["heard"]]}
+        named = (
+            j.entry is not None
+            and j.entry.id == entry.id
+            and heard is not None
+            and normalize_heard(heard) in accepted
         )
         cases.append(
             {
-                "entry": item["entry_id"],
-                "default_level": item["default_level"],
-                "expected": item["expected"],
-                "actual": item["actual"],
-                "voice": item["voice"],
-                "carrier": item["carrier"],
-                "target": ref.phones[ti].symbol,
+                "entry": entry.id,
+                "default_level": entry.default_level,
+                "target": p.symbol,
                 "level": j.level,
-                "heard": "".join(j.heard) if j.heard is not None else None,
+                "judged_entry": j.entry.id if j.entry else None,
+                "heard": heard,
                 "llr": round(j.llr, 2),
                 "diagnosis_ok": bool(named),
+                **_meta(item),
             }
         )
+
+    scored = [c for c in cases if "skipped" not in c]
 
     def rates(selected: list[dict[str, Any]]) -> dict[str, Any]:
         n = len(selected)
@@ -156,35 +163,38 @@ def evaluate(carriers: list[str] | None = None) -> dict[str, Any]:
             "diagnosis": round(sum(c["diagnosis_ok"] for c in selected) / n, 3) if n else None,
         }
 
-    named_cases = [c for c in cases if (c["expected"], c["actual"]) in NAMED_PAIRS]
-    error_cases = [c for c in cases if c["default_level"] == "error"]
     by_entry = {
-        entry: rates([c for c in cases if c["entry"] == entry])
-        for entry in dict.fromkeys(c["entry"] for c in cases)
+        e: rates([c for c in scored if c["entry"] == e])
+        for e in dict.fromkeys(c["entry"] for c in scored)
     }
-    by_pair = {
-        f"{a}/{b}": rates([c for c in cases if (c["expected"], c["actual"]) == (a, b)])
-        for a, b in dict.fromkeys((c["expected"], c["actual"]) for c in cases)
+    error_entries = [e.id for e in catalog.entries(lang) if e.default_level == "error"]
+    unreliable = {
+        e: r
+        for e, r in by_entry.items()
+        if (r["error"] if e in error_entries else r["flagged"]) is not None
+        and (r["error"] if e in error_entries else r["flagged"]) < RELIABLE
     }
     five = [t for d, t in timings if 4.0 <= d <= 6.0] or [t for _, t in timings]
     return {
+        "lang": lang,
         "carriers": sorted({c["carrier"] for c in cases}),
         "false_alarms": {
             "phones": total,
             "error": errors,
             "approx": approx,
-            "error_rate": round(errors / total, 4),
-            "approx_rate": round(approx / total, 4),
+            "error_rate": round(errors / total, 4) if total else None,
+            "approx_rate": round(approx / total, 4) if total else None,
             "per_sound": dict(sorted(per_sound.items(), key=lambda kv: -kv[1]["n"])),
             "offenders": offenders,
         },
-        "substitutions": {
-            "named_pairs": rates(named_cases),
-            "error_level_entries": rates(error_cases),
-            "all": rates(cases),
+        "mistakes": {
+            "error_level_entries": rates([c for c in scored if c["entry"] in error_entries]),
+            "approx_level_entries": rates([c for c in scored if c["entry"] not in error_entries]),
+            "all": rates(scored),
             "by_entry": by_entry,
-            "by_pair": by_pair,
-            "cases": cases,
+            "unreliable": unreliable,
+            "skipped": [c for c in cases if "skipped" in c],
+            "cases": scored,
         },
         "timing": {
             "analysis_s_median_for_5s_phrase": round(sorted(five)[len(five) // 2], 3),
@@ -193,42 +203,47 @@ def evaluate(carriers: list[str] | None = None) -> dict[str, Any]:
     }
 
 
+def _meta(item: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "expected": item["expected"],
+        "actual": item["actual"],
+        "pair_heard": item["heard"],
+        "voice": item["voice"],
+        "carrier": item["carrier"],
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
+    ap.add_argument("--lang", choices=LANGS, action="append", help="default: both")
     ap.add_argument("--carrier", action="append", default=None, help="experimental carrier")
-    ap.add_argument("--out", default=str(REPO / "docs" / "reports" / "data" / "pron_stage3.json"))
     args = ap.parse_args()
-    result = evaluate(args.carrier)
-    if args.carrier is None:
-        out = Path(args.out)
-        out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
-    fa = result["false_alarms"]
-    print(
-        f"false alarms: error {fa['error']}/{fa['phones']} = {fa['error_rate']:.2%},"
-        f" approx {fa['approx_rate']:.2%}"
-    )
-    for o in fa["offenders"]:
+    for lang in args.lang or LANGS:
+        result = evaluate(lang, args.carrier)
+        if args.carrier is None:
+            out = REPO / "docs" / "reports" / "data" / f"pron_stage2_{lang}.json"
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
+        fa = result["false_alarms"]
         print(
-            f"   {o['level']:6} {o['phrase']} {o['voice']:10} {o['word']:10}"
-            f" {o['expected']} -> {o['heard'] or '∅'} ({o['gop']})"
+            f"[{lang}] false alarms: error {fa['error']}/{fa['phones']} = {fa['error_rate']:.2%},"
+            f" approx {fa['approx_rate']:.2%}"
         )
-    sub = result["substitutions"]
-    print("named pairs:", sub["named_pairs"])
-    print("error-level entries:", sub["error_level_entries"])
-    for entry, r in sub["by_entry"].items():
-        print(f"   {entry:16} {r}")
-    for c in sub["cases"]:
-        mark = (
-            "ok " if c["level"] == "error" else "MISS" if c["default_level"] == "error" else "    "
-        )
-        print(
-            f"   {mark} {c['carrier'][:8]:8} {c['entry']:16} {c['expected']:7}->{c['actual']:7}"
-            f" {c['voice']:10}"
-            f" {c['target']:3} heard={c['heard'] or '-':4} {c['level']:6} llr={c['llr']}"
-            f" diag={'+' if c['diagnosis_ok'] else '-'}"
-        )
-    print("timing:", result["timing"])
+        for o in fa["offenders"]:
+            if o["level"] == "error":
+                print(
+                    f"   error {o['phrase']} {o['voice']:10} {o['word']:10}"
+                    f" {o['expected']} -> {o['heard'] or '∅'} {o['catalog_id']} ({o['gop']})"
+                )
+        m = result["mistakes"]
+        print(f"[{lang}] error-level entries:", m["error_level_entries"])
+        print(f"[{lang}] approx-level entries:", m["approx_level_entries"])
+        for entry, r in m["by_entry"].items():
+            print(f"   {entry:22} {r}")
+        print(f"[{lang}] unreliable:", m["unreliable"])
+        for s in m["skipped"]:
+            print("   skipped:", s)
+        print(f"[{lang}] timing:", result["timing"])
     return 0
 
 

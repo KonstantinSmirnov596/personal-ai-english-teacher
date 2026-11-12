@@ -98,6 +98,11 @@ def heard_symbol(variant: Variant | None, expected: str) -> str:
     return "".join(variant)  # '' means the sound was not pronounced
 
 
+def heard_of(p: RefPhone, j: Judgement) -> str:
+    """'+ɛ' for an inserted sound, '' for a missing one, the sounds heard otherwise."""
+    return catalog.heard_display(j.entry, p, j.heard)
+
+
 def build_result(
     ref: Reference,
     evidence: Evidence,
@@ -130,7 +135,7 @@ def build_result(
                 {
                     "expected": p.symbol,
                     "cls": p.cls,
-                    "heard": heard_symbol(j.heard, p.symbol),
+                    "heard": heard_of(p, j),
                     "start": e.start,
                     "end": e.end,
                     "gop": round(j.gop, 2),
@@ -149,7 +154,7 @@ def build_result(
             local = worst[2]
             j = judgements[phone_ids[local]]
             if j.entry is not None:
-                tip = catalog.tip(j.entry, heard_symbol(j.heard, ""))
+                tip = catalog.tip(j.entry, heard_of(ref.phones[phone_ids[local]], j))
             else:
                 tip = {"catalog_id": None, "title_l1": "", "tip_l1": "", "pair": None}
             tip["phone_index"] = local

@@ -89,7 +89,7 @@ class PronService:
         offsets: dict[str, float],
         confident: list[bool] | None,
     ) -> tuple[dict[str, Any], dict[str, Any] | None]:
-        ref = build_reference(source_words)
+        ref = build_reference(source_words, lang=self.core.l1)
         if not ref.phones:
             raise PronError("pron_no_text")
         if confident is not None:
@@ -353,7 +353,7 @@ class PronService:
         for p in reading_phrases()["phrases"]:
             targets = []
             for tid in p.get("targets", []):
-                entry = catalog.entry_by_id(tid)
+                entry = catalog.entry_by_id(tid, self.core.l1)
                 if entry is not None:
                     targets.append({"id": tid, "title_l1": entry.title_l1})
             out.append({"id": p["id"], "text": p["text"], "targets": targets})

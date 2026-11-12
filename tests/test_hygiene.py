@@ -22,12 +22,9 @@ TEXT_SUFFIXES = {
     ".yaml", ".ps1", ".cmd", ".bat", ".cfg", ".ini", ".svg", ".lock", "",
 }  # fmt: skip
 
-# Files whose Russian text is data of the predecessor's ru locale. Stage 1 removed the locale
-# (UI, core messages, prompts, mistake keys, scenarios, corrector set); the pronunciation catalog
-# is replaced by the es-419 and pt-BR catalogs in stage 2 (plan item 2.1), which empties the list.
-CYRILLIC_ALLOWED: dict[str, str] = {
-    "voicetutor/data/l1_ru_catalog.json": "ru pronunciation catalog until stage 2",
-}
+# The predecessor's Russian locale is gone (stage 1 removed the UI, prompts and data; stage 2
+# replaced the pronunciation catalog): no file may contain Cyrillic.
+CYRILLIC_ALLOWED: dict[str, str] = {}
 
 CYRILLIC = re.compile(r"[\u0400-\u052f]")
 # Assembled from parts so this file does not match its own patterns.

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import time
 from dataclasses import dataclass
 from typing import Any
@@ -11,6 +12,9 @@ import numpy as np
 from voicetutor.lang_guard import LearnerLanguageError, not_english
 from voicetutor.model_registry import KOKORO_VOICES, TTS, local_path
 from voicetutor.speech.audio import TTS_RATE, FloatAudio
+
+# misaki's phoneme override "[word](/phonemes/)", used by the accent fixtures of the tests
+PHONEME_OVERRIDE = re.compile(r"\[([^\]]+)\]\(/[^)]*/\)")
 
 
 @dataclass(frozen=True)
@@ -60,8 +64,9 @@ class SpeechSynthesizer:
         return str(self._root / "voices" / f"{voice}.pt")
 
     def synthesize(self, text: str, voice: str = "af_heart", speed: float = 1.0) -> Synthesis:
-        if not_english(text):
-            # SPEC 5: learner-language text is shown, never spoken.
+        # SPEC 5: learner-language text is shown, never spoken. A misaki phoneme override
+        # "[word](/phonemes/)" (test fixtures only) is checked by its word, not its IPA.
+        if not_english(PHONEME_OVERRIDE.sub(r"\1", text)):
             raise LearnerLanguageError("only English text may reach speech synthesis")
         if not 0.5 <= speed <= 2.0:
             raise ValueError("speed must be within 0.5..2.0")

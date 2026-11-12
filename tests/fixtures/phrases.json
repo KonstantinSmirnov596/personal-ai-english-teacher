@@ -77,10 +77,10 @@
     },
     "turn_accent": {
       "voice": "am_michael",
-      "note": "'very' is pronounced 'wery' through a phoneme override",
+      "note": "'video' is pronounced with /b/ (v -> b, typical for Spanish speakers) through a phoneme override",
       "segments": [
         {
-          "say": "I think this is a [very](/wˈɛɹi/) good idea."
+          "say": "We had a [video](/bˈɪdiO/) call with the team."
         },
         {
           "silence_s": 5.0
@@ -89,10 +89,10 @@
     },
     "reading_p01_accent": {
       "voice": "am_michael",
-      "note": "phrase p01 with work->verk and third->serd (phoneme overrides)",
+      "note": "phrase p01 with start -> estart and third -> tird (Spanish speakers; phoneme overrides)",
       "segments": [
         {
-          "say": "I think we should [work](/vˈɜɹk/) on the [third](/sˈɜɹd/) version this week."
+          "say": "I think we should [start](/ɛstˈɑɹt/) the [third](/tˈɜɹd/) project this week."
         },
         {
           "silence_s": 5.0

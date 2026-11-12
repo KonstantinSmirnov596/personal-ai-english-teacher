@@ -193,7 +193,7 @@ Attempt analysis (shortened):
 ```
 
 - `level`: `ok`, `approx`, `error` — shown as "correct", "close", "error".
-- Word: `source_index` is the word number in the phrase text split by spaces; `tip` is `null` when there are no marks; `heard` is an empty string when the sound was not produced.
+- Word: `source_index` is the word number in the phrase text split by spaces; `tip` is `null` when there are no marks. `heard` is an empty string when the sound was not produced and `+` followed by the sound when an extra sound was inserted (`+ɛ` in "espeak" for *speak*); the catalog is the learner language's (`voicetutor/data/l1/<code>/catalog.json`).
 - Sound: `cls` is the sound class for statistics; `scored: false` means the sound is not assessed (vowels of function words, syllabic consonants); `catalog_id` is the catalog entry or `null`; `gop` is the log likelihood ratio of the expected sound against the best competitor, at most 0.
 - `POST /api/pron/feedback` answers `{phone, sensitivity_offset, attempt}`: the updated attempt with the mark removed.
 - Errors: `pron_no_speech` (no speech heard), `pron_bad_audio`, `pron_no_text`, `audio_too_short`, `audio_too_long` — status `422`; `pron_unavailable` — `503`.

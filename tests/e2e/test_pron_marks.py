@@ -1,6 +1,7 @@
 """Stage 3.9 end-to-end: a clear pronunciation mistake is highlighted in the conversation.
 
-The microphone loops "I think this is a very good idea" with "very" said as "wery".
+The microphone loops "We had a video call with the team." with "video" said with /b/
+(a typical mistake of Spanish speakers; Spanish is the default learner language here).
 """
 
 from __future__ import annotations
@@ -33,11 +34,11 @@ def test_pronunciation_mark_in_conversation(env: E2E) -> None:
     mark = page.locator("[data-testid=pron-mark]")
     mark.first.wait_for(timeout=90_000)
     assert mark.count() == 1
-    assert mark.first.inner_text().lower() == "very"
+    assert mark.first.inner_text().lower() == "video"
     mark.first.click()
     card = page.locator("[data-testid=pron-card]")
     text = card.inner_text()
-    assert "/w/" in text and "/v/" in text
+    assert "/b/" in text and "/v/" in text
     assert card.get_attribute("lang") == "es-419"
     env.screenshot("15-pron-mark")
     # the grammar underline and the pronunciation fill coexist in one turn

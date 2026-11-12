@@ -113,26 +113,51 @@ def test_needleman_wunsch() -> None:
 
 
 def test_catalog_matching() -> None:
-    ref = build_reference(["I", "think", "the", "bad", "dog", "can", "sing."])
-    theta = phones_of(ref, "think")[0]
+    """Spanish and Portuguese catalogs: substitutions, sequences, deletions, insertions."""
+    es = build_reference(["I", "think", "the", "bad", "dog", "can", "sing."], "es-419")
+    theta = phones_of(es, "think")[0]
     assert catalog.match(theta, ("s",)).id == "th_voiceless"
+    assert catalog.match(theta, ("t",)).id == "th_voiceless"
     assert catalog.match(theta, ("p",)) is None
-    bad = phones_of(ref, "bad")
-    assert catalog.match(bad[-1], ("t",)).id == "final_devoicing"
-    assert catalog.match(bad[0], ("p",)) is None  # only word-final devoicing is catalogued
-    assert catalog.match(bad[1], ("ɛ",)).id == "ae_to_eh"
-    ng = phones_of(ref, "sing")[-1]
-    assert catalog.match(ng, ("n",)).id == "ng_to_n"
-    assert catalog.match(ng, ("ŋ", "k")).id == "ng_plus_stop"
-    the = phones_of(ref, "the")[0]
-    assert catalog.match(the, ("z",)).id == "th_voiced"
-    car = phones_of(build_reference(["car"]), "car")[-1]
-    assert catalog.match(car, ("ɑː",)).id == "r_dropped"
-    assert catalog.match(car, ("ɑː", "r")).id == "r_trill"
-    word = phones_of(build_reference(["word"]), "word")[1]
-    assert catalog.match(word, ("ɔːɹ",)).id == "nurse_vowel"
+    bad = phones_of(es, "bad")
+    assert catalog.match(bad[1], ("ɑː",)).id == "ae_vowel"  # Spanish: æ -> a
+    ng = phones_of(es, "sing")[-1]
+    assert catalog.match(ng, ("n",)).id == "ng_ending"
+    assert catalog.match(ng, ("ŋ", "ɡ")).id == "ng_ending"
+    the = phones_of(es, "the")[0]
+    assert catalog.match(the, ("d",)).id == "th_voiced"
+    pt = build_reference(["I", "think", "the", "bad", "dog", "can", "sing."], "pt-BR")
+    assert catalog.match(phones_of(pt, "think")[0], ("f",)).id == "th_voiceless"
+    assert catalog.match(phones_of(pt, "bad")[1], ("ɛ",)).id == "ae_vowel"  # Portuguese: æ -> ɛ
+    assert catalog.match(phones_of(es, "think")[0], ("f",)) is None  # not typical for Spanish
+    word = phones_of(build_reference(["word"], "es-419"), "word")[1]
+    assert catalog.match(word, ("ɛɹ",)).id == "nurse_vowel"
+    assert catalog.match(word, ("ɛ", "ɾ")).id == "nurse_vowel"
+    very = build_reference(["very"], "es-419")
+    r = next(p for p in very.phones if p.cls == "ɹ")
+    assert catalog.match(r, ("ɾ",)).id == "r_tap_trill"
+    v = phones_of(very, "very")[0]
+    assert catalog.match(v, ("b",)).id == "b_v"
+    # insertions (plan item 2.2)
+    speak = phones_of(build_reference(["speak"], "es-419"), "speak")[0]
+    assert catalog.match(speak, ("ɛ", "s")).id == "s_cluster_epenthesis"
+    assert catalog.heard_display(catalog.match(speak, ("ɛ", "s")), speak, ("ɛ", "s")) == "+ɛ"
+    big = phones_of(build_reference(["big"], "pt-BR"), "big")[-1]
+    assert catalog.match(big, ("ɡ", "iː")).id == "final_epenthesis"
+    assert (
+        catalog.match(phones_of(build_reference(["big"], "es-419"), "big")[-1], ("ɡ", "iː")) is None
+    )
+    worked = phones_of(build_reference(["worked"], "pt-BR"), "worked")[-1]
+    assert catalog.match(worked, ("ɪ", "d")).id == "ed_suffix"
+    wanted = phones_of(build_reference(["wanted"], "pt-BR"), "wanted")[-1]
+    assert catalog.match(wanted, ("ɪ", "d")) is None  # -ed after t is a syllable of its own
+    # deletions
+    house = phones_of(build_reference(["house"], "pt-BR"), "house")[0]
+    assert catalog.match(house, ()).id == "h_dropped"
+    team = phones_of(build_reference(["team"], "pt-BR"), "team")[-1]
+    assert catalog.match(team, ()).id == "final_m_nasal"
     tip = catalog.tip(catalog.match(theta, ("s",)), "s")
-    assert tip["pair"] == ["think", "sink"] and tip["tip_l1"]
+    assert tip["pair"] == ["thick", "sick"] and tip["tip_l1"]
 
 
 def ev(llr: dict) -> PhoneEvidence:
@@ -140,7 +165,7 @@ def ev(llr: dict) -> PhoneEvidence:
 
 
 def test_levels_and_thresholds() -> None:
-    ref = build_reference(["I", "think", "the", "bad", "dog", "can", "sing."])
+    ref = build_reference(["I", "think", "the", "bad", "dog", "can", "sing."], "es-419")
     theta = phones_of(ref, "think")[0]
     assert judge(theta, ev({("s",): TH.cat_error + 0.1})).level == "error"
     assert judge(theta, ev({("s",): TH.cat_error - 0.1})).level == "approx"
@@ -162,8 +187,9 @@ def test_levels_and_thresholds() -> None:
     j = judge(theta, ev({("s",): 2.5, ("p",): 3.0}))
     assert j.level == "error" and j.heard == ("s",)
     # entries whose default level is "close" never become errors
-    ng = phones_of(ref, "sing")[-1]
-    assert judge(ng, ev({("ŋ", "k"): 20.0})).level == "approx"
+    busy = phones_of(build_reference(["busy"], "es-419"), "busy")
+    z = next(p for p in busy if p.cls == "z")
+    assert judge(z, ev({("s",): 20.0})).level == "approx"
     # negative margins: said as expected
     ok = judge(theta, ev({("s",): -4.0, ("f",): -2.0}))
     assert ok.level == "ok" and ok.heard is None and ok.gop == 0.0
@@ -171,7 +197,7 @@ def test_levels_and_thresholds() -> None:
 
 def test_build_result_shape_and_scores() -> None:
     source = ["I", "think", "so."]
-    ref = build_reference(source)
+    ref = build_reference(source, "es-419")
     phones = []
     for p in ref.phones:
         llr = {c: -5.0 for c in p.competitors}
@@ -195,7 +221,7 @@ def test_build_result_shape_and_scores() -> None:
         "catalog_id": "th_voiceless",
     }
     assert think["tip"]["catalog_id"] == "th_voiceless" and think["tip"]["phone_index"] == 0
-    assert think["tip"]["pair"] == ["think", "sink"]
+    assert think["tip"]["pair"] == ["thick", "sick"]
     assert words["so"]["level"] == "ok" and words["so"]["score"] == 1.0
     assert 0.0 < think["score"] < 1.0
     assert res["score"] == pytest.approx((1.0 + think["score"] + 1.0) / 3, abs=1e-3)
@@ -204,7 +230,7 @@ def test_build_result_shape_and_scores() -> None:
 def test_pron_routes_without_model(tmp_path: Path) -> None:
     with make_app(tmp_path) as ctx:
         phrases = ctx.client.get("/api/pron/phrases").json()
-        assert len(phrases) == 26 and phrases[0]["id"] == "p01"
+        assert len(phrases) == 30 and phrases[0]["id"] == "p01"
         assert phrases[0]["targets"][0]["title_l1"]
         h = ctx.auth_headers
         r = ctx.client.post("/api/pron/assess?phrase_id=p01", content=b"not a wav", headers=h)

@@ -1,5 +1,6 @@
-"""Stage 3 acceptance on synthesized speech (docs/PLAN.md): false alarms, substitutions,
-assessment time, sensitivity feedback, cautious marks in conversation."""
+"""Pronunciation on synthesized speech, per learner language (stage 2 acceptance): false
+alarms, catalog mistakes (substitutions, deletions, insertions), assessment time, sensitivity
+feedback, cautious marks in conversation."""
 
 from __future__ import annotations
 
@@ -24,33 +25,43 @@ from voicetutor.speech.audio import read_wav, wav_bytes
 pytestmark = pytest.mark.gpu
 
 
-@pytest.fixture(scope="module")
-def evaluation() -> dict[str, Any]:
-    import sys
-
-    repo = Path(__file__).resolve().parents[2]
-    sys.path.insert(0, str(repo / "scripts"))
-    import pron_eval
-
-    return pron_eval.evaluate()
+_EVALUATIONS: dict[str, dict[str, Any]] = {}
 
 
-def test_false_alarms_on_native_reading(evaluation: dict[str, Any]) -> None:
-    """Three American voices read all phrases: at most 3 % of phones get "error"."""
-    fa = evaluation["false_alarms"]
+def evaluation_for(lang: str) -> dict[str, Any]:
+    """scripts/pron_eval.py once per learner language (shared by the tests of this module)."""
+    if lang not in _EVALUATIONS:
+        import sys
+
+        repo = Path(__file__).resolve().parents[2]
+        sys.path.insert(0, str(repo / "scripts"))
+        import pron_eval
+
+        result = pron_eval.evaluate(lang)
+        out = repo / "docs" / "reports" / "data" / f"pron_stage2_{lang}.json"
+        out.write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
+        _EVALUATIONS[lang] = result
+    return _EVALUATIONS[lang]
+
+
+@pytest.mark.parametrize("lang", ["es-419", "pt-BR"])
+def test_false_alarms_on_native_reading(lang: str) -> None:
+    """Three American voices read all 30 phrases: at most 3 % of phones get "error"."""
+    fa = evaluation_for(lang)["false_alarms"]
     assert fa["phones"] > 2000
-    assert fa["error_rate"] <= 0.03, fa["offenders"]
+    assert fa["error_rate"] <= 0.03, [o for o in fa["offenders"] if o["level"] == "error"]
 
 
-def test_substitutions_are_flagged_and_named(evaluation: dict[str, Any]) -> None:
-    """Minimal pairs: the target phone gets "error" in >= 80 % of cases and the heard sound
-    is named in >= 60 %."""
-    named = evaluation["substitutions"]["named_pairs"]
-    assert named["cases"] == 36  # six pairs, three voices, two carrier phrases
-    assert named["error"] >= 0.80, evaluation["substitutions"]["by_pair"]
-    assert named["diagnosis"] >= 0.60
-    every = evaluation["substitutions"]["error_level_entries"]
-    assert every["error"] >= 0.80 and every["diagnosis"] >= 0.60
+@pytest.mark.parametrize("lang", ["es-419", "pt-BR"])
+def test_catalog_mistakes_are_flagged_and_named(lang: str) -> None:
+    """SPEC 12: a catalog substitution or insertion gets "error" in >= 80 % of cases over all
+    verifiable entries together, and the heard sound is named in >= 60 %."""
+    m = evaluation_for(lang)["mistakes"]
+    every = m["error_level_entries"]
+    assert every["cases"] >= 100
+    assert every["error"] >= 0.80, m["by_entry"]
+    assert every["diagnosis"] >= 0.60, m["by_entry"]
+    assert not m["skipped"], m["skipped"]
 
 
 def test_accented_phrase_marks_the_right_words() -> None:
@@ -67,16 +78,19 @@ def test_accented_phrase_marks_the_right_words() -> None:
     text = next(p["text"] for p in reading_phrases()["phrases"] if p["id"] == "p01")
     audio, rate = read_wav(ensure_turns()["reading_p01_accent"])
     source = text.split()
-    ref = build_reference(source)
+    ref = build_reference(source, lang="es-419")
     result = build_result(
         ref, PronEngine(PhonemeModel()).analyze(resample(audio, rate, STT_RATE), ref), source
     )
     words = {w["w"]: w for w in result["words"]}
     assert words["third"]["level"] == "error"
-    assert words["third"]["tip"]["heard"] == "s" and words["third"]["tip"]["expected"] == "θ"
-    assert words["work"]["level"] == "error" and words["work"]["tip"]["heard"] == "v"
+    assert words["third"]["tip"]["heard"] == "t" and words["third"]["tip"]["expected"] == "θ"
+    # an inserted vowel before the s-cluster is named as an extra sound (plan item 2.2)
+    assert words["start"]["level"] == "error"
+    assert words["start"]["tip"]["catalog_id"] == "s_cluster_epenthesis"
+    assert words["start"]["tip"]["heard"] in {"+ɛ", "+ə"}
     wrong = [w["w"] for w in result["words"] if w["level"] == "error"]
-    assert set(wrong) == {"third", "work"}, wrong
+    assert set(wrong) == {"third", "start"}, wrong
 
 
 @pytest.fixture(scope="module")
@@ -209,8 +223,8 @@ def test_feedback_lowers_sensitivity(env: dict[str, Any]) -> None:
             "/api/pron/assess?phrase_id=p01", content=body, headers={"Content-Type": "audio/wav"}
         ).json()
         assert final["words"][wi]["level"] != "error"
-        work = next(w for w in final["words"] if w["w"] == "work")
-        assert work["level"] == "error"  # other sounds keep their sensitivity
+        start = next(w for w in final["words"] if w["w"] == "start")
+        assert start["level"] == "error"  # other sounds keep their sensitivity
 
 
 def test_silence_is_rejected(env: dict[str, Any]) -> None:
@@ -234,7 +248,7 @@ def test_reference_audio(env: dict[str, Any]) -> None:
 
 
 def test_conversation_marks_only_clear_errors(env: dict[str, Any]) -> None:
-    """Free conversation: «very» said as «wery» is flagged; nothing else is."""
+    """Free conversation: "video" said with /b/ (Spanish speakers) is flagged; nothing else is."""
     lp: LauncherProcess = env["lp"]
     with lp.ws_connect() as ws:
         client = WSClient(ws)
@@ -251,14 +265,14 @@ def test_conversation_marks_only_clear_errors(env: dict[str, Any]) -> None:
         assert flags["turn_id"] == turn_id
         assert len(flags["items"]) == 1
         item = flags["items"][0]
-        assert transcript["words"][item["word_index"]]["w"].strip(".,").lower() == "very"
-        assert item["expected"] == "v" and item["heard"] == "w" and item["tip_l1"]
+        assert transcript["words"][item["word_index"]]["w"].strip(".,").lower() == "video"
+        assert item["expected"] == "v" and item["heard"] == "b" and item["tip_l1"]
         client.until(lambda m: m["type"] == "tutor.done", timeout=60) if not any(
             r.msg["type"] == "tutor.done" for r in got
         ) else None
         client.send({"type": "session.end"})
         summary = client.until(lambda m: m["type"] == "summary", timeout=60)[-1].msg
-    assert summary["sounds"] == [{"phone": "v", "count": 1, "words": ["very"]}]
+    assert summary["sounds"] == [{"phone": "v", "count": 1, "words": ["video"]}]
 
     # a clean turn produces no marks at all
     with lp.ws_connect() as ws:

@@ -87,7 +87,7 @@ PREDECESSOR_TESTS: tuple[str, ...] = (
     "tests.test_pron_logic::test_catalog_matching",
     "tests.test_pron_logic::test_levels_and_thresholds",
     "tests.gpu.test_pron::test_false_alarms_on_native_reading",
-    "tests.gpu.test_pron::test_substitutions_are_flagged_and_named",
+    "tests.gpu.test_pron::test_catalog_mistakes_are_flagged_and_named",  # was substitutions
     "tests.gpu.test_pron::test_assessment_time_for_a_five_second_phrase",
     "tests.gpu.test_pron::test_feedback_lowers_sensitivity",
     "tests.gpu.test_pron::test_conversation_marks_only_clear_errors",
@@ -188,6 +188,47 @@ STAGES: dict[int, Stage] = {
         ),
         reports=("stage1.md",),
         files=("web/i18n/es-419.js", "web/i18n/pt-BR.js"),
+    ),
+    2: Stage(
+        suites=("fast", "gpu", "e2e"),
+        optional_suites=("live",),
+        required_tests=(
+            # 2.1 catalogs
+            "tests.test_catalogs::test_entry_sets_as_in_spec",
+            "tests.test_catalogs::test_schema",
+            "tests.test_catalogs::test_symbols_are_scoring_classes",
+            "tests.test_catalogs::test_tips_are_in_their_language",
+            "tests.test_catalogs::test_spanish_tips_are_latin_american",
+            "tests.test_catalogs::test_portuguese_tips_are_brazilian",
+            "tests.test_pron_logic::test_catalog_matching",
+            # 2.2 insertions
+            "tests.test_catalogs::test_insertions_only_where_the_catalog_says",
+            "tests.gpu.test_pron::test_accented_phrase_marks_the_right_words",
+            # 2.3 reading phrases
+            "tests.test_catalogs::test_reading_coverage",
+            "tests.test_catalogs::test_phrase_targets_exist",
+            # 2.5 metrics per learner language (SPEC 12)
+            "tests.gpu.test_pron::test_false_alarms_on_native_reading[es-419]",
+            "tests.gpu.test_pron::test_false_alarms_on_native_reading[pt-BR]",
+            "tests.gpu.test_pron::test_catalog_mistakes_are_flagged_and_named[es-419]",
+            "tests.gpu.test_pron::test_catalog_mistakes_are_flagged_and_named[pt-BR]",
+            "tests.gpu.test_pron::test_assessment_time_for_a_five_second_phrase",
+            "tests.gpu.test_pron::test_feedback_lowers_sensitivity",
+            "tests.gpu.test_pron::test_conversation_marks_only_clear_errors",
+            # 2.6 window, per language
+            "tests.e2e.test_reading::test_reading_marks_sounds_and_accepts_feedback",
+            "tests.e2e.test_reading::test_reading_in_portuguese",
+            "tests.e2e.test_pron_marks::test_pronunciation_mark_in_conversation",
+            # the Russian catalog is gone: no Cyrillic anywhere
+            "tests.test_hygiene::test_cyrillic_only_in_allowed_paths",
+        ),
+        reports=("stage2.md",),
+        files=(
+            "voicetutor/data/l1/es-419/catalog.json",
+            "voicetutor/data/l1/pt-BR/catalog.json",
+            "docs/reports/data/pron_stage2_es-419.json",
+            "docs/reports/data/pron_stage2_pt-BR.json",
+        ),
     ),
 }
 

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import sys
+import unicodedata
 from pathlib import Path
 
 import numpy as np
@@ -129,11 +130,24 @@ def ensure_reading(synth: _Synth | None = None) -> list[dict]:
     return out
 
 
-def ensure_pairs(synth: _Synth | None = None, carriers: list[str] | None = None) -> list[dict]:
-    """Minimal pairs of the catalog: the second word is spoken where the first is expected.
+def accent_word(word: str, say: str | None) -> str:
+    """The word as Kokoro should say it: a misaki phoneme override when the catalog gives one.
 
-    The word is said inside short carrier phrases, once before a pause and once before a
-    consonant (pair_<expected>_<actual>_<voice>_c<N>.wav). Extra carriers are for experiments.
+    Precomposed letters (ĩ, ũ) are decomposed: Kokoro's vocabulary has the combining tilde only.
+    """
+    if not say:
+        return word
+    return f"[{word}](/{unicodedata.normalize('NFD', say)}/)"
+
+
+def ensure_pairs(
+    lang: str = "es-419", synth: _Synth | None = None, carriers: list[str] | None = None
+) -> list[dict]:
+    """Minimal pairs and accent variants of a learner language's catalog.
+
+    The word is spoken as the learner would say it (``say``: Kokoro phonemes such as
+    /ɛspˈik/ for "speak") inside short carrier phrases, once before a pause and once before a
+    consonant: pair_<lang>_<entry>_<n>_<voice>_c<N>.wav. Extra carriers are for experiments.
     """
     from voicetutor.data_files import l1_catalog
 
@@ -143,26 +157,28 @@ def ensure_pairs(synth: _Synth | None = None, carriers: list[str] | None = None)
     for ci, carrier in enumerate(carriers or spec["pair_carriers"], start=1):
         tag = f"c{ci}" if carriers is None else "x" + "".join(c for c in carrier if c.isalpha())
         word_index = next(i for i, w in enumerate(carrier.split()) if "{word}" in w)
-        for entry in l1_catalog()["entries"]:
-            for pair in entry.get("pairs", []):
+        for entry in l1_catalog(lang)["entries"]:
+            for n, pair in enumerate(entry.get("pairs", []), start=1):
                 expected, actual = pair["words"]
+                spoken = accent_word(expected, pair.get("say")) if pair.get("say") else actual
                 for voice in spec["voices"]:
-                    name = f"pair_{expected}_{actual}_{voice}_{tag}"
+                    name = f"pair_{lang}_{entry['id']}_{n}_{voice}_{tag}"
                     path = GENERATED / f"{name}.wav"
                     if not path.exists():
-                        _write(name, synth.say(carrier.format(word=actual), voice))
+                        _write(name, synth.say(carrier.format(word=spoken), voice))
                     out.append(
                         {
+                            "lang": lang,
                             "entry_id": entry["id"],
                             "default_level": entry.get("default_level", "approx"),
                             "expected": expected,
                             "actual": actual,
                             "heard": pair["heard"],
+                            "names": pair.get("names", [pair["heard"]]),
                             "voice": voice,
                             "carrier": carrier,
                             "path": path,
                             "reference_text": carrier.format(word=expected),
-                            "actual_text": carrier.format(word=actual),
                             "word_index": word_index,
                         }
                     )
@@ -180,7 +196,8 @@ def main(argv: list[str]) -> int:
             print(path)
     if what in ("pron", "all"):
         print(len(ensure_reading(synth)), "reading fixtures")
-        print(len(ensure_pairs(synth)), "pair fixtures")
+        for lang in ("es-419", "pt-BR"):
+            print(lang, len(ensure_pairs(lang, synth)), "pair fixtures")
     return 0
 
 

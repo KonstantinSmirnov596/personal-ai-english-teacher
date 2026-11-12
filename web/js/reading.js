@@ -7,6 +7,12 @@ import { clear, el, icons, isTextField } from './dom.js';
 import { Wave } from './wave.js';
 
 const R = L.reading;
+
+// "+ɛ": an extra sound (insertion); "": a missing sound; anything else: heard instead.
+export function soundTitle(heard, expected) {
+  if (heard && heard.startsWith('+')) return L.reading.extraSound(heard.slice(1));
+  return heard ? L.reading.heardInstead(heard, expected) : L.reading.notHeard(expected);
+}
 const LEVEL_CLASS = { error: 'mark-pron-error', approx: 'mark-pron-approx', ok: 'read-word-ok' };
 
 export function wavBlob(pcm, sampleRate) {
@@ -255,10 +261,10 @@ export class ReadingView {
     );
     const tip = word.tip;
     if (tip) {
-      const title = tip.heard ? R.heardInstead(tip.heard, tip.expected) : R.notHeard(tip.expected);
+      const title = soundTitle(tip.heard, tip.expected);
       const body = el('p', { class: 'read-tip-text' });
       if (tip.tip_l1) body.append(`${tip.tip_l1} `);
-      if (tip.pair) body.append(R.compare, el('span', { lang: 'en', text: `${tip.pair[0]} — ${tip.pair[1]}` }), '.');
+      if (tip.pair && tip.pair[0] !== tip.pair[1]) body.append(R.compare, el('span', { lang: 'en', text: `${tip.pair[0]} — ${tip.pair[1]}` }), '.');
       section.append(el('div', { class: 'read-tip' }, [el('p', { class: 'strong', 'data-testid': 'word-tip-title', text: title }), body]));
     } else {
       section.append(el('p', { class: 'muted', text: R.wordOk }));

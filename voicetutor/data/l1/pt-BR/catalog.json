@@ -1,0 +1,1211 @@
+{
+  "version": 2,
+  "note": "Typical pronunciation mistakes of Brazilian Portuguese speakers (SPEC 12). Same format as voicetutor/data/l1/es-419/catalog.json. names: diagnoses that count as naming the pair's mistake correctly (evaluation only).",
+  "entries": [
+    {
+      "id": "short_i",
+      "expected": "ɪ",
+      "heard": [
+        "iː",
+        "i"
+      ],
+      "position": "stressed",
+      "detect": "substitution",
+      "default_level": "error",
+      "priority": 1,
+      "title": "O /ɪ/ soou como «i» longo",
+      "tip": "O /ɪ/ é mais curto e relaxado que o «i» do português: a língua desce um pouco, quase para o «ê», e os lábios não se esticam.",
+      "examples": [
+        "this",
+        "big",
+        "fix",
+        "minute",
+        "business"
+      ],
+      "pairs": [
+        {
+          "heard": "iː",
+          "words": [
+            "ship",
+            "sheep"
+          ],
+          "say": "ʃˈip"
+        },
+        {
+          "heard": "iː",
+          "words": [
+            "hit",
+            "heat"
+          ],
+          "say": "hˈit"
+        },
+        {
+          "heard": "iː",
+          "words": [
+            "sit",
+            "seat"
+          ],
+          "say": "sˈit"
+        },
+        {
+          "heard": "iː",
+          "words": [
+            "fill",
+            "feel"
+          ],
+          "say": "fˈil"
+        }
+      ]
+    },
+    {
+      "id": "ae_vowel",
+      "expected": "æ",
+      "heard": [
+        "ɛ"
+      ],
+      "position": "stressed",
+      "detect": "substitution",
+      "default_level": "error",
+      "priority": 1,
+      "title": "O /æ/ soou como «é»",
+      "tip": "Abra bem a boca, mais do que no «é» de «pé», com a língua baixa e para frente: é um som entre «é» e «á».",
+      "examples": [
+        "bad",
+        "back",
+        "plan",
+        "happy",
+        "manager"
+      ],
+      "pairs": [
+        {
+          "heard": "ɛ",
+          "words": [
+            "bad",
+            "bed"
+          ],
+          "say": "bˈɛd"
+        },
+        {
+          "heard": "ɛ",
+          "words": [
+            "man",
+            "men"
+          ],
+          "say": "mˈɛn"
+        },
+        {
+          "heard": "ɛ",
+          "words": [
+            "sad",
+            "said"
+          ],
+          "say": "sˈɛd"
+        },
+        {
+          "heard": "ɛ",
+          "words": [
+            "pan",
+            "pen"
+          ],
+          "say": "pˈɛn"
+        }
+      ]
+    },
+    {
+      "id": "strut_vowel",
+      "expected": "ʌ",
+      "heard": [
+        "a",
+        "ɔ"
+      ],
+      "position": "stressed",
+      "detect": "substitution",
+      "default_level": "error",
+      "priority": 2,
+      "title": "O /ʌ/ soou como «a» ou «ó»",
+      "tip": "É uma vogal curta e relaxada, parecida com o «a» fechado de «cama»: boca meio aberta, lábios sem arredondar.",
+      "examples": [
+        "but",
+        "much",
+        "lunch",
+        "budget",
+        "company"
+      ],
+      "pairs": [
+        {
+          "heard": "a",
+          "words": [
+            "cut",
+            "cot"
+          ],
+          "say": "kˈɑt"
+        },
+        {
+          "heard": "a",
+          "words": [
+            "luck",
+            "lock"
+          ],
+          "say": "lˈɑk"
+        },
+        {
+          "heard": "ɔ",
+          "words": [
+            "cup",
+            "cop"
+          ],
+          "say": "kˈɔp"
+        },
+        {
+          "heard": "a",
+          "words": [
+            "duck",
+            "dock"
+          ],
+          "say": "dˈɑk"
+        }
+      ]
+    },
+    {
+      "id": "schwa_reduction",
+      "expected": "ə",
+      "heard": [
+        "a",
+        "o",
+        "ɔ",
+        "oʊ",
+        "æ",
+        "ɛ",
+        "u"
+      ],
+      "position": "unstressed",
+      "detect": "substitution",
+      "default_level": "approx",
+      "priority": 2,
+      "title": "A vogal sem acento soou completa",
+      "tip": "Nas sílabas sem acento o inglês usa uma vogal curta e neutra, como o «a» final de «casa». Não pronuncie «a» ou «o» abertos.",
+      "examples": [
+        "about",
+        "today",
+        "problem",
+        "support",
+        "second"
+      ],
+      "pairs": [
+        {
+          "heard": "a",
+          "words": [
+            "about",
+            "about"
+          ],
+          "say": "ɑbˈWt"
+        },
+        {
+          "heard": "u",
+          "words": [
+            "today",
+            "today"
+          ],
+          "say": "tudˈA"
+        },
+        {
+          "heard": "a",
+          "words": [
+            "again",
+            "again"
+          ],
+          "say": "ɑɡˈɛn"
+        }
+      ]
+    },
+    {
+      "id": "short_u",
+      "expected": "ʊ",
+      "heard": [
+        "uː",
+        "u"
+      ],
+      "position": "stressed",
+      "detect": "substitution",
+      "default_level": "approx",
+      "priority": 3,
+      "title": "O /ʊ/ soou como «u» longo",
+      "tip": "O /ʊ/ é mais curto e relaxado que o «u» do português: os lábios se arredondam pouco e a língua fica um pouco mais baixa.",
+      "examples": [
+        "good",
+        "book",
+        "look",
+        "could",
+        "should"
+      ],
+      "pairs": [
+        {
+          "heard": "uː",
+          "words": [
+            "full",
+            "fool"
+          ],
+          "say": "fˈul"
+        },
+        {
+          "heard": "uː",
+          "words": [
+            "pull",
+            "pool"
+          ],
+          "say": "pˈul"
+        },
+        {
+          "heard": "uː",
+          "words": [
+            "look",
+            "Luke"
+          ],
+          "say": "lˈuk"
+        }
+      ]
+    },
+    {
+      "id": "nurse_vowel",
+      "expected": "ɝ",
+      "heard": [
+        "ɛɾ",
+        "ɛr",
+        "ɛɹ",
+        "ɛ",
+        "eɾ",
+        "ɛx"
+      ],
+      "position": "stressed",
+      "detect": "substitution",
+      "default_level": "error",
+      "priority": 1,
+      "title": "O /ɝ/ soou como «ér»",
+      "tip": "Não é «é» mais «r»: é uma vogal só, com a língua recolhida para trás desde o começo, como o «r» do interior paulista, sem tocar o céu da boca.",
+      "examples": [
+        "work",
+        "first",
+        "early",
+        "person",
+        "learn"
+      ],
+      "pairs": [
+        {
+          "heard": "ɛɾ",
+          "words": [
+            "work",
+            "werk"
+          ],
+          "say": "wˈɛɾk",
+          "names": [
+            "ɛɾ",
+            "ɛ",
+            "ɛɹ",
+            "ɛr"
+          ]
+        },
+        {
+          "heard": "ɛɾ",
+          "words": [
+            "bird",
+            "berd"
+          ],
+          "say": "bˈɛɾd",
+          "names": [
+            "ɛɾ",
+            "ɛ",
+            "ɛɹ",
+            "ɛr"
+          ]
+        },
+        {
+          "heard": "ɛɾ",
+          "words": [
+            "first",
+            "ferst"
+          ],
+          "say": "fˈɛɾst",
+          "names": [
+            "ɛɾ",
+            "ɛ",
+            "ɛɹ",
+            "ɛr"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "th_voiceless",
+      "expected": "θ",
+      "heard": [
+        "f",
+        "t",
+        "s"
+      ],
+      "position": "any",
+      "detect": "substitution",
+      "default_level": "error",
+      "priority": 1,
+      "title": "O /θ/ soou como «f», «t» ou «s»",
+      "tip": "Ponha a ponta da língua entre os dentes, sem apertar, e solte o ar sem voz. Os lábios não se tocam, como acontece no «f».",
+      "examples": [
+        "think",
+        "three",
+        "thanks",
+        "both",
+        "month"
+      ],
+      "pairs": [
+        {
+          "heard": "f",
+          "words": [
+            "three",
+            "free"
+          ],
+          "say": "fɹˈi"
+        },
+        {
+          "heard": "f",
+          "words": [
+            "thin",
+            "fin"
+          ],
+          "say": "fˈɪn"
+        },
+        {
+          "heard": "t",
+          "words": [
+            "think",
+            "tink"
+          ],
+          "say": "tˈɪŋk"
+        },
+        {
+          "heard": "s",
+          "words": [
+            "thick",
+            "sick"
+          ],
+          "say": "sˈɪk"
+        }
+      ]
+    },
+    {
+      "id": "th_voiced",
+      "expected": "ð",
+      "heard": [
+        "d"
+      ],
+      "position": "any",
+      "detect": "substitution",
+      "default_level": "error",
+      "priority": 1,
+      "title": "O /ð/ soou como «d»",
+      "tip": "A língua fica entre os dentes, como em «think», mas com voz. Não encoste a língua atrás dos dentes como no «d».",
+      "examples": [
+        "the",
+        "this",
+        "other",
+        "together",
+        "weather"
+      ],
+      "pairs": [
+        {
+          "heard": "d",
+          "words": [
+            "then",
+            "den"
+          ],
+          "say": "dˈɛn"
+        },
+        {
+          "heard": "d",
+          "words": [
+            "they",
+            "day"
+          ],
+          "say": "dˈA"
+        },
+        {
+          "heard": "d",
+          "words": [
+            "those",
+            "doze"
+          ],
+          "say": "dˈOz"
+        },
+        {
+          "heard": "d",
+          "words": [
+            "there",
+            "dare"
+          ],
+          "say": "dˈɛɹ"
+        }
+      ]
+    },
+    {
+      "id": "sh_ch",
+      "expected": "tʃ",
+      "heard": [
+        "ʃ"
+      ],
+      "position": "any",
+      "detect": "substitution",
+      "default_level": "error",
+      "priority": 1,
+      "title": "O «ch» de «chair» soou como «x»",
+      "tip": "Em «chair» e «check» o som começa com um toque da língua, como o «tch» de «tchau». O «x» de «xícara» é outro som (/ʃ/ de «share»).",
+      "examples": [
+        "chair",
+        "check",
+        "choose",
+        "teacher",
+        "watch"
+      ],
+      "pairs": [
+        {
+          "heard": "ʃ",
+          "words": [
+            "chip",
+            "ship"
+          ],
+          "say": "ʃˈɪp"
+        },
+        {
+          "heard": "ʃ",
+          "words": [
+            "chair",
+            "share"
+          ],
+          "say": "ʃˈɛɹ"
+        },
+        {
+          "heard": "ʃ",
+          "words": [
+            "cheap",
+            "sheep"
+          ],
+          "say": "ʃˈip"
+        },
+        {
+          "heard": "ʃ",
+          "words": [
+            "watch",
+            "wash"
+          ],
+          "say": "wˈɑʃ"
+        }
+      ]
+    },
+    {
+      "id": "h_dropped",
+      "expected": "h",
+      "heard": [
+        ""
+      ],
+      "position": "word_initial",
+      "detect": "deletion",
+      "default_level": "error",
+      "priority": 1,
+      "title": "O /h/ do começo sumiu",
+      "tip": "Em inglês o «h» se pronuncia: é só um sopro de ar, como quando você embaça um espelho. «house» começa com esse sopro.",
+      "examples": [
+        "have",
+        "help",
+        "home",
+        "happy",
+        "behind"
+      ],
+      "pairs": [
+        {
+          "heard": "",
+          "words": [
+            "house",
+            "ouse"
+          ],
+          "say": "ˈWs"
+        },
+        {
+          "heard": "",
+          "words": [
+            "hair",
+            "air"
+          ],
+          "say": "ˈɛɹ"
+        },
+        {
+          "heard": "",
+          "words": [
+            "hat",
+            "at"
+          ],
+          "say": "ˈæt"
+        },
+        {
+          "heard": "",
+          "words": [
+            "heart",
+            "art"
+          ],
+          "say": "ˈɑɹt"
+        }
+      ]
+    },
+    {
+      "id": "r_initial",
+      "expected": "ɹ",
+      "heard": [
+        "h",
+        "x"
+      ],
+      "position": "word_initial",
+      "detect": "substitution",
+      "default_level": "error",
+      "priority": 1,
+      "title": "O /ɹ/ do começo soou como o «r» de «rato»",
+      "tip": "O «r» inglês do começo da palavra não sai da garganta como o «r» de «rato»: a língua se recolhe para trás sem tocar em nada e os lábios se arredondam.",
+      "examples": [
+        "right",
+        "really",
+        "red",
+        "report",
+        "review"
+      ],
+      "pairs": [
+        {
+          "heard": "h",
+          "words": [
+            "red",
+            "head"
+          ],
+          "say": "hˈɛd"
+        },
+        {
+          "heard": "h",
+          "words": [
+            "right",
+            "height"
+          ],
+          "say": "hˈIt"
+        },
+        {
+          "heard": "x",
+          "words": [
+            "road",
+            "hroad"
+          ],
+          "say": "xˈOd"
+        },
+        {
+          "heard": "h",
+          "words": [
+            "rat",
+            "hat"
+          ],
+          "say": "hˈæt"
+        }
+      ]
+    },
+    {
+      "id": "r_tap_trill",
+      "expected": "ɹ",
+      "heard": [
+        "ɾ",
+        "r",
+        "d",
+        "t"
+      ],
+      "position": "any",
+      "detect": "substitution",
+      "default_level": "error",
+      "priority": 2,
+      "title": "O /ɹ/ soou como o «r» de «caro»",
+      "tip": "O «r» inglês não é a batida rápida de «caro»: a língua não toca o céu da boca, fica recolhida para trás, e o som é contínuo.",
+      "examples": [
+        "around",
+        "very",
+        "problem",
+        "story",
+        "every"
+      ],
+      "pairs": [
+        {
+          "heard": "ɾ",
+          "words": [
+            "around",
+            "around"
+          ],
+          "say": "əɾˈWnd",
+          "names": [
+            "ɾ",
+            "r",
+            "d",
+            "t"
+          ]
+        },
+        {
+          "heard": "ɾ",
+          "words": [
+            "very",
+            "very"
+          ],
+          "say": "vˈɛɾi",
+          "names": [
+            "ɾ",
+            "r",
+            "d",
+            "t"
+          ]
+        },
+        {
+          "heard": "ɾ",
+          "words": [
+            "story",
+            "story"
+          ],
+          "say": "stˈɔɾi",
+          "names": [
+            "ɾ",
+            "r",
+            "d",
+            "t"
+          ]
+        },
+        {
+          "heard": "ɾ",
+          "words": [
+            "sorry",
+            "sorry"
+          ],
+          "say": "sˈɑɾi",
+          "names": [
+            "ɾ",
+            "r",
+            "d",
+            "t"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s_cluster_epenthesis",
+      "expected": "s",
+      "heard": [
+        "+i",
+        "+ɪ",
+        "+ɛ",
+        "+e"
+      ],
+      "insert": {
+        "where": "before",
+        "sounds": [
+          "i",
+          "ɪ",
+          "ɛ",
+          "e"
+        ]
+      },
+      "position": "s_cluster",
+      "detect": "insertion",
+      "default_level": "error",
+      "priority": 1,
+      "title": "Entrou um «i» antes do «s»",
+      "tip": "Em inglês a palavra começa direto com «s»: «speak», não «ispeak». Alongue o «s» um instante e passe para a consoante seguinte sem vogal.",
+      "examples": [
+        "speak",
+        "student",
+        "school",
+        "start",
+        "small"
+      ],
+      "pairs": [
+        {
+          "heard": "+i",
+          "words": [
+            "speak",
+            "ispeak"
+          ],
+          "say": "ispˈik",
+          "names": [
+            "+ɛ",
+            "+e",
+            "+ə",
+            "+i",
+            "+ɪ"
+          ]
+        },
+        {
+          "heard": "+i",
+          "words": [
+            "student",
+            "istudent"
+          ],
+          "say": "istˈudᵊnt",
+          "names": [
+            "+ɛ",
+            "+e",
+            "+ə",
+            "+i",
+            "+ɪ"
+          ]
+        },
+        {
+          "heard": "+i",
+          "words": [
+            "school",
+            "ischool"
+          ],
+          "say": "iskˈul",
+          "names": [
+            "+ɛ",
+            "+e",
+            "+ə",
+            "+i",
+            "+ɪ"
+          ]
+        },
+        {
+          "heard": "+i",
+          "words": [
+            "start",
+            "istart"
+          ],
+          "say": "istˈɑɹt",
+          "names": [
+            "+ɛ",
+            "+e",
+            "+ə",
+            "+i",
+            "+ɪ"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "final_epenthesis",
+      "expected": "*",
+      "heard": [
+        "+i",
+        "+ɪ"
+      ],
+      "insert": {
+        "where": "after",
+        "sounds": [
+          "i",
+          "ɪ"
+        ]
+      },
+      "position": "word_final_obstruent",
+      "detect": "insertion",
+      "default_level": "error",
+      "priority": 1,
+      "title": "Entrou um «i» depois da consoante final",
+      "tip": "Termine a palavra na consoante, sem soltar vogal depois: «big» acaba no «g», não «bigui». Feche o som e pare.",
+      "examples": [
+        "big",
+        "book",
+        "good",
+        "stop",
+        "Facebook"
+      ],
+      "pairs": [
+        {
+          "heard": "+i",
+          "words": [
+            "big",
+            "bigi"
+          ],
+          "say": "bˈɪɡi",
+          "names": [
+            "+i",
+            "+ɪ"
+          ]
+        },
+        {
+          "heard": "+i",
+          "words": [
+            "book",
+            "booki"
+          ],
+          "say": "bˈʊki",
+          "names": [
+            "+i",
+            "+ɪ"
+          ]
+        },
+        {
+          "heard": "+i",
+          "words": [
+            "bag",
+            "bagi"
+          ],
+          "say": "bˈæɡi",
+          "names": [
+            "+i",
+            "+ɪ"
+          ]
+        },
+        {
+          "heard": "+i",
+          "words": [
+            "stop",
+            "stopi"
+          ],
+          "say": "stˈɑpi",
+          "names": [
+            "+i",
+            "+ɪ"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ed_suffix",
+      "expected_map": [
+        [
+          "t",
+          "ɪd"
+        ],
+        [
+          "t",
+          "ɛd"
+        ],
+        [
+          "t",
+          "əd"
+        ],
+        [
+          "d",
+          "ɪd"
+        ],
+        [
+          "d",
+          "ɛd"
+        ],
+        [
+          "d",
+          "əd"
+        ]
+      ],
+      "position": "ed_suffix",
+      "detect": "substitution",
+      "default_level": "error",
+      "priority": 1,
+      "title": "A terminação -ed virou uma sílaba a mais",
+      "tip": "Depois de um som que não é /t/ nem /d/, o -ed não acrescenta sílaba: «worked» soa /wɝkt/, uma sílaba só.",
+      "examples": [
+        "worked",
+        "liked",
+        "helped",
+        "stopped",
+        "finished"
+      ],
+      "pairs": [
+        {
+          "heard": "ɪd",
+          "words": [
+            "worked",
+            "workid"
+          ],
+          "say": "wˈɜɹkɪd",
+          "names": [
+            "ɛd",
+            "ɪd",
+            "əd"
+          ]
+        },
+        {
+          "heard": "ɪd",
+          "words": [
+            "liked",
+            "likid"
+          ],
+          "say": "lˈIkɪd",
+          "names": [
+            "ɛd",
+            "ɪd",
+            "əd"
+          ]
+        },
+        {
+          "heard": "ɪd",
+          "words": [
+            "helped",
+            "helpid"
+          ],
+          "say": "hˈɛlpɪd",
+          "names": [
+            "ɛd",
+            "ɪd",
+            "əd"
+          ]
+        },
+        {
+          "heard": "ɪd",
+          "words": [
+            "stopped",
+            "stoppid"
+          ],
+          "say": "stˈɑpɪd",
+          "names": [
+            "ɛd",
+            "ɪd",
+            "əd"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "t_d_palatal",
+      "expected_map": [
+        [
+          "t",
+          "tʃ"
+        ],
+        [
+          "d",
+          "dʒ"
+        ],
+        [
+          "ɾ",
+          "tʃ"
+        ],
+        [
+          "ɾ",
+          "dʒ"
+        ]
+      ],
+      "position": "before_high_front_vowel",
+      "detect": "substitution",
+      "default_level": "error",
+      "priority": 2,
+      "title": "O /t/ ou /d/ antes de «i» soou como «tch» ou «dj»",
+      "tip": "Em inglês o /t/ e o /d/ não mudam antes de «i»: «party» não é «partchy». A ponta da língua toca atrás dos dentes de cima e solta rápido.",
+      "examples": [
+        "party",
+        "city",
+        "body",
+        "ready",
+        "study"
+      ],
+      "pairs": [
+        {
+          "heard": "tʃ",
+          "words": [
+            "party",
+            "partchy"
+          ],
+          "say": "pˈɑɹʧi"
+        },
+        {
+          "heard": "tʃ",
+          "words": [
+            "city",
+            "citchy"
+          ],
+          "say": "sˈɪʧi"
+        },
+        {
+          "heard": "dʒ",
+          "words": [
+            "body",
+            "bodjy"
+          ],
+          "say": "bˈɑʤi"
+        },
+        {
+          "heard": "dʒ",
+          "words": [
+            "ready",
+            "redjy"
+          ],
+          "say": "ɹˈɛʤi"
+        }
+      ]
+    },
+    {
+      "id": "final_l",
+      "expected": "l",
+      "heard": [
+        "w",
+        "u"
+      ],
+      "position": "coda",
+      "detect": "substitution",
+      "default_level": "approx",
+      "priority": 2,
+      "title": "O /l/ final soou como «u»",
+      "tip": "No fim da sílaba o «l» inglês continua sendo «l»: encoste a ponta da língua atrás dos dentes de cima. Em «Brasil» a gente diz «u», em inglês não.",
+      "examples": [
+        "feel",
+        "school",
+        "milk",
+        "help",
+        "call"
+      ],
+      "pairs": [
+        {
+          "heard": "w",
+          "words": [
+            "feel",
+            "feeu"
+          ],
+          "say": "fˈiw"
+        },
+        {
+          "heard": "w",
+          "words": [
+            "school",
+            "schoou"
+          ],
+          "say": "skˈuw"
+        },
+        {
+          "heard": "w",
+          "words": [
+            "milk",
+            "miuk"
+          ],
+          "say": "mˈɪwk"
+        },
+        {
+          "heard": "w",
+          "words": [
+            "well",
+            "weu"
+          ],
+          "say": "wˈɛw"
+        }
+      ]
+    },
+    {
+      "id": "final_m_nasal",
+      "expected": "m",
+      "heard": [
+        ""
+      ],
+      "position": "word_final",
+      "detect": "deletion",
+      "default_level": "approx",
+      "priority": 2,
+      "title": "O /m/ final virou vogal nasal",
+      "tip": "Em inglês o «m» final se fecha de verdade: junte os lábios no fim de «him» e «team». Não deixe só a vogal nasal, como em «tem».",
+      "examples": [
+        "him",
+        "team",
+        "them",
+        "problem",
+        "time"
+      ],
+      "pairs": [
+        {
+          "heard": "",
+          "words": [
+            "him",
+            "hĩ"
+          ],
+          "say": "hˈɪ̃"
+        },
+        {
+          "heard": "",
+          "words": [
+            "team",
+            "tĩ"
+          ],
+          "say": "tˈĩ"
+        },
+        {
+          "heard": "",
+          "words": [
+            "them",
+            "dhẽ"
+          ],
+          "say": "ðˈɛ̃"
+        },
+        {
+          "heard": "",
+          "words": [
+            "room",
+            "rũ"
+          ],
+          "say": "ɹˈũ"
+        }
+      ]
+    },
+    {
+      "id": "ng_ending",
+      "expected": "ŋ",
+      "heard": [
+        "n",
+        "ŋɡ"
+      ],
+      "position": "word_final",
+      "detect": "substitution",
+      "default_level": "error",
+      "priority": 2,
+      "title": "O /ŋ/ final soou como «n» ou com «g»",
+      "tip": "O /ŋ/ se faz com a parte de trás da língua no céu da boca, como o «n» de «manga», mas sem dizer o «g» no final.",
+      "examples": [
+        "thing",
+        "morning",
+        "working",
+        "long",
+        "meeting"
+      ],
+      "pairs": [
+        {
+          "heard": "n",
+          "words": [
+            "sing",
+            "sin"
+          ],
+          "say": "sˈɪn"
+        },
+        {
+          "heard": "n",
+          "words": [
+            "thing",
+            "thin"
+          ],
+          "say": "θˈɪn"
+        },
+        {
+          "heard": "n",
+          "words": [
+            "wing",
+            "win"
+          ],
+          "say": "wˈɪn"
+        },
+        {
+          "heard": "ŋɡ",
+          "words": [
+            "sing",
+            "singg"
+          ],
+          "say": "sˈɪŋɡ"
+        }
+      ]
+    },
+    {
+      "id": "aspiration",
+      "expected": "p",
+      "heard": [],
+      "position": "stressed_onset",
+      "detect": "manual",
+      "default_level": "approx",
+      "priority": 3,
+      "title": "Falta o sopro de /p/, /t/, /k/",
+      "tip": "No começo de uma sílaba tônica, /p/, /t/ e /k/ vêm com um sopro de ar. Ponha a mão na frente da boca e diga «pen»: você deve sentir o ar.",
+      "examples": [
+        "pen",
+        "time",
+        "keep",
+        "today",
+        "important"
+      ],
+      "pairs": []
+    }
+  ]
+}

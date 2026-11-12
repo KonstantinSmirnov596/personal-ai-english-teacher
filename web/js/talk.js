@@ -1,6 +1,7 @@
 // Conversation: start screen, feed with corrections, bottom panel with mic and waveform.
 
 import { L, langTag } from './i18n.js';
+import { soundTitle } from './reading.js';
 import { get, patch, post } from './api.js';
 import { clear, el, formatClock, icons, isTextField } from './dom.js';
 import { AutoTurns, floatToPcm16 } from './vad.js';
@@ -822,7 +823,7 @@ export class TalkView {
 
   showPronCard(t, flag, word) {
     if (t.pronCard) t.pronCard.remove();
-    const title = flag.heard ? L.reading.heardInstead(flag.heard, flag.expected) : L.reading.notHeard(flag.expected);
+    const title = soundTitle(flag.heard, flag.expected);
     const close = el('button', { type: 'button', class: 'link-button card-close', text: L.card.close });
     t.pronCard = el('section', { class: 'card', lang: langTag(), 'data-testid': 'pron-card' }, [
       el('div', { class: 'card-item' }, [

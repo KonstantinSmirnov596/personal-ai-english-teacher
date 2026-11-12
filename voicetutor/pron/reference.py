@@ -242,6 +242,10 @@ class RefPhone:
     competitors: list[Variant] = field(default_factory=list)
     scored: bool = True
     deletion_ok: bool = False
+    lang: str = ""  # learner language whose catalog applies (voicetutor/data/l1/<code>)
+    word_text: str = ""
+    prev_in_word: str | None = None  # class of the neighbouring phone in the same word
+    next_in_word: str | None = None
 
 
 @dataclass
@@ -281,8 +285,11 @@ def _class_of(symbol: str) -> str | None:
     return None
 
 
-def build_reference(source_words: list[str]) -> Reference:
-    """Build the reference for a list of source words (display words or recognized words)."""
+def build_reference(source_words: list[str], lang: str = "") -> Reference:
+    """Build the reference for a list of source words (display words or recognized words).
+
+    ``lang`` is the learner language: its catalog adds competitors such as insertions.
+    """
     tokens = tokenize(source_words)
     words = [RefWord(text=t, source_index=i) for t, i in tokens]
     if not words:
@@ -328,10 +335,17 @@ def build_reference(source_words: list[str]) -> Reference:
                     word_final=pi == len(merged) - 1,
                     function_word=word.is_function,
                     canonical=canonical,
+                    lang=lang,
+                    word_text=word.text,
+                    prev_in_word=merged[pi - 1][1] if pi > 0 else None,
+                    next_in_word=merged[pi + 1][1] if pi + 1 < len(merged) else None,
                 )
             )
     ref = Reference(words=words, phones=phones)
     _fill_variants(ref)
+    from voicetutor.pron import catalog  # catalog imports this module
+
+    catalog.add_competitors(ref)
     return ref
 
 
