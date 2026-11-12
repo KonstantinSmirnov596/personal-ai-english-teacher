@@ -1,0 +1,32 @@
+# environment and caches
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+node_modules/
+# application data and models are never stored in the repository
+/data/
+/models/
+/logs/
+*.db
+*.db-wal
+*.db-shm
+# test artifacts
+tests/fixtures/audio/generated/
+playwright-report/
+test-results/
+# local Claude Code settings and secrets
+.claude/settings.local.json
+CLAUDE.local.md
+.env
+.env.*
+
+# project-local tools (uv bootstrap)
+.tools/
+# fonts are installed by scripts/setup.ps1 (voicetutor.setup_fonts)
+web/fonts/
+web/vendor/
+
+# application shortcut is created by scripts/setup.ps1
+*.lnk

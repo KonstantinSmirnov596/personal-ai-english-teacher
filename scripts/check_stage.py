@@ -1,0 +1,296 @@
+"""Stage acceptance: runs the suites a stage needs, checks required tests and reports.
+
+Usage: python scripts/check_stage.py <N>
+Exit code 0 only when every check passed. A ``live`` suite that was skipped because no key is
+saved does not fail the stage but is listed separately in the summary.
+"""
+
+from __future__ import annotations
+
+import os
+import re
+import subprocess
+import sys
+import tempfile
+import xml.etree.ElementTree as ET
+from dataclasses import dataclass, field
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parent.parent
+REPORTS = REPO / "docs" / "reports"
+
+MARKERS = {
+    "fast": "not gpu and not e2e and not live",
+    "gpu": "gpu",
+    "e2e": "e2e",
+    "live": "live",
+}
+
+
+@dataclass(frozen=True)
+class Stage:
+    suites: tuple[str, ...]
+    required_tests: tuple[str, ...] = ()
+    reports: tuple[str, ...] = ()
+    files: tuple[str, ...] = ()
+    optional_suites: tuple[str, ...] = ()
+    clean_install: bool = False
+
+
+STAGES: dict[int, Stage] = {
+    0: Stage(
+        suites=("fast", "gpu"),
+        required_tests=(
+            "tests.test_scaffold::test_package_imports",
+            "tests.gpu.test_stage0::test_cuda_device_is_rtx5060",
+            "tests.gpu.test_stage0::test_tts_stt_loop_wer",
+            "tests.gpu.test_stage0::test_word_probabilities_present",
+            "tests.gpu.test_stage0::test_espeak_symbols_in_phoneme_vocab",
+        ),
+        reports=("stage0.md", "deepseek.md"),
+        files=("uv.lock",),
+    ),
+    1: Stage(
+        suites=("fast", "gpu", "e2e"),
+        optional_suites=("live",),
+        required_tests=(
+            "tests.test_sentences::test_abbreviations_do_not_split",
+            "tests.test_sentences::test_numbers_do_not_split",
+            "tests.test_corrector::test_postprocess_rules",
+            "tests.test_corrector::test_retry_once_on_empty_then_ok",
+            "tests.test_storage::test_data_dir_and_schema_created",
+            "tests.test_llm_client::test_stream_and_extra_params",
+            "tests.test_llm_client::test_401",
+            "tests.test_llm_client::test_status_mapping",
+            "tests.test_llm_client::test_timeout",
+            "tests.test_connections::test_log_filter_redacts_keys",
+            "tests.test_connections::test_create_stores_key_in_keyring_only",
+            "tests.test_security::test_health_requires_cookie",
+            "tests.test_security::test_foreign_host_rejected_even_with_cookie",
+            "tests.test_security::test_foreign_origin_rejected",
+            "tests.test_security::test_websocket_guard",
+            "tests.test_security::test_html_has_csp_and_no_cors",
+            "tests.test_launcher::test_launcher_serves_and_exits_when_window_closes",
+            "tests.gpu.test_secret::test_key_marker_stays_in_keyring",
+            "tests.gpu.test_turn_ws::test_turn_through_websocket",
+            "tests.gpu.test_turn_ws::test_history_prefix_is_stable",
+            "tests.gpu.test_turn_ws::test_interrupt_stops_reply_but_not_corrector",
+            "tests.e2e.test_conversation::test_conversation_turn",
+            "tests.e2e.test_conversation::test_connection_failure_offers_manual_switch",
+        ),
+        reports=("stage1.md",),
+    ),
+    2: Stage(
+        suites=("fast", "gpu", "e2e"),
+        optional_suites=("live",),
+        required_tests=(
+            "tests.e2e.test_auto::test_pause_below_threshold_keeps_one_turn",
+            "tests.e2e.test_auto::test_pause_above_threshold_splits_turn",
+            "tests.gpu.test_turn_ws::test_interrupt_stops_reply_but_not_corrector",
+            "tests.e2e.test_conversation::test_space_interrupts_reply",
+            "tests.test_stage2_logic::test_text_helpers",
+            "tests.test_stage2_logic::test_hint_with_cyrillic_is_rejected_after_retry",
+            "tests.test_stage2_logic::test_summary_with_mock",
+            "tests.test_stage2_logic::test_synthesis_service_rejects_cyrillic_before_any_model_work",
+            "tests.gpu.test_speech::test_synthesis_rejects_cyrillic",
+            "tests.test_stage2_logic::test_pattern_focus_after_three_sessions_and_close_after_three_clean",
+            "tests.test_stage2_logic::test_cleanup_removes_audio_older_than_retention",
+            "tests.test_stage2_logic::test_delete_all_data_keeps_keys_without_flag",
+            "tests.test_stage2_logic::test_vocab_spaced_repetition",
+            "tests.e2e.test_stage2_ui::test_helpers_summary_and_vocab",
+            "tests.e2e.test_stage2_ui::test_settings_sections",
+        ),
+        reports=("stage2.md",),
+    ),
+    3: Stage(
+        suites=("fast", "gpu", "e2e"),
+        optional_suites=("live",),
+        required_tests=(
+            "tests.test_pron_logic::test_reference_words_and_merged_units",
+            "tests.test_pron_logic::test_american_tolerances",
+            "tests.test_pron_logic::test_forced_align_on_synthetic_posteriors",
+            "tests.test_pron_logic::test_catalog_matching",
+            "tests.test_pron_logic::test_levels_and_thresholds",
+            "tests.gpu.test_pron::test_false_alarms_on_native_reading",
+            "tests.gpu.test_pron::test_substitutions_are_flagged_and_named",
+            "tests.gpu.test_pron::test_assessment_time_for_a_five_second_phrase",
+            "tests.gpu.test_pron::test_feedback_lowers_sensitivity",
+            "tests.gpu.test_pron::test_conversation_marks_only_clear_errors",
+            "tests.e2e.test_reading::test_reading_marks_sounds_and_accepts_feedback",
+            "tests.e2e.test_pron_marks::test_pronunciation_mark_in_conversation",
+        ),
+        reports=("stage3.md",),
+    ),
+    4: Stage(
+        suites=("fast", "gpu", "e2e"),
+        optional_suites=("live",),
+        required_tests=(
+            "tests.test_operations::test_second_launch_does_not_start_a_second_core",
+            "tests.test_operations::test_no_gpu_is_reported_in_plain_words",
+            "tests.test_operations::test_missing_models_are_reported",
+            "tests.test_operations::test_log_rotation_keeps_a_bounded_number_of_files",
+            "tests.gpu.test_network::test_core_talks_only_to_localhost_and_the_llm",
+            "tests.gpu.test_startup::test_startup_time",
+            "tests.e2e.test_shortcut::test_shortcut_starts_app_once_and_core_exits_with_window",
+        ),
+        reports=("final.md",),
+        files=("README.md", "assets/voicetutor.ico"),
+        clean_install=True,
+    ),
+}
+
+
+@dataclass
+class SuiteResult:
+    name: str
+    exit_code: int
+    passed: set[str] = field(default_factory=set)
+    failed: set[str] = field(default_factory=set)
+    skipped: dict[str, str] = field(default_factory=dict)
+
+
+def run_suite(name: str, out_dir: Path) -> SuiteResult:
+    xml_path = out_dir / f"{name}.xml"
+    cmd = [
+        sys.executable,
+        "-m",
+        "pytest",
+        "-m",
+        MARKERS[name],
+        f"--junitxml={xml_path}",
+        "-o",
+        "junit_family=xunit2",
+    ]
+    print(f"=== suite: {name} ===", flush=True)
+    proc = subprocess.run(cmd, cwd=REPO, env=os.environ.copy(), check=False)
+    result = SuiteResult(name=name, exit_code=proc.returncode)
+    if not xml_path.exists():
+        return result
+    root = ET.parse(xml_path).getroot()
+    for case in root.iter("testcase"):
+        test_id = f"{case.get('classname', '')}::{case.get('name', '')}"
+        if case.find("failure") is not None or case.find("error") is not None:
+            result.failed.add(test_id)
+        elif (skip := case.find("skipped")) is not None:
+            result.skipped[test_id] = skip.get("message", "")
+        else:
+            result.passed.add(test_id)
+    return result
+
+
+def _matches(required: str, test_id: str) -> bool:
+    # Parametrized tests carry a "[...]" suffix; any parametrization counts.
+    return test_id == required or test_id.startswith(required + "[")
+
+
+_PLACEHOLDER = re.compile(r"\b(TBD|TODO)\b|\?\?\?")
+
+
+def check_report(path: Path) -> list[str]:
+    problems: list[str] = []
+    if not path.exists():
+        return [f"report missing: {path.relative_to(REPO)}"]
+    text = path.read_text(encoding="utf-8")
+    if not text.strip():
+        return [f"report empty: {path.relative_to(REPO)}"]
+    for lineno, line in enumerate(text.splitlines(), start=1):
+        stripped = line.strip()
+        if _PLACEHOLDER.search(stripped):
+            problems.append(f"{path.name}:{lineno}: placeholder left: {stripped[:80]}")
+        if not stripped.startswith("|") or re.fullmatch(r"\|[\s:|-]+\|", stripped):
+            continue
+        cells = [c.strip() for c in stripped.strip("|").split("|")]
+        if any(c == "" for c in cells):
+            problems.append(f"{path.name}:{lineno}: table row has an empty cell")
+    return problems
+
+
+def main() -> int:
+    if len(sys.argv) != 2 or not sys.argv[1].isdigit():
+        print("usage: check_stage.py <N>")
+        return 2
+    target = int(sys.argv[1])
+    if target not in STAGES:
+        print(f"stage {target} has no acceptance definition yet")
+        return 2
+
+    stages = [STAGES[n] for n in sorted(STAGES) if n <= target]
+    suites: list[str] = []
+    optional: set[str] = set()
+    for st in stages:
+        for s in st.suites:
+            if s not in suites:
+                suites.append(s)
+        optional.update(st.optional_suites)
+    for s in optional:
+        if s not in suites:
+            suites.append(s)
+
+    problems: list[str] = []
+    notes: list[str] = []
+    results: dict[str, SuiteResult] = {}
+    with tempfile.TemporaryDirectory(prefix="check_stage_") as tmp:
+        for s in suites:
+            res = run_suite(s, Path(tmp))
+            results[s] = res
+            if res.exit_code not in (0, 5):
+                problems.append(f"suite {s}: pytest exit code {res.exit_code}")
+
+    for s in optional:
+        res = results[s]
+        if not res.passed and not res.failed and res.skipped:
+            reasons = sorted(set(res.skipped.values()))
+            notes.append(f"suite {s} skipped: {'; '.join(reasons)[:200]}")
+
+    all_passed = set().union(*(r.passed for r in results.values()))
+    all_seen = all_passed | set().union(*(r.failed | set(r.skipped) for r in results.values()))
+    for st in stages:
+        for req in st.required_tests:
+            if any(_matches(req, t) for t in all_passed):
+                continue
+            if any(_matches(req, t) for t in all_seen):
+                problems.append(f"required test did not pass: {req}")
+            else:
+                problems.append(f"required test not found: {req}")
+        for rep in st.reports:
+            problems.extend(check_report(REPORTS / rep))
+        for f in st.files:
+            if not (REPO / f).exists():
+                problems.append(f"required file missing: {f}")
+
+    clean_note = ""
+    if any(st.clean_install for st in stages):
+        print("=== setup from scratch on a clean copy ===", flush=True)
+        clean = subprocess.run(
+            [sys.executable, str(REPO / "scripts" / "check_clean_install.py")],
+            cwd=REPO,
+            env=os.environ.copy(),
+            check=False,
+        )
+        clean_note = "passed" if clean.returncode == 0 else "FAILED"
+        if clean.returncode != 0:
+            problems.append("setup from scratch failed (scripts/check_clean_install.py)")
+
+    print()
+    print(f"=== stage {target} summary ===")
+    for s in suites:
+        r = results[s]
+        print(
+            f"  {s:5}: exit {r.exit_code}, passed {len(r.passed)}, "
+            f"failed {len(r.failed)}, skipped {len(r.skipped)}"
+        )
+    if clean_note:
+        print(f"  clean install: {clean_note}")
+    for n in notes:
+        print(f"  NOTE: {n}")
+    for p in problems:
+        print(f"  FAIL: {p}")
+    if problems:
+        print(f"stage {target}: NOT accepted")
+        return 1
+    print(f"stage {target}: accepted")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

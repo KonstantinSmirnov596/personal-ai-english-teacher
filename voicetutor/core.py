@@ -1,0 +1,190 @@
+"""Core services shared by HTTP routes and the WebSocket conversation."""
+
+from __future__ import annotations
+
+import asyncio
+import logging
+import time
+from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass, field
+from functools import partial
+from pathlib import Path
+from typing import Any, TypeVar
+
+from voicetutor import __version__, keystore
+from voicetutor.data_files import scenarios as builtin_scenarios
+from voicetutor.llm.client import Endpoint, LLMClient, LLMError, Timeouts
+from voicetutor.server.guard import AccessKeys
+from voicetutor.speech.stt import SpeechRecognizer
+from voicetutor.speech.tts import SpeechSynthesizer
+from voicetutor.storage.db import Database
+from voicetutor.storage.repo import ConnectionRepo, ScenarioRepo, SessionRepo, SettingsRepo
+
+log = logging.getLogger(__name__)
+T = TypeVar("T")
+
+
+class GpuQueue:
+    """All GPU model calls run one at a time on a single worker thread."""
+
+    def __init__(self) -> None:
+        self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="gpu")
+
+    async def run(self, fn: Callable[..., T], *args: Any, **kwargs: Any) -> T:
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(self._executor, partial(fn, *args, **kwargs))
+
+    def shutdown(self) -> None:
+        self._executor.shutdown(wait=False, cancel_futures=True)
+
+
+@dataclass
+class ModelStatus:
+    stt: str = "not_loaded"  # not_loaded | loading | ready | error
+    tts: str = "not_loaded"
+    phoneme: str = "not_loaded"
+    error: str = ""
+    problem: str = ""  # no_gpu | models_missing | model_load_failed
+    load_ms: dict[str, float] = field(default_factory=dict)
+
+    @property
+    def ready(self) -> bool:
+        return self.stt == "ready" and self.tts == "ready"
+
+
+class NoActiveConnection(Exception):
+    pass
+
+
+class Core:
+    def __init__(
+        self,
+        *,
+        data_dir: Path,
+        keys: AccessKeys,
+        load_models: bool = True,
+        llm_timeouts: Timeouts | None = None,
+    ) -> None:
+        self.data_dir = data_dir
+        self.keys = keys
+        self.app_version = __version__
+        data_dir.mkdir(parents=True, exist_ok=True)
+        self.audio_dir = data_dir / "audio"
+        self.db = Database(data_dir / "voicetutor.db")
+        self.settings = SettingsRepo(self.db)
+        self.connections = ConnectionRepo(self.db)
+        self.scenarios = ScenarioRepo(self.db)
+        self.sessions = SessionRepo(self.db)
+        self.llm = LLMClient(llm_timeouts)
+        self.gpu = GpuQueue()
+        self.stt = SpeechRecognizer()
+        self.tts = SpeechSynthesizer()
+        from voicetutor.pron.service import PronService
+
+        self.pron = PronService(self)
+        self.models = ModelStatus()
+        self.load_models = load_models
+        self.models_ready = asyncio.Event()
+        self.started_at = time.monotonic()
+        # WebSocket presence, used by the launcher to exit after the window is closed.
+        self.ws_count = 0
+        self.ws_ever_connected = False
+        self.ws_last_change = time.monotonic()
+        self.current_ws: Any = None
+        self._load_task: asyncio.Task[None] | None = None
+        self._cleanup_task: asyncio.Task[None] | None = None
+
+    async def startup(self) -> None:
+        from voicetutor.maintenance import cleanup_loop
+
+        self.scenarios.seed_builtin(builtin_scenarios())
+        self._cleanup_task = asyncio.create_task(cleanup_loop(self))
+        if self.load_models:
+            self._load_task = asyncio.create_task(self._load_models())
+
+    async def shutdown(self) -> None:
+        for task in (self._cleanup_task, self._load_task):
+            if task is not None and not task.done():
+                task.cancel()
+        await self.llm.aclose()
+        self.gpu.shutdown()
+        self.db.close()
+
+    def _preflight(self) -> str:
+        """Runs on the GPU thread before loading: is there a video card, are the models here?"""
+        import torch
+
+        from voicetutor.model_registry import STT, TTS, local_path
+
+        if not torch.cuda.is_available():
+            return "no_gpu"
+        try:
+            local_path(STT)
+            local_path(TTS)
+        except Exception:
+            return "models_missing"
+        return ""
+
+    async def _load_models(self) -> None:
+        try:
+            problem = await self.gpu.run(self._preflight)
+        except Exception:
+            log.exception("model preflight failed")
+            problem = "model_load_failed"
+        if problem:
+            log.error("models are not loaded: %s", problem)
+            self.models.problem = problem
+            self.models.error = problem
+            self.models.stt = self.models.tts = "error"
+            return
+        for name, model in (("stt", self.stt), ("tts", self.tts)):
+            setattr(self.models, name, "loading")
+            started = time.perf_counter()
+            try:
+                await self.gpu.run(model.load)
+            except Exception as e:  # missing GPU, missing models, broken install
+                log.exception("failed to load %s model", name)
+                setattr(self.models, name, "error")
+                self.models.error = f"{name}: {type(e).__name__}"
+                self.models.problem = "model_load_failed"
+                continue
+            self.models.load_ms[name] = round((time.perf_counter() - started) * 1000)
+            setattr(self.models, name, "ready")
+            log.info("%s model ready in %.0f ms", name, self.models.load_ms[name])
+        if self.models.ready:
+            # Warm-up: the first call after loading is slower (CUDA kernels, caches).
+            try:
+                await self.gpu.run(self.tts.synthesize, "Hello there.")
+                import numpy as np
+
+                await self.gpu.run(self.stt.transcribe, np.zeros(16000, dtype=np.float32))
+            except Exception:
+                log.exception("model warm-up failed")
+            self.models_ready.set()
+
+    # --- connections ---------------------------------------------------------------------------
+
+    def active_endpoint(self) -> tuple[Any, Endpoint]:
+        row = self.connections.active()
+        if row is None:
+            raise NoActiveConnection
+        key = keystore.load_key(int(row["id"]))
+        if not key:
+            raise LLMError("llm_unauthorized", "no key saved for the active connection")
+        return row, endpoint_from_row(row, key)
+
+    def connection_ref(self, row: Any) -> dict[str, Any]:
+        return {"id": int(row["id"]), "name": row["name"], "model": row["model"]}
+
+
+def endpoint_from_row(row: Any, key: str) -> Endpoint:
+    import json
+
+    return Endpoint(
+        base_url=row["base_url"],
+        model=row["model"],
+        api_key=key,
+        extra_params=json.loads(row["extra_params"] or "{}"),
+        json_mode=bool(row["json_mode"]),
+    )
