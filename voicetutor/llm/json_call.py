@@ -56,7 +56,9 @@ async def ask_json[M: BaseModel](
     last_error: LLMError | None = None
     for attempt in (1, 2):
         try:
-            text = await llm.complete(endpoint, messages, json_mode=True, max_tokens=max_tokens)
+            text = await llm.complete(
+                endpoint, messages, json_mode=True, max_tokens=max_tokens, schema=model
+            )
         except LLMError as e:
             if not e.retryable:
                 raise

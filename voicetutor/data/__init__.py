@@ -1,1 +1,1 @@
-"""Working copies of the source data (docs/data); edited here from now on."""
+"""Bundled data files: scenarios, mistake keys, pronunciation catalogs, reading phrases."""

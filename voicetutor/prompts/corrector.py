@@ -1,4 +1,4 @@
-"""Corrector prompt. Source: docs/prompts/corrector.md."""
+"""Corrector prompt."""
 
 from __future__ import annotations
 

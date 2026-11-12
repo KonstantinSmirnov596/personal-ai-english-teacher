@@ -1,4 +1,4 @@
-"""Session summary prompt. Source: docs/prompts/summary.md."""
+"""Session summary prompt."""
 
 from __future__ import annotations
 

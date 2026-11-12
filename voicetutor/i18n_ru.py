@@ -41,6 +41,7 @@ ERRORS: dict[str, str] = {
 TEST_OK = "Подключение работает"
 INVALID_URL = "Адрес должен начинаться с https:// (http:// — только для 127.0.0.1 и localhost)."
 INVALID_EXTRA = "Доп. параметры должны быть JSON-объектом без ключей model, messages, stream."
+KEY_REQUIRED = "Нужен ключ API (без ключа — только для 127.0.0.1 и localhost)."
 ACTIVE_DELETE = "Активное подключение нельзя удалить, пока не выбрано другое."
 BUILTIN_SCENARIO = "Встроенный сценарий нельзя удалить."
 

@@ -116,6 +116,18 @@ def test_templates(tmp_path: Path) -> None:
         assert ds["base_url"] == "https://api.deepseek.com"
         assert ds["model"] == "deepseek-flash"
         assert ds["extra_params"] == {"thinking": {"type": "disabled"}}
+        assert {x["id"] for x in t} >= {"openai", "openrouter", "ollama", "lmstudio"}
+
+
+def test_local_connection_needs_no_key(tmp_path: Path) -> None:
+    with make_app(tmp_path) as ctx:
+        body = {"name": "local", "base_url": "http://127.0.0.1:11434/v1", "model": "m"}
+        r = ctx.client.post("/api/connections", json=body, headers=ctx.auth_headers)
+        assert r.status_code == 201, r.text
+        assert r.json()["key_last4"] == ""
+        remote = {"name": "remote", "base_url": "https://api.example.com/v1", "model": "m"}
+        r = ctx.client.post("/api/connections", json=remote, headers=ctx.auth_headers)
+        assert r.status_code == 422
 
 
 def test_connection_test_ok_and_401(tmp_path: Path, test_key: str, mock_llm: MockLLM) -> None:

@@ -32,7 +32,6 @@ CYRILLIC_ALLOWED: dict[str, str] = {
     "voicetutor/data/scenarios.json": "ru scenario titles",
     "voicetutor/data/corrector_eval.jsonl": "ru corrector evaluation set",
     "voicetutor/prompts/corrector.py": "ru example in the corrector prompt",
-    "voicetutor/server/routes_api.py": "ru name of the generic connection template",
     "tests/mock_llm/server.py": "ru answers of the mock LLM",
     "tests/test_corrector.py": "ru corrector test data",
     "tests/test_history.py": "ru history test data",
@@ -147,6 +146,9 @@ def _suspicious(text: str, start: int, token: str) -> bool:
         return False  # Subresource Integrity hash of a downloaded file
     if text[max(0, start - 8) : start] == "sk-test-":
         return False  # fake key used by tests (never a real provider key)
+    word_start = max(text.rfind(c, 0, start) for c in (" ", "(", "\n", '"', "'", "`"))
+    if "/" in stripped and "://" in text[word_start + 1 : start + 1]:
+        return False  # path segments of a URL (a secret in a query string still matches)
     has_digit = any(c.isdigit() for c in stripped)
     has_letter = any(c.isalpha() for c in stripped)
     return has_digit and has_letter

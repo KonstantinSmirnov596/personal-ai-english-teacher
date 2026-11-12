@@ -1,1 +1,1 @@
-"""Prompt texts (moved from docs/prompts and maintained here)."""
+"""Prompt texts of the tutor, corrector, summary and helpers."""

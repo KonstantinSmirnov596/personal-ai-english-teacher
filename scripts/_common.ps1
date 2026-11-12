@@ -8,20 +8,20 @@ $script:VenvPython = Join-Path $VenvDir 'Scripts\python.exe'
 $script:ToolsDir = Join-Path $RepoRoot '.tools'
 $script:UvExe = Join-Path $ToolsDir 'uv\Scripts\uv.exe'
 
-function Get-TrainerDataDir {
+function Get-AppDataDir {
     if ($env:VOICETUTOR_DATA_DIR) { return $env:VOICETUTOR_DATA_DIR }
     return (Join-Path $env:LOCALAPPDATA 'VoiceTutor')
 }
 
-function Get-TrainerModelsDir {
+function Get-AppModelsDir {
     if ($env:VOICETUTOR_MODELS_DIR) { return $env:VOICETUTOR_MODELS_DIR }
-    return (Join-Path (Get-TrainerDataDir) 'models')
+    return (Join-Path (Get-AppDataDir) 'models')
 }
 
-function Set-TrainerEnv {
+function Set-AppEnv {
     $env:PYTHONUTF8 = '1'
     $env:PYTHONIOENCODING = 'utf-8'
-    $env:HF_HOME = Get-TrainerModelsDir
+    $env:HF_HOME = Get-AppModelsDir
     $env:HF_HUB_DISABLE_TELEMETRY = '1'
     $env:UV_PROJECT_ENVIRONMENT = $VenvDir
     $env:UV_PYTHON_DOWNLOADS = 'never'

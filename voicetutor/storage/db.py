@@ -136,6 +136,11 @@ MIGRATIONS: list[str] = [
     ALTER TABLE pron_attempt ADD COLUMN turn_id TEXT;
     CREATE INDEX pron_attempt_session ON pron_attempt(session_id);
     """,
+    # 4: how a connection asks for JSON (json_object, json_schema or none) replaces json_mode
+    """
+    ALTER TABLE connection ADD COLUMN json_format TEXT NOT NULL DEFAULT 'json_object';
+    UPDATE connection SET json_format = 'none' WHERE json_mode = 0;
+    """,
 ]
 
 

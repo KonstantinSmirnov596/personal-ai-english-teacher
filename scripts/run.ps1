@@ -8,6 +8,6 @@ if (-not (Test-Path $launcher)) {
 }
 
 Assert-Venv
-Set-TrainerEnv
+Set-AppEnv
 & $VenvPython -m voicetutor.launcher @args
 exit $LASTEXITCODE

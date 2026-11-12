@@ -42,3 +42,8 @@ def l1_catalog() -> dict[str, Any]:
 def corrector_eval() -> list[dict[str, Any]]:
     lines = (DATA_DIR / "corrector_eval.jsonl").read_text(encoding="utf-8").splitlines()
     return [json.loads(line) for line in lines if line.strip()]
+
+
+def provider_templates() -> list[dict[str, Any]]:
+    """LLM provider templates (docs/reports/providers.md), in display order."""
+    return list(load_json("providers.json")["templates"])

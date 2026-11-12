@@ -4,7 +4,7 @@ param(
     [switch]$SkipModels
 )
 . "$PSScriptRoot\_common.ps1"
-Set-TrainerEnv
+Set-AppEnv
 
 $UvVersion = '0.13.7'
 
@@ -52,7 +52,7 @@ try {
 if ($SkipModels) {
     Write-Step 'models: skipped (-SkipModels)'
 } elseif (Test-Path (Join-Path $RepoRoot 'voicetutor\setup_models.py')) {
-    Write-Step "models -> $(Get-TrainerModelsDir)"
+    Write-Step "models -> $(Get-AppModelsDir)"
     Push-Location $RepoRoot
     try { Invoke-Checked $VenvPython -m voicetutor.setup_models } finally { Pop-Location }
 }

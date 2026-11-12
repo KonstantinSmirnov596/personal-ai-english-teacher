@@ -1,4 +1,4 @@
-"""Text helpers (docs/prompts/helpers.md): hint, translate, how to say, replay, exercise check.
+"""Text helpers: hint, translate, how to say, replay, exercise check.
 
 Helpers never add to the conversation history and never change the core state. Russian text is
 returned only as text; English fields are checked for Cyrillic.

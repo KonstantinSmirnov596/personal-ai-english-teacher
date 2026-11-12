@@ -11,10 +11,11 @@ import logging
 import time
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import urlsplit
 
 import httpx
+from pydantic import BaseModel
 
 from voicetutor.logging_setup import redact
 
@@ -22,6 +23,13 @@ log = logging.getLogger(__name__)
 
 FORBIDDEN_EXTRA_KEYS = frozenset({"model", "messages", "stream"})
 LOCAL_HOSTS = frozenset({"127.0.0.1", "localhost"})
+
+# How a connection asks for JSON answers (docs/reports/providers.md):
+# json_object -> response_format {"type": "json_object"} (JSON mode);
+# json_schema -> response_format {"type": "json_schema"} with the expected pydantic schema;
+# none        -> no response_format, the prompt alone asks for JSON.
+JsonFormat = Literal["json_object", "json_schema", "none"]
+JSON_FORMATS: tuple[str, ...] = ("json_object", "json_schema", "none")
 
 
 class LLMError(Exception):
@@ -44,11 +52,18 @@ class Endpoint:
     model: str
     api_key: str = field(repr=False)
     extra_params: dict[str, Any] = field(default_factory=dict)
-    json_mode: bool = True
+    json_format: str = "json_object"
 
     @property
     def url(self) -> str:
         return self.base_url.rstrip("/") + "/chat/completions"
+
+
+def is_local_url(url: str) -> bool:
+    try:
+        return urlsplit(url.strip()).hostname in LOCAL_HOSTS
+    except ValueError:
+        return False
 
 
 def validate_base_url(url: str) -> bool:
@@ -104,10 +119,19 @@ class LLMClient:
         stream: bool,
         json_mode: bool,
         max_tokens: int | None,
+        schema: type[BaseModel] | None = None,
     ) -> dict[str, Any]:
         body: dict[str, Any] = {"model": ep.model, "messages": messages, "stream": stream}
-        if json_mode and ep.json_mode:
+        if json_mode and ep.json_format == "json_object":
             body["response_format"] = {"type": "json_object"}
+        elif json_mode and ep.json_format == "json_schema":
+            if schema is not None:
+                body["response_format"] = {
+                    "type": "json_schema",
+                    "json_schema": {"name": schema.__name__, "schema": schema.model_json_schema()},
+                }
+            else:
+                body["response_format"] = {"type": "json_object"}
         if max_tokens is not None:
             body["max_tokens"] = max_tokens
         for k, v in ep.extra_params.items():
@@ -116,7 +140,10 @@ class LLMClient:
         return body
 
     def _headers(self, ep: Endpoint) -> dict[str, str]:
-        return {"Authorization": f"Bearer {ep.api_key}", "Content-Type": "application/json"}
+        headers = {"Content-Type": "application/json"}
+        if ep.api_key:  # local servers (Ollama, LM Studio) may run without a key
+            headers["Authorization"] = f"Bearer {ep.api_key}"
+        return headers
 
     async def stream_chat(
         self,
@@ -176,11 +203,18 @@ class LLMClient:
         *,
         json_mode: bool = False,
         max_tokens: int | None = None,
+        schema: type[BaseModel] | None = None,
     ) -> str:
-        """Non-streaming request; returns the message content (may be empty)."""
+        """Non-streaming request; returns the message content (may be empty).
+
+        With ``json_mode`` the connection's ``json_format`` decides what is sent; ``schema`` is
+        the expected answer, used by ``json_schema`` connections.
+        """
         if not validate_base_url(ep.base_url):
             raise LLMError("llm_unreachable", "invalid base URL")
-        body = self._body(ep, messages, stream=False, json_mode=json_mode, max_tokens=max_tokens)
+        body = self._body(
+            ep, messages, stream=False, json_mode=json_mode, max_tokens=max_tokens, schema=schema
+        )
         try:
             resp = await self._client.post(ep.url, json=body, headers=self._headers(ep))
         except (httpx.TimeoutException, httpx.ConnectError, httpx.NetworkError) as e:

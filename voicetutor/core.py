@@ -14,7 +14,7 @@ from typing import Any, TypeVar
 
 from voicetutor import __version__, keystore
 from voicetutor.data_files import scenarios as builtin_scenarios
-from voicetutor.llm.client import Endpoint, LLMClient, LLMError, Timeouts
+from voicetutor.llm.client import Endpoint, LLMClient, LLMError, Timeouts, is_local_url
 from voicetutor.server.guard import AccessKeys
 from voicetutor.speech.stt import SpeechRecognizer
 from voicetutor.speech.tts import SpeechSynthesizer
@@ -169,8 +169,8 @@ class Core:
         row = self.connections.active()
         if row is None:
             raise NoActiveConnection
-        key = keystore.load_key(int(row["id"]))
-        if not key:
+        key = keystore.load_key(int(row["id"])) or ""
+        if not key and not is_local_url(row["base_url"]):
             raise LLMError("llm_unauthorized", "no key saved for the active connection")
         return row, endpoint_from_row(row, key)
 
@@ -186,5 +186,5 @@ def endpoint_from_row(row: Any, key: str) -> Endpoint:
         model=row["model"],
         api_key=key,
         extra_params=json.loads(row["extra_params"] or "{}"),
-        json_mode=bool(row["json_mode"]),
+        json_format=row["json_format"],
     )

@@ -72,7 +72,7 @@ class ConnectionRepo:
             "base_url": row["base_url"],
             "model": row["model"],
             "extra_params": json.loads(row["extra_params"] or "{}"),
-            "json_mode": bool(row["json_mode"]),
+            "json_format": row["json_format"],
             "key_last4": row["key_last4"],
             "is_active": bool(row["is_active"]),
             "last_test": last_test,
@@ -94,20 +94,20 @@ class ConnectionRepo:
         base_url: str,
         model: str,
         extra_params: dict[str, Any],
-        json_mode: bool,
+        json_format: str,
         key_last4: str,
     ) -> int:
         with self.db.transaction() as conn:
             has_active = conn.execute("SELECT 1 FROM connection WHERE is_active = 1").fetchone()
             cur = conn.execute(
-                "INSERT INTO connection(name, base_url, model, extra_params, json_mode, key_last4,"
-                " is_active) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO connection(name, base_url, model, extra_params, json_format,"
+                " key_last4, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 (
                     name,
                     base_url,
                     model,
                     json.dumps(extra_params),
-                    int(json_mode),
+                    json_format,
                     key_last4,
                     0 if has_active else 1,
                 ),
@@ -115,7 +115,7 @@ class ConnectionRepo:
             return int(cur.lastrowid or 0)
 
     def update(self, conn_id: int, fields: dict[str, Any]) -> None:
-        allowed = {"name", "base_url", "model", "extra_params", "json_mode", "key_last4"}
+        allowed = {"name", "base_url", "model", "extra_params", "json_format", "key_last4"}
         sets: list[str] = []
         values: list[Any] = []
         for key, value in fields.items():
@@ -123,8 +123,6 @@ class ConnectionRepo:
                 continue
             if key == "extra_params":
                 value = json.dumps(value)
-            if key == "json_mode":
-                value = int(bool(value))
             sets.append(f"{key} = ?")
             values.append(value)
         if sets:

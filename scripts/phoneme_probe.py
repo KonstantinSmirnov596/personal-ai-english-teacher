@@ -1,6 +1,6 @@
 """Stage 0.7: compare espeak-ng en-us symbols with the wav2vec2 phoneme vocabulary.
 
-For the 20 probe words of docs/data/reading_phrases.json:
+For the 20 probe words of voicetutor/data/reading_phrases.json:
 1. espeak-ng en-us phones and whether every symbol exists in the model vocabulary;
 2. free phoneme recognition of each word read by three Kokoro voices, aligned to the espeak
    reference, to list the symbols the model actually prints instead.
@@ -63,7 +63,8 @@ def main() -> int:
     from voicetutor.speech.audio import STT_RATE, resample
     from voicetutor.speech.tts import SpeechSynthesizer
 
-    data = json.loads((REPO / "docs" / "data" / "reading_phrases.json").read_text(encoding="utf-8"))
+    phrases_file = REPO / "voicetutor" / "data" / "reading_phrases.json"
+    data = json.loads(phrases_file.read_text(encoding="utf-8"))
     words: list[str] = data["probe_words"]
 
     model = PhonemeModel()

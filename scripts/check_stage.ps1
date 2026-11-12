@@ -14,7 +14,7 @@ if ($Stage -ge 0) {
 }
 
 Assert-Venv
-Set-TrainerEnv
+Set-AppEnv
 Push-Location $RepoRoot
 try {
     & $VenvPython (Join-Path $PSScriptRoot 'check_stage.py') $Stage

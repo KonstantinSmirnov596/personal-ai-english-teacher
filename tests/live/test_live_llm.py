@@ -48,7 +48,7 @@ def owner_endpoint() -> Endpoint | None:
         model=row["model"],
         api_key=key,
         extra_params=json.loads(row["extra_params"] or "{}"),
-        json_mode=bool(row["json_mode"]),
+        json_format=row["json_format"],
     )
 
 

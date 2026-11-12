@@ -128,7 +128,9 @@ export class ConnectionsView {
     const input = (id, attrs = {}) => el('input', { id, class: 'input', type: 'text', autocomplete: 'off', spellcheck: 'false', ...attrs });
     const name = input('conn-name', { placeholder: R.namePlaceholder, value: existing ? existing.name : '' });
     const template = el('select', { id: 'conn-template', class: 'select' });
-    for (const tpl of this.templates) template.append(el('option', { value: tpl.id, text: tpl.name_ru }));
+    const tplName = (tpl) => (R.templateNames && R.templateNames[tpl.id]) || tpl.name;
+    for (const tpl of this.templates) template.append(el('option', { value: tpl.id, text: tplName(tpl) }));
+    let jsonFormat = existing ? existing.json_format : 'json_object';
     const url = input('conn-url', { class: 'input mono', type: 'url', placeholder: (this.templates[0] && this.templates[0].base_url) || '', value: existing ? existing.base_url : '' });
     const model = input('conn-model', { class: 'input mono', placeholder: 'deepseek-flash', value: existing ? existing.model : '' });
     const key = input('conn-key', { class: 'input mono', type: 'password', placeholder: existing ? R.keyKeep : R.keyPlaceholder, 'data-testid': 'conn-key-input' });
@@ -139,7 +141,8 @@ export class ConnectionsView {
       url.value = tpl.base_url;
       model.value = tpl.model;
       extra.value = Object.keys(tpl.extra_params).length ? JSON.stringify(tpl.extra_params) : '';
-      if (!name.value) name.value = tpl.name_ru;
+      jsonFormat = tpl.json_format;
+      if (!name.value) name.value = tplName(tpl);
     };
     template.addEventListener('change', applyTemplate);
     if (!existing) applyTemplate();
@@ -154,8 +157,10 @@ export class ConnectionsView {
         }
         if (typeof extraParams !== 'object' || Array.isArray(extraParams) || extraParams === null) throw new Error(R.extraInvalid);
       }
-      if (!name.value.trim() || !url.value.trim() || !model.value.trim() || (requireKey && !key.value.trim())) throw new Error(R.required);
-      return { name: name.value.trim(), base_url: url.value.trim(), model: model.value.trim(), api_key: key.value.trim(), extra_params: extraParams };
+      // Local model servers (127.0.0.1, localhost) work without a key.
+      const local = /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?(\/|$)/i.test(url.value.trim());
+      if (!name.value.trim() || !url.value.trim() || !model.value.trim() || (requireKey && !local && !key.value.trim())) throw new Error(R.required);
+      return { name: name.value.trim(), base_url: url.value.trim(), model: model.value.trim(), api_key: key.value.trim(), extra_params: extraParams, json_format: jsonFormat };
     };
     const save = el('button', { type: 'button', class: 'btn btn-primary', 'data-testid': 'conn-save', text: R.save });
     save.addEventListener('click', async () => {

@@ -13,6 +13,13 @@ def test_package_imports() -> None:
     assert voicetutor.__version__
 
 
+def test_predecessor_package_name_is_gone() -> None:
+    import importlib.util
+
+    assert importlib.util.find_spec("trainer") is None
+    assert paths.APP_DIR_NAME == "VoiceTutor"
+
+
 def test_data_dir_honours_env(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv("VOICETUTOR_DATA_DIR", str(tmp_path / "data"))
     monkeypatch.delenv("VOICETUTOR_MODELS_DIR", raising=False)

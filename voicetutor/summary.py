@@ -1,4 +1,4 @@
-"""Session summary (docs/prompts/summary.md): data from the database plus one LLM request."""
+"""Session summary: data from the database plus one LLM request."""
 
 from __future__ import annotations
 
@@ -135,7 +135,9 @@ async def build_summary(core: Any, session: Any) -> dict[str, Any]:
             _row, endpoint = core.active_endpoint()
             messages = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": user}]
             for attempt in (1, 2):
-                text = await core.llm.complete(endpoint, messages, json_mode=True, max_tokens=1200)
+                text = await core.llm.complete(
+                    endpoint, messages, json_mode=True, max_tokens=1200, schema=SummaryOut
+                )
                 parsed = parse_model(text, SummaryOut)
                 if parsed is not None:
                     llm_part = _validated(parsed, tutor_lines, focus)

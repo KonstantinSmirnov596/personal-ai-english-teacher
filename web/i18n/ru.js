@@ -123,6 +123,7 @@ export const ru = {
     name: 'Название',
     namePlaceholder: 'Например, «DeepSeek запасной»',
     template: 'Шаблон',
+    templateNames: { openai_compatible: 'Другой OpenAI-совместимый' },
     url: 'Адрес',
     model: 'Модель',
     key: 'Ключ API',

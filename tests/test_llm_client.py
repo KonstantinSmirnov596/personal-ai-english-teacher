@@ -111,8 +111,36 @@ async def test_complete_json_mode(mock_llm: MockLLM, test_key: str) -> None:
     text = await client.complete(ep(mock_llm, test_key), MESSAGES, json_mode=True)
     assert text.startswith("{")
     assert mock_llm.requests[-1]["body"]["response_format"] == {"type": "json_object"}
-    await client.complete(ep(mock_llm, test_key, json_mode=False), MESSAGES, json_mode=True)
+    await client.complete(ep(mock_llm, test_key, json_format="none"), MESSAGES, json_mode=True)
     assert "response_format" not in mock_llm.requests[-1]["body"]
+    await client.aclose()
+
+
+async def test_complete_json_schema(mock_llm: MockLLM, test_key: str) -> None:
+    """json_schema connections (OpenAI, Ollama, LM Studio) send the expected answer schema."""
+    from pydantic import BaseModel
+
+    class Answer(BaseModel):
+        ok: bool
+
+    client = LLMClient()
+    endpoint = ep(mock_llm, test_key, json_format="json_schema")
+    await client.complete(endpoint, MESSAGES, json_mode=True, schema=Answer)
+    fmt = mock_llm.requests[-1]["body"]["response_format"]
+    assert fmt["type"] == "json_schema"
+    assert fmt["json_schema"]["name"] == "Answer"
+    assert fmt["json_schema"]["schema"]["properties"]["ok"]["type"] == "boolean"
+    await client.aclose()
+
+
+async def test_local_server_without_key(mock_llm: MockLLM) -> None:
+    """An empty key sends no Authorization header (local servers ignore it)."""
+    client = LLMClient()
+    endpoint = Endpoint(base_url=mock_llm.base_url, model="mock-model", api_key="")
+    with pytest.raises(LLMError) as info:
+        await client.complete(endpoint, MESSAGES)
+    assert info.value.code == "llm_unauthorized"  # the mock requires its test key
+    assert mock_llm.requests[-1]["authorization"] == ""
     await client.aclose()
 
 

@@ -9,7 +9,7 @@ param(
 )
 . "$PSScriptRoot\_common.ps1"
 Assert-Venv
-Set-TrainerEnv
+Set-AppEnv
 
 $markers = @{
     fast = 'not gpu and not e2e and not live'

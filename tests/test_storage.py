@@ -70,10 +70,20 @@ def test_connections_single_active(tmp_path: Path) -> None:
     db = Database(tmp_path / "t.db")
     repo = ConnectionRepo(db)
     a = repo.create(
-        name="A", base_url="https://a", model="m", extra_params={}, json_mode=True, key_last4="1234"
+        name="A",
+        base_url="https://a",
+        model="m",
+        extra_params={},
+        json_format="json_object",
+        key_last4="1234",
     )
     b = repo.create(
-        name="B", base_url="https://b", model="m", extra_params={}, json_mode=True, key_last4="5678"
+        name="B",
+        base_url="https://b",
+        model="m",
+        extra_params={},
+        json_format="json_object",
+        key_last4="5678",
     )
     assert repo.active()["id"] == a
     repo.activate(b)

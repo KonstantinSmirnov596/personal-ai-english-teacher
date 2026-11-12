@@ -1,4 +1,4 @@
-"""Helper prompts (hint, translate, how to say, exercise check). Source: docs/prompts/helpers.md."""
+"""Helper prompts (hint, translate, how to say, exercise check)."""
 
 from __future__ import annotations
 

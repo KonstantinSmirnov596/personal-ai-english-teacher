@@ -1,4 +1,4 @@
-"""Tutor (conversation partner) prompt. Source: docs/prompts/tutor.md."""
+"""Tutor (conversation partner) prompt."""
 
 from __future__ import annotations
 

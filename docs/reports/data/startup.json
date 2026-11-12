@@ -1,0 +1,15 @@
+{
+  "goal_s": 20.0,
+  "runs": [
+    {
+      "server_s": 1.86,
+      "window_s": 2.29,
+      "models_ready_s": 15.87
+    },
+    {
+      "server_s": 1.79,
+      "window_s": 2.24,
+      "models_ready_s": 15.1
+    }
+  ]
+}

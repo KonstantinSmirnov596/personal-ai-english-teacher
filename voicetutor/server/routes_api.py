@@ -1,4 +1,4 @@
-"""HTTP routes under /api (docs/protocol.md, «HTTP»)."""
+"""HTTP routes under /api (docs/protocol.md, "HTTP")."""
 
 from __future__ import annotations
 
@@ -15,7 +15,14 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from voicetutor import i18n_ru, keystore
 from voicetutor.core import Core, endpoint_from_row
-from voicetutor.llm.client import Endpoint, validate_base_url, validate_extra_params
+from voicetutor.data_files import provider_templates
+from voicetutor.llm.client import (
+    Endpoint,
+    JsonFormat,
+    is_local_url,
+    validate_base_url,
+    validate_extra_params,
+)
 from voicetutor.logging_setup import register_secret
 from voicetutor.model_registry import KOKORO_VOICES
 from voicetutor.server.app import ApiError
@@ -69,27 +76,6 @@ async def health(request: Request) -> dict[str, Any]:
 
 # --- connections ------------------------------------------------------------------------------
 
-TEMPLATES = [
-    {
-        "id": "deepseek",
-        "name_ru": "DeepSeek",
-        "base_url": "https://api.deepseek.com",
-        "model": "deepseek-flash",
-        "models": ["deepseek-flash", "deepseek-v4-pro"],
-        "extra_params": {"thinking": {"type": "disabled"}},
-        "json_mode": True,
-    },
-    {
-        "id": "openai_compatible",
-        "name_ru": "Другой OpenAI-совместимый",
-        "base_url": "",
-        "model": "",
-        "models": [],
-        "extra_params": {},
-        "json_mode": True,
-    },
-]
-
 
 class ConnectionCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -97,9 +83,9 @@ class ConnectionCreate(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     base_url: str = Field(min_length=1, max_length=500)
     model: str = Field(min_length=1, max_length=200)
-    api_key: str = Field(min_length=1, max_length=500, repr=False)
+    api_key: str = Field(default="", max_length=500, repr=False)
     extra_params: dict[str, Any] = Field(default_factory=dict)
-    json_mode: bool = True
+    json_format: JsonFormat = "json_object"
 
 
 class ConnectionPatch(BaseModel):
@@ -110,7 +96,7 @@ class ConnectionPatch(BaseModel):
     model: str | None = Field(default=None, min_length=1, max_length=200)
     api_key: str | None = Field(default=None, min_length=1, max_length=500, repr=False)
     extra_params: dict[str, Any] | None = None
-    json_mode: bool | None = None
+    json_format: JsonFormat | None = None
 
 
 class ConnectionTest(BaseModel):
@@ -118,9 +104,15 @@ class ConnectionTest(BaseModel):
 
     base_url: str = Field(min_length=1, max_length=500)
     model: str = Field(min_length=1, max_length=200)
-    api_key: str = Field(min_length=1, max_length=500, repr=False)
+    api_key: str = Field(default="", max_length=500, repr=False)
     extra_params: dict[str, Any] = Field(default_factory=dict)
-    json_mode: bool = True
+    json_format: JsonFormat = "json_object"
+
+
+def _check_key(base_url: str, key: str) -> None:
+    """A key is required except for local model servers (Ollama, LM Studio)."""
+    if not key and not is_local_url(base_url):
+        raise ApiError(422, "validation", i18n_ru.KEY_REQUIRED)
 
 
 def _check_fields(base_url: str | None, extra: Any) -> None:
@@ -145,7 +137,7 @@ async def list_connections(request: Request) -> list[dict[str, Any]]:
 
 @router.get("/connections/templates")
 async def connection_templates() -> list[dict[str, Any]]:
-    return TEMPLATES
+    return provider_templates()
 
 
 @router.post("/connections", status_code=201)
@@ -153,15 +145,17 @@ async def create_connection(request: Request, body: ConnectionCreate) -> dict[st
     core = core_of(request)
     _check_fields(body.base_url, body.extra_params)
     key = body.api_key.strip()
+    _check_key(body.base_url, key)
     conn_id = core.connections.create(
         name=body.name.strip(),
         base_url=body.base_url.strip(),
         model=body.model.strip(),
         extra_params=body.extra_params,
-        json_mode=body.json_mode,
+        json_format=body.json_format,
         key_last4=keystore.last4(key),
     )
-    keystore.save_key(conn_id, key)
+    if key:
+        keystore.save_key(conn_id, key)
     return core.connections.to_api(_get_conn(core, conn_id))
 
 
@@ -174,7 +168,7 @@ async def patch_connection(request: Request, conn_id: int, body: ConnectionPatch
     for k in ("name", "base_url", "model"):
         if k in fields:
             fields[k] = fields[k].strip()
-    if body.api_key is not None:
+    if body.api_key:
         key = body.api_key.strip()
         keystore.save_key(conn_id, key)
         fields["key_last4"] = keystore.last4(key)
@@ -214,8 +208,8 @@ async def _run_test(core: Core, ep: Endpoint) -> dict[str, Any]:
 async def test_connection(request: Request, conn_id: int) -> dict[str, Any]:
     core = core_of(request)
     row = _get_conn(core, conn_id)
-    key = keystore.load_key(conn_id)
-    if not key:
+    key = keystore.load_key(conn_id) or ""
+    if not key and not is_local_url(row["base_url"]):
         result = {
             "ok": False,
             "latency_ms": None,
@@ -231,13 +225,16 @@ async def test_connection(request: Request, conn_id: int) -> dict[str, Any]:
 async def test_unsaved_connection(request: Request, body: ConnectionTest) -> dict[str, Any]:
     core = core_of(request)
     _check_fields(body.base_url, body.extra_params)
-    register_secret(body.api_key.strip())
+    key = body.api_key.strip()
+    _check_key(body.base_url, key)
+    if key:
+        register_secret(key)
     ep = Endpoint(
         base_url=body.base_url.strip(),
         model=body.model.strip(),
-        api_key=body.api_key.strip(),
+        api_key=key,
         extra_params=body.extra_params,
-        json_mode=body.json_mode,
+        json_format=body.json_format,
     )
     return await _run_test(core, ep)
 

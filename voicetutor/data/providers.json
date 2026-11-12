@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "note": "LLM provider templates for the API connections window. Every value is confirmed in the provider's official documentation; links and quotes are in docs/reports/providers.md. json_format: json_object sends response_format {type: json_object}; json_schema sends the pydantic JSON schema of the expected answer; none sends no response_format. key_required false: local servers that ignore the Authorization header.",
+  "templates": [
+    {
+      "id": "deepseek",
+      "name": "DeepSeek",
+      "kind": "cloud",
+      "base_url": "https://api.deepseek.com",
+      "model": "deepseek-flash",
+      "models": ["deepseek-flash", "deepseek-v4-pro"],
+      "extra_params": {"thinking": {"type": "disabled"}},
+      "json_format": "json_object",
+      "key_required": true,
+      "docs_url": "https://api-docs.deepseek.com/"
+    },
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "kind": "cloud",
+      "base_url": "https://api.openai.com/v1",
+      "model": "gpt-6-luna",
+      "models": ["gpt-6-luna"],
+      "extra_params": {"reasoning_effort": "none"},
+      "json_format": "json_schema",
+      "key_required": true,
+      "docs_url": "https://developers.openai.com/api/docs/models/gpt-6-luna"
+    },
+    {
+      "id": "openrouter",
+      "name": "OpenRouter",
+      "kind": "cloud",
+      "base_url": "https://openrouter.ai/api/v1",
+      "model": "",
+      "models": [],
+      "extra_params": {"reasoning": {"effort": "none"}, "provider": {"require_parameters": true}},
+      "json_format": "json_object",
+      "key_required": true,
+      "docs_url": "https://openrouter.ai/docs/quickstart"
+    },
+    {
+      "id": "ollama",
+      "name": "Ollama",
+      "kind": "local",
+      "base_url": "http://127.0.0.1:11434/v1",
+      "model": "",
+      "models": [],
+      "extra_params": {"reasoning_effort": "none"},
+      "json_format": "json_schema",
+      "key_required": false,
+      "docs_url": "https://docs.ollama.com/api/openai-compatibility"
+    },
+    {
+      "id": "lmstudio",
+      "name": "LM Studio",
+      "kind": "local",
+      "base_url": "http://127.0.0.1:1234/v1",
+      "model": "",
+      "models": [],
+      "extra_params": {},
+      "json_format": "json_schema",
+      "key_required": false,
+      "docs_url": "https://lmstudio.ai/docs/developer/openai-compat"
+    },
+    {
+      "id": "openai_compatible",
+      "name": "Other OpenAI-compatible",
+      "kind": "custom",
+      "base_url": "",
+      "model": "",
+      "models": [],
+      "extra_params": {},
+      "json_format": "json_object",
+      "key_required": true,
+      "docs_url": ""
+    }
+  ]
+}

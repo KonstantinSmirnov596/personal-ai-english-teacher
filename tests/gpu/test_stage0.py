@@ -7,11 +7,26 @@ import pytest
 pytestmark = pytest.mark.gpu
 
 
-def test_cuda_device_is_rtx5060() -> None:
+# Minimum supported architecture: Turing (docs/reports/stage0.md, "Hardware facts").
+MIN_CAPABILITY = (7, 5)
+
+
+def test_cuda_device_meets_minimum() -> None:
     import torch
 
     assert torch.cuda.is_available()
-    assert "RTX 5060" in torch.cuda.get_device_name(0)
+    assert "NVIDIA" in torch.cuda.get_device_name(0)
+    assert torch.cuda.get_device_capability(0) >= MIN_CAPABILITY
+
+
+def test_torch_arch_list_covers_minimum() -> None:
+    """Item 0.6: the installed cu128 torch wheel carries kernels for Turing and the local GPU."""
+    import torch
+
+    archs = torch.cuda.get_arch_list()
+    assert "sm_75" in archs, archs
+    major, minor = torch.cuda.get_device_capability(0)
+    assert f"sm_{major}{minor}" in archs, archs
 
 
 def test_tts_stt_loop_wer() -> None:
@@ -59,7 +74,7 @@ def test_espeak_symbols_in_phoneme_vocab() -> None:
     from voicetutor.pron.espeak import word_phones
 
     vocab = json.loads((local_path(PHONEME) / "vocab.json").read_text(encoding="utf-8"))
-    data_file = Path(__file__).resolve().parents[2] / "docs" / "data" / "reading_phrases.json"
+    data_file = Path(__file__).resolve().parents[2] / "voicetutor" / "data" / "reading_phrases.json"
     words = json.loads(data_file.read_text(encoding="utf-8"))["probe_words"]
     assert len(words) == 20
     missing = {w: p for w in words for p in word_phones(w) if p not in vocab}

@@ -1,4 +1,4 @@
-"""Corrector: second, independent LLM request per learner turn (docs/prompts/corrector.md)."""
+"""Corrector: second, independent LLM request per learner turn."""
 
 from __future__ import annotations
 
@@ -36,6 +36,13 @@ class RawResponse(BaseModel):
 
     items: list[dict[str, Any]] = Field(default_factory=list)
     better: str = ""
+
+
+class CorrectorAnswer(BaseModel):
+    """Schema sent to ``json_schema`` connections; answers are parsed leniently by RawResponse."""
+
+    items: list[RawItem] = Field(max_length=MAX_ITEMS)
+    better: str
 
 
 @dataclass
@@ -166,7 +173,9 @@ async def run_corrector(
     ]
     for attempt in (1, 2):
         try:
-            text = await llm.complete(endpoint, messages, json_mode=True, max_tokens=800)
+            text = await llm.complete(
+                endpoint, messages, json_mode=True, max_tokens=800, schema=CorrectorAnswer
+            )
         except LLMError as e:
             log.warning("corrector request failed (attempt %d): %s %s", attempt, e.code, e.detail)
             if not e.retryable:
