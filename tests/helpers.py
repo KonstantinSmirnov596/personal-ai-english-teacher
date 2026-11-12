@@ -6,6 +6,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from starlette.testclient import TestClient
 
@@ -37,10 +38,17 @@ class AppCtx:
 
 @contextmanager
 def make_app(
-    data_dir: Path, *, login: bool = True, timeouts: Timeouts | None = None
+    data_dir: Path,
+    *,
+    login: bool = True,
+    timeouts: Timeouts | None = None,
+    **inject: Any,
 ) -> Iterator[AppCtx]:
+    """In-process app; ``inject`` passes test doubles to the core (detector, stt, tts,
+    load_models) — dependency injection, never a switch inside the app."""
     keys = AccessKeys(port=TEST_PORT)
-    core = Core(data_dir=data_dir, keys=keys, load_models=False, llm_timeouts=timeouts)
+    options: dict[str, Any] = {"load_models": False, **inject}
+    core = Core(data_dir=data_dir, keys=keys, llm_timeouts=timeouts, **options)
     app = create_app(core)
     base = f"http://127.0.0.1:{TEST_PORT}"
     with TestClient(app, base_url=base) as client:

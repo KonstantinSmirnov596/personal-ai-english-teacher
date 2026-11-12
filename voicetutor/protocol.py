@@ -20,6 +20,7 @@ ErrorCode = Literal[
     "llm_unreachable",
     "llm_bad_response",
     "stt_failed",
+    "vram_low",
     "tts_failed",
     "audio_too_short",
     "audio_too_long",
@@ -160,6 +161,7 @@ class Hello(_Out):
     active_connection: ConnectionRef | None
     settings: dict[str, Any]
     models_ready: bool
+    hardware: dict[str, Any] = Field(default_factory=dict)  # profile and notices (stage 3)
 
 
 class ScenarioRef(_Out):

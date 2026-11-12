@@ -12,6 +12,7 @@ from voicetutor.model_registry import KOKORO_VOICES
 CorrectionMode = Literal["instant", "on_click", "end", "off"]
 Level = Literal["A2", "B1", "B2", "C1"]
 TurnMode = Literal["manual", "auto"]
+ProfileSetting = Literal["auto", "completo", "compacto"]
 
 
 def _check_l1(v: str | None) -> str | None:
@@ -43,6 +44,11 @@ class Settings(BaseModel):
     pron_in_conversation: bool = True
     # Reading mode: open the microphone without noise suppression and auto gain.
     reading_raw_mic: bool = False
+    # Stage 3: model profile (auto = the wizard's measurement or the start-up estimate),
+    # first-run wizard, voice detector threshold from the microphone check.
+    profile: ProfileSetting = "auto"
+    wizard_done: bool = False
+    vad_threshold: float = Field(default=0.5, ge=0.2, le=0.9)
 
     @field_validator("voice")
     @classmethod
@@ -76,6 +82,9 @@ class SettingsPatch(BaseModel):
     noise_suppression: bool | None = None
     pron_in_conversation: bool | None = None
     reading_raw_mic: bool | None = None
+    profile: ProfileSetting | None = None
+    wizard_done: bool | None = None
+    vad_threshold: float | None = Field(default=None, ge=0.2, le=0.9)
 
     @field_validator("l1")
     @classmethod

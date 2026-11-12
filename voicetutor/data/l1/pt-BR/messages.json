@@ -25,7 +25,9 @@
     "pron_no_speech": "Não ouvi a frase. Leia de novo, um pouco mais alto.",
     "pron_no_text": "Não há texto para avaliar.",
     "pron_bad_audio": "Não foi possível ler a gravação.",
-    "pron_unavailable": "A avaliação de pronúncia não está disponível: não foi possível carregar o modelo."
+    "pron_unavailable": "A avaliação de pronúncia não está disponível: não foi possível carregar o modelo.",
+    "vram_low": "Não há memória de vídeo suficiente. Feche outros programas que usam a placa de vídeo (jogos, editores de vídeo) e tente de novo.",
+    "unsupported_hardware": "Este computador não atende aos requisitos mínimos. Os motivos estão na tela de requisitos."
   },
   "test_ok": "A conexão está funcionando",
   "invalid_url": "A URL precisa começar com https:// (http:// só para 127.0.0.1 e localhost).",

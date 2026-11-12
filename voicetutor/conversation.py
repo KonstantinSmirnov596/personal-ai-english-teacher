@@ -20,7 +20,7 @@ from typing import Any, Protocol
 
 import numpy as np
 
-from voicetutor.core import Core, NoActiveConnection
+from voicetutor.core import Core, NoActiveConnection, VramLowError
 from voicetutor.corrector import run_corrector
 from voicetutor.i18n import error_text
 from voicetutor.lang_guard import LearnerLanguageError, not_english
@@ -172,7 +172,8 @@ class Conversation:
                 active_connection=ConnectionRef(**self.core.connection_ref(active))
                 if active
                 else None,
-                settings=self.core.settings.get().model_dump(),
+                settings=self.core.effective_settings(),
+                hardware=self.core.hardware_api(),
                 models_ready=self.core.models.ready,
             )
         )
@@ -326,7 +327,12 @@ class Conversation:
         audio16 = await asyncio.to_thread(resample, audio, rate, STT_RATE)
         stt_started = time.perf_counter()
         try:
-            transcript = await self.core.gpu.run(self.core.stt.transcribe, audio16)
+            transcript = await self.core.transcribe(audio16)
+        except VramLowError:
+            log.error("speech recognition: not enough video memory")
+            await self.error("vram_low", turn_id=turn_id, retryable=True)
+            await self.set_state("idle")
+            return
         except Exception:
             log.exception("speech recognition failed")
             await self.error("stt_failed", turn_id=turn_id, retryable=True)
@@ -374,7 +380,7 @@ class Conversation:
             self.generate_reply(session, turn_id, received, stt_ms)
         )
         self.reply_task.add_done_callback(lambda _t: gate.set())
-        if self.core.settings.get().pron_in_conversation:
+        if self.core.effective_settings()["pron_in_conversation"]:
             self._spawn(self.pron_flags(session, turn_id, words, audio16, gate))
 
     def _store_audio(self, session_id: str, turn_id: str, audio16: np.ndarray) -> str | None:

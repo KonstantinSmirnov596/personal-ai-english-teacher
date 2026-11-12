@@ -51,23 +51,29 @@ class SpeechRecognizer:
         self.beam_size = beam_size
         self.vad_filter = vad_filter
         self._model: Any = None
+        self._loaded_compute_type = ""
 
     @property
     def loaded(self) -> bool:
         return self._model is not None
 
     def load(self) -> None:
-        if self._model is not None:
+        """Load the model, or reload it when ``compute_type`` changed (profile switch)."""
+        if self._model is not None and self._loaded_compute_type == self.compute_type:
             return
+        self._model = None
         prepare_cuda_dlls()
         from faster_whisper import WhisperModel
 
+        compute_type = self.compute_type
         self._model = WhisperModel(
-            str(local_path(STT)), device=self.device, compute_type=self.compute_type
+            str(local_path(STT)), device=self.device, compute_type=compute_type
         )
+        self._loaded_compute_type = compute_type
 
     def unload(self) -> None:
         self._model = None
+        self._loaded_compute_type = ""
 
     def transcribe(self, audio_16k: FloatAudio) -> Transcript:
         """Transcribe mono float32 audio at 16 kHz."""

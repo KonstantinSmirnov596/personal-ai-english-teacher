@@ -41,6 +41,7 @@ class PronService:
         self.model = PhonemeModel()
         self.engine = PronEngine(self.model)
         self._load_lock = asyncio.Lock()
+        self.last_used = time.monotonic()
 
     # --- model lifecycle -------------------------------------------------------------------
 
@@ -60,6 +61,23 @@ class PronService:
                 raise
             self.core.models.phoneme = "ready"
             log.info("phoneme model ready in %.0f ms", (time.perf_counter() - started) * 1000)
+
+    async def free_memory(self) -> None:
+        """Give the phoneme model's video memory back (another model ran out of memory)."""
+        if self.model.loaded:
+            await self.core.gpu.run(self.model.unload)
+            self.core.models.phoneme = "not_loaded"
+            log.warning("phoneme model unloaded to free video memory")
+
+    async def unload_when_idle(self) -> None:
+        """Profile compacto: the phoneme model leaves video memory after 5 minutes idle."""
+        from voicetutor import profiles
+
+        idle = profiles.PHONEME_IDLE_UNLOAD_S.get(self.core.profile)
+        if idle is None or not self.model.loaded:
+            return
+        if time.monotonic() - self.last_used >= idle:
+            await self.free_memory()
 
     def _unload_if_low_memory(self) -> None:
         """Runs on the GPU thread: free the model when video memory is nearly exhausted."""
@@ -110,6 +128,7 @@ class PronService:
         except NoSpeechError as e:
             raise PronError("pron_no_speech") from e
         finally:
+            self.last_used = time.monotonic()
             self._unload_if_low_memory()
         return result, strict
 

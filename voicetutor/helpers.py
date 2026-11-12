@@ -13,7 +13,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 from voicetutor import l1
-from voicetutor.core import NoActiveConnection
+from voicetutor.core import NoActiveConnection, VramLowError
 from voicetutor.lang_guard import not_english
 from voicetutor.llm.client import LLMError
 from voicetutor.llm.json_call import ask_json
@@ -230,7 +230,10 @@ async def exercise_answer(conv: Any, msg: ExerciseAnswer, pcm: bytes) -> None:
         return
     audio = resample(pcm16_to_float(pcm), msg.audio.sample_rate, STT_RATE)
     try:
-        transcript = await core.gpu.run(core.stt.transcribe, audio)
+        transcript = await core.transcribe(audio)
+    except VramLowError:
+        await conv.error("vram_low", request_id=msg.request_id, retryable=True)
+        return
     except Exception:
         log.exception("speech recognition failed for exercise answer")
         await conv.error("stt_failed", request_id=msg.request_id, retryable=True)

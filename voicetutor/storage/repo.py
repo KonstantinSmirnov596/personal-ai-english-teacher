@@ -35,6 +35,10 @@ class SettingsRepo:
         except ValueError:
             return Settings()
 
+    def is_set(self, key: str) -> bool:
+        """True when the user (or the wizard) saved this setting at least once."""
+        return self.db.one("SELECT 1 FROM setting WHERE key = ?", (key,)) is not None
+
     def patch(self, patch: SettingsPatch) -> Settings:
         changes = patch.model_dump(exclude_none=True)
         merged = Settings(**{**self.get().model_dump(), **changes})

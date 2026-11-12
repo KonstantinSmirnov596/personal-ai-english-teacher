@@ -153,6 +153,21 @@ MIGRATIONS: list[str] = [
     ALTER TABLE scenario ADD COLUMN title_l10n TEXT NOT NULL DEFAULT '{}';
     ALTER TABLE scenario ADD COLUMN description_l10n TEXT NOT NULL DEFAULT '{}';
     """,
+    # 6: hardware measurements of the first-run wizard (SPEC 7); nothing leaves the computer
+    """
+    CREATE TABLE hardware_profile (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        created_at TEXT NOT NULL,
+        gpu_name TEXT NOT NULL DEFAULT '',
+        driver TEXT NOT NULL DEFAULT '',
+        vram_total_mb INTEGER NOT NULL DEFAULT 0,
+        vram_free_mb INTEGER NOT NULL DEFAULT 0,
+        compute_capability TEXT NOT NULL DEFAULT '',
+        ram_total_mb INTEGER NOT NULL DEFAULT 0,
+        profile TEXT NOT NULL,
+        measurements TEXT NOT NULL DEFAULT '{}'
+    );
+    """,
 ]
 
 

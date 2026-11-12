@@ -11,6 +11,7 @@ from fastapi import APIRouter, File, Form, Request, UploadFile
 from fastapi.responses import Response
 from pydantic import BaseModel, ConfigDict, Field
 
+from voicetutor.core import is_out_of_memory
 from voicetutor.lang_guard import not_english
 from voicetutor.pron.service import PronError
 from voicetutor.server.app import ApiError
@@ -51,6 +52,8 @@ async def _assess(request: Request, text: str, audio: FloatAudio, phrase_id: str
         raise ApiError(404 if e.code == "not_found" else 422, e.code) from e
     except Exception as e:
         log.exception("pronunciation assessment failed")
+        if is_out_of_memory(e):
+            raise ApiError(503, "vram_low") from e  # SPEC 7: suggest closing other programs
         raise ApiError(503, "pron_unavailable") from e
 
 

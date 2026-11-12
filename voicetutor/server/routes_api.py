@@ -6,6 +6,7 @@ import csv
 import io
 import json
 import logging
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -45,9 +46,10 @@ async def health(request: Request) -> dict[str, Any]:
     core = core_of(request)
     gpu: dict[str, Any] | None = None
     try:
-        import torch
-
-        if torch.cuda.is_available():
+        # Only once the GPU thread has imported torch: importing it here would block the event
+        # loop for seconds, and an unsupported machine never needs a CUDA context.
+        torch = sys.modules.get("torch") if core.profile != "unsupported" else None
+        if torch is not None and torch.cuda.is_available():
             free, total = torch.cuda.mem_get_info()
             gpu = {
                 "name": torch.cuda.get_device_name(0),
@@ -260,7 +262,7 @@ async def get_languages(request: Request) -> dict[str, Any]:
 
 @router.get("/settings")
 async def get_settings(request: Request) -> dict[str, Any]:
-    return core_of(request).settings.get().model_dump()
+    return core_of(request).effective_settings()
 
 
 @router.patch("/settings")
@@ -274,7 +276,14 @@ async def patch_settings(request: Request, body: SettingsPatch) -> dict[str, Any
         from voicetutor.maintenance import cleanup_audio
 
         cleanup_audio(core)
-    return updated.model_dump()
+    if body.profile is not None and core.profile != "unsupported":
+        target = body.profile
+        if target == "auto":
+            await core.detect_hardware()
+            target = core.profile
+        await core.apply_profile(target)
+    del updated
+    return core.effective_settings()
 
 
 @router.get("/voices")
