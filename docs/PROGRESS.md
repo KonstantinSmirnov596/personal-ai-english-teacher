@@ -4,9 +4,9 @@ Maintained by Claude Code. Read at the start of every session, updated after eve
 
 ## State
 
-- Current stage: 4
-- Current item: 4.8 Final regression (`check_stage.ps1 4` from a clean worktree)
-- Last stage check: `check_stage.ps1 3` — exit 0, 2026-11-12, worktree of `7a1f328` (fast 291, gpu 29, e2e 18, gpu@compacto 29, e2e@compacto 18, live skipped: no key)
+- Current stage: done (stages 0–4 accepted); waiting for the owner's decisions on publication
+- Current item: none open; owner tasks in `docs/HUMAN_TASKS.md`
+- Last stage check: `check_stage.ps1 4` — exit 0, 2026-11-12, clean worktree of `554066c` with its own environment (repeated setup OK; fast 328, gpu 29, e2e 20, gpu@compacto 29, e2e@compacto 20; profile benchmark, `ci_local.ps1` and the clean install from the release archive passed; live skipped: no key)
 
 ## Plan items
 
@@ -66,7 +66,7 @@ Mark `[x]` only after the item's check passed.
 - [x] 4.5 Screenshots
 - [x] 4.6 GitHub files
 - [x] 4.7 Diagnostics
-- [ ] 4.8 Final regression
+- [x] 4.8 Final regression
 
 ## Decisions
 
@@ -148,6 +148,7 @@ Format: date, item, decision, reason. Deviations from SPEC, PLAN or `docs/design
 | 2026-11-12 | 4.1 | The `.cmd` wrappers clear `PSModulePath`; the installer hashes, downloads and unzips through .NET | Windows PowerShell started from a PowerShell 7 terminal inherited PS7's module path and could not load `Get-FileHash` |
 | 2026-11-12 | 4.1 | `.gitattributes` keeps CRLF for `.cmd`, `.bat`, `.ps1` | `* text=auto eol=lf` would give batch files LF endings on checkout, which cmd.exe can misread |
 | 2026-11-12 | 4.5 | Of two neighbouring insertions "added after" and "added before" (the same vowel between two words) only the one with the larger margin is reported | The Portuguese README screenshot showed a false mark on "should" before "es-TART"; the stage 2 metrics of both languages are unchanged |
+| 2026-11-12 | 4.8 | `check_stage.ps1` runs the developer setup (`-Dev -Shortcuts no -NoLaunch`); the acceptance worktree builds its own environment from the package cache instead of a junction to the main `.venv` | The first stage 4 run used the user setup, which rebuilt `.venv` without test tools through the junction (the main environment was rebuilt with `setup.ps1 -Dev`) and would have created Desktop shortcuts |
 ## Failed checks
 
 Format: check, what was tried, what was seen, next step.

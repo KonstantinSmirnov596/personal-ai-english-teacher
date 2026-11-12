@@ -4,7 +4,7 @@
 
 Voice Tutor is an open-source Windows desktop app for practicing spoken American English, for learners who speak Latin American Spanish (`es-419`) or Brazilian Portuguese (`pt-BR`). The tutor speaks only General American English; corrections, translations, hints and tips come in the learner's language. Speech recognition, speech synthesis and pronunciation assessment run on the user's NVIDIA GPU; only dialogue text goes to the LLM provider the user picks.
 
-All five stages of `docs/PLAN.md` are done. Stages 0–3 were accepted by `scripts/check_stage.ps1 <N>` (exit 0); the stage 4 acceptance run is recorded in `docs/PROGRESS.md` ("State"). Nothing is published: the work is in the local git repository, and publishing is the owner's decision (`docs/HUMAN_TASKS.md`, "Before publication").
+All five stages of `docs/PLAN.md` are done and accepted by `scripts/check_stage.ps1 <N>` (exit 0). The stage 4 run, from a clean worktree with its own environment: repeated setup OK; fast 328, gpu 29, e2e 20, gpu@compacto 29, e2e@compacto 20 passed; profile benchmark (`compacto` peak 2.46 GB, first audio 0.48–0.51 s / 0.99 s), `ci_local.ps1` and the clean install from the release archive (204 s) passed; `live` skipped for lack of a key. Nothing is published: the work is in the local git repository, and publishing is the owner's decision (`docs/HUMAN_TASKS.md`, "Before publication").
 
 ## Stages
 
