@@ -21,6 +21,14 @@ Three techniques replace the human:
 
 `live` spends the owner's money: at most 80 requests per run, no retry loops. It runs only on the owner's word.
 
+### Model profiles
+
+SPEC 7 requires both profiles to pass `gpu` and `e2e`. `pytest --vt-profile completo|compacto` (default `auto`; `scripts\test.ps1 gpu --vt-profile compacto`) is an option of the tests, read by `tests/profile_opt.py`: before a launcher starts, the profile is stored in its temporary data directory as if the user had chosen it in Settings → Performance, and models built directly in a test get the profile's compute type. The app reads no flag or variable for this. `scripts/check_stage.ps1 3` runs `gpu@compacto` and `e2e@compacto` next to the default suites.
+
+### Hardware the machine does not have
+
+Unsupported hardware, other drivers, batteries and out-of-memory errors are produced by test doubles passed to the `Core` constructor (`detector=`, `stt=`, `tts=`; `tests/hw_fakes.py`), never by a switch in the app. `tests/e2e/test_unsupported_window.py` runs such a core in the test process (uvicorn in a thread) and opens it in Edge. `tests/gpu/test_vram.py` fills the real GPU from the test process while a real core runs. `tests/test_requirements_ps1.py` feeds fake facts to the PowerShell functions of the installer's requirements check.
+
 ## Isolation from user data
 
 Tests never use the real data directory or real keys.
@@ -142,4 +150,4 @@ If a threshold is missed, the prompt in the code is changed and the result and t
 
 ## Stage acceptance
 
-`scripts/check_stage.ps1 <N>` runs the suites needed by the stage and all earlier stages, requires the listed tests to pass (not merely be collected), checks that reports exist without placeholders or empty table cells, prints a summary and returns 0 only on full success. A `live` suite skipped for lack of a key is not a failure but gets its own summary line.
+`scripts/check_stage.ps1 <N>` runs the suites needed by the stage and all earlier stages, requires the listed tests to pass (not merely be collected), checks that reports exist without placeholders or empty table cells, prints a summary and returns 0 only on full success. A `live` suite skipped for lack of a key is not a failure but gets its own summary line. A suite name with `@<profile>` runs it with `--vt-profile <profile>`; a stage may also list acceptance scripts (stage 3: `scripts/bench_profiles.py`) whose exit code must be 0.

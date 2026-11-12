@@ -1,0 +1,107 @@
+{
+  "date": "2026-11-12T06:52:41+00:00",
+  "gpu_total_mb": null,
+  "profiles": {
+    "completo": {
+      "baseline_device_used_mb": 0,
+      "applied_profile": "completo",
+      "pron_in_conversation": true,
+      "ready_device_used_mb": 2758,
+      "first_audio_client_ms": {
+        "0": {
+          "median": 413.7,
+          "max": 922.9,
+          "runs": [
+            923,
+            432,
+            412,
+            410,
+            414
+          ]
+        },
+        "500": {
+          "median": 933.1,
+          "max": 941.6,
+          "runs": [
+            924,
+            933,
+            926,
+            942,
+            935
+          ]
+        }
+      },
+      "reading_roundtrip_ms": [
+        60,
+        61,
+        55,
+        53,
+        62
+      ],
+      "phoneme_model_after_readings": "ready",
+      "peak_device_used_mb": 3690,
+      "peak_core_mb": 3690,
+      "samples": 116,
+      "loop_wer": 0.0,
+      "stt_10s_audio_s": 10.1,
+      "stt_10s_warm_median_ms": 326.0
+    },
+    "compacto": {
+      "baseline_device_used_mb": 0,
+      "applied_profile": "compacto",
+      "pron_in_conversation": false,
+      "ready_device_used_mb": 1766,
+      "first_audio_client_ms": {
+        "0": {
+          "median": 400.8,
+          "max": 952.3,
+          "runs": [
+            952,
+            399,
+            401,
+            413,
+            395
+          ]
+        },
+        "500": {
+          "median": 907.2,
+          "max": 910.6,
+          "runs": [
+            894,
+            898,
+            908,
+            907,
+            911
+          ]
+        }
+      },
+      "reading_roundtrip_ms": [
+        1791,
+        70,
+        59,
+        59,
+        58
+      ],
+      "phoneme_model_after_readings": "ready",
+      "peak_device_used_mb": 2476,
+      "peak_core_mb": 2476,
+      "samples": 109,
+      "loop_wer": 0.0,
+      "stt_10s_audio_s": 10.1,
+      "stt_10s_warm_median_ms": 312.9
+    }
+  },
+  "acceptance": {
+    "completo_applied": true,
+    "compacto_applied": true,
+    "compacto_peak_le_5gb": true,
+    "wer_delta_le_2pp": true,
+    "wer_le_10pct": true
+  },
+  "latency_targets": {
+    "completo_first_audio_0ms_le_target": true,
+    "completo_first_audio_500ms_le_target": true,
+    "compacto_first_audio_0ms_le_target": true,
+    "compacto_first_audio_500ms_le_target": true
+  }
+}

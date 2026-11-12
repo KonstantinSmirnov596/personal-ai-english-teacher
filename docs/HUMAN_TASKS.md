@@ -23,6 +23,11 @@ Claude Code turns to the owner only through this list. New questions go to "Ques
 - [ ] Proofread the pronunciation catalogs (`voicetutor/data/l1/es-419/catalog.json`, `voicetutor/data/l1/pt-BR/catalog.json`), especially the comparisons with native sounds in the tips.
 - [ ] If possible: read 10 phrases in the Reading screen per language and press "That was right" on marks you disagree with; tell Claude Code how many marks felt wrong.
 
+## Stage 3
+
+- [ ] Proofread the new Spanish and Portuguese texts: the first-run wizard and Settings → Performance (`web/i18n/es-419.js`, `web/i18n/pt-BR.js`, sections `wizard`, `performance`, `notices`), the installer messages (`scripts/requirements.messages.json`) and `docs/es/hardware.md`, `docs/pt-BR/hardware.md`.
+- [ ] If possible: run the wizard once yourself (Settings → Performance → "Run the wizard again") and say whether any step is unclear.
+
 ## API key
 
 - [ ] Create a separate key with a spending limit at the provider and type it into the app window (Settings → API connections → Add → template → paste key → Save → Test). Never send the key in chat.
@@ -38,3 +43,4 @@ Format: date, stage, question, options, default until answered.
 | 2026-11-12 | 0 | Commits use your global git identity (name and e-mail). The history is local; before the first push it can be rewritten. Which author identity should the public history carry? | Keep as is / GitHub noreply address / another name | Keep as is until you decide; nothing is pushed |
 | 2026-11-12 | 0 | Copyright line in `LICENSE`: "Copyright (c) 2026 Voice Tutor contributors". | Keep / your name / another holder | Keep |
 | 2026-11-12 | 0 | GPL question from the license audit: the app (MIT) is installed together with and imports GPL-3.0-or-later components (espeak-ng via `espeakng-loader`, `phonemizer-fork`), all downloaded from PyPI on the user's machine and never in the repository or release archive. Keep MIT, change the license, or ask a lawyer? | Keep MIT with notices / relicense (e.g. GPL-3.0) / legal review first | Keep MIT and list the GPL components in THIRD_PARTY_NOTICES; no legal conclusion from Claude Code |
+| 2026-11-12 | 3 | SPEC 7 asks the wizard to download missing models; CLAUDE.md allows downloads only at install time and no run-time traffic except the LLM. Claude Code followed CLAUDE.md: the wizard sends the user to `install.cmd` (resume and checksums there, stage 4) and loads the models afterwards. Keep it that way? | Keep install-only downloads / allow the wizard to download | Install-only downloads |

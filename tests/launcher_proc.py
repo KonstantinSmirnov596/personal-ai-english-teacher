@@ -28,6 +28,9 @@ class LauncherProcess:
         entry: tuple[str, ...] = ("-m", "voicetutor.launcher"),
     ) -> None:
         self.data_dir = data_dir
+        from tests.profile_opt import seed_profile
+
+        seed_profile(data_dir)  # pytest --vt-profile; a no-op for "auto"
         full_env = os.environ.copy()
         full_env["VOICETUTOR_DATA_DIR"] = str(data_dir)
         full_env["PYTHONUNBUFFERED"] = "1"

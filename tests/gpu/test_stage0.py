@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import pytest
 
+from tests.profile_opt import stt_compute_type
+
 pytestmark = pytest.mark.gpu
 
 
@@ -37,7 +39,7 @@ def test_tts_stt_loop_wer() -> None:
     from voicetutor.wer import wer
 
     items = ensure_loop()
-    stt = SpeechRecognizer()
+    stt = SpeechRecognizer(compute_type=stt_compute_type())
     refs: list[str] = []
     hyps: list[str] = []
     for path, text in items:
@@ -58,7 +60,9 @@ def test_word_probabilities_present() -> None:
 
     path, _text = ensure_loop()[1]
     audio, rate = read_wav(path)
-    tr = SpeechRecognizer().transcribe(resample(audio, rate, STT_RATE))
+    tr = SpeechRecognizer(compute_type=stt_compute_type()).transcribe(
+        resample(audio, rate, STT_RATE)
+    )
     assert len(tr.words) >= 5
     assert all(0.0 <= w.p <= 1.0 for w in tr.words)
     assert all(w.end >= w.start for w in tr.words)

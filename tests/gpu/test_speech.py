@@ -7,6 +7,7 @@ import asyncio
 import numpy as np
 import pytest
 
+from tests.profile_opt import stt_compute_type
 from voicetutor.core import GpuQueue
 from voicetutor.lang_guard import LearnerLanguageError
 from voicetutor.speech.audio import STT_RATE, TTS_RATE, resample
@@ -19,7 +20,7 @@ pytestmark = pytest.mark.gpu
 
 @pytest.fixture(scope="module")
 def models() -> tuple[SpeechRecognizer, SpeechSynthesizer]:
-    stt = SpeechRecognizer()
+    stt = SpeechRecognizer(compute_type=stt_compute_type())
     tts = SpeechSynthesizer()
     stt.load()
     tts.load()

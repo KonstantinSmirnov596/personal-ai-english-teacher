@@ -1,6 +1,8 @@
 """Stage acceptance: runs the suites a stage needs, checks required tests and reports.
 
 Usage: python scripts/check_stage.py <N>
+A suite name "gpu@compacto" runs the gpu suite with ``--vt-profile compacto``
+(tests/profile_opt.py).
 Exit code 0 only when every check passed. A ``live`` suite that was skipped because no key is
 saved does not fail the stage but is listed separately in the summary.
 """
@@ -35,6 +37,7 @@ class Stage:
     files: tuple[str, ...] = ()
     optional_suites: tuple[str, ...] = ()
     clean_install: bool = False
+    scripts: tuple[str, ...] = ()  # acceptance scripts (repo-relative), exit code 0 required
 
 
 # Required tests of the predecessor (its stages 0-4), kept under the new package name. SPEC 13:
@@ -230,6 +233,60 @@ STAGES: dict[int, Stage] = {
             "docs/reports/data/pron_stage2_pt-BR.json",
         ),
     ),
+    3: Stage(
+        # SPEC 7: both profiles pass the gpu and e2e suites.
+        suites=("fast", "gpu", "e2e", "gpu@compacto", "e2e@compacto"),
+        optional_suites=("live",),
+        required_tests=(
+            # 3.1 hardware detector
+            "tests.test_hardware::test_system_detector_reads_this_computer",
+            # 3.2 profiles
+            "tests.test_profiles::test_profiles_from_measured_free_memory",
+            "tests.test_profiles::test_profile_estimate_before_the_wizard",
+            "tests.test_profiles::test_unsupported_reasons",
+            "tests.test_profiles::test_minimum_hardware_is_supported",
+            "tests.test_profiles::test_benchmark_can_lower_the_profile",
+            "tests.test_profiles::test_compacto_profile_settings",
+            "tests.test_profiles::test_phoneme_model_unloads_after_idle_in_compacto",
+            # 3.3 video memory shortage
+            "tests.test_hardware::test_out_of_memory_frees_the_phoneme_model_and_retries",
+            "tests.test_hardware::test_persistent_out_of_memory_gives_a_clear_error",
+            "tests.gpu.test_vram::test_core_survives_video_memory_pressure",
+            # 3.4 installer requirements check
+            "tests.test_requirements_ps1::test_good_machine_passes",
+            "tests.test_requirements_ps1::test_blocking_failures",
+            "tests.test_requirements_ps1::test_messages_are_complete_in_three_languages",
+            "tests.test_requirements_ps1::test_invoke_reports_and_links_the_docs",
+            "tests.test_requirements_ps1::test_setup_checks_before_any_download",
+            # 3.5 first-run wizard, both languages
+            "tests.e2e.test_wizard::test_first_run_wizard[es-419]",
+            "tests.e2e.test_wizard::test_first_run_wizard[pt-BR]",
+            # 3.6 unsupported hardware: core by injection, window
+            "tests.test_unsupported::test_unsupported_hardware_is_explained_and_models_stay_unloaded",
+            "tests.e2e.test_unsupported_window::test_unsupported_screen_explains_why",
+            # 3.7 run-time notices
+            "tests.test_hardware::test_notices_for_battery_and_changed_hardware",
+            "tests.test_hardware::test_notices_are_dismissed_once_per_run",
+            "tests.test_hardware::test_hello_carries_profile_and_notices",
+            # wizard step 3: no download at run time (CLAUDE.md hard constraint)
+            "tests.test_hardware::test_models_status_and_load_without_download",
+            # docs/<lang>/hardware.md: the wizard and the installer link to its anchors
+            "tests.test_user_docs::test_same_structure_in_every_language",
+            "tests.test_user_docs::test_every_check_has_an_anchor",
+            "tests.test_user_docs::test_installer_check_ids_have_anchors",
+        ),
+        reports=("stage3.md",),
+        files=(
+            "scripts/requirements.ps1",
+            "scripts/requirements.messages.json",
+            "web/js/wizard.js",
+            "docs/en/hardware.md",
+            "docs/es/hardware.md",
+            "docs/pt-BR/hardware.md",
+        ),
+        # 3.8 profile acceptance: compacto peak <= 5.0 GB, WER delta <= 2 pp
+        scripts=("scripts/bench_profiles.py",),
+    ),
 }
 
 
@@ -243,17 +300,20 @@ class SuiteResult:
 
 
 def run_suite(name: str, out_dir: Path) -> SuiteResult:
-    xml_path = out_dir / f"{name}.xml"
+    marker, _, profile = name.partition("@")
+    xml_path = out_dir / f"{name.replace('@', '-')}.xml"
     cmd = [
         sys.executable,
         "-m",
         "pytest",
         "-m",
-        MARKERS[name],
+        MARKERS[marker],
         f"--junitxml={xml_path}",
         "-o",
         "junit_family=xunit2",
     ]
+    if profile:
+        cmd += ["--vt-profile", profile]
     print(f"=== suite: {name} ===", flush=True)
     proc = subprocess.run(cmd, cwd=REPO, env=os.environ.copy(), check=False)
     result = SuiteResult(name=name, exit_code=proc.returncode)
@@ -352,6 +412,15 @@ def main() -> int:
             if not (REPO / f).exists():
                 problems.append(f"required file missing: {f}")
 
+    for st in stages:
+        for script in st.scripts:
+            print(f"=== acceptance script: {script} ===", flush=True)
+            proc = subprocess.run(
+                [sys.executable, str(REPO / script)], cwd=REPO, env=os.environ.copy(), check=False
+            )
+            if proc.returncode != 0:
+                problems.append(f"acceptance script failed: {script} (exit {proc.returncode})")
+
     clean_note = ""
     if any(st.clean_install for st in stages):
         print("=== setup from scratch on a clean copy ===", flush=True)
@@ -370,7 +439,7 @@ def main() -> int:
     for s in suites:
         r = results[s]
         print(
-            f"  {s:5}: exit {r.exit_code}, passed {len(r.passed)}, "
+            f"  {s:12}: exit {r.exit_code}, passed {len(r.passed)}, "
             f"failed {len(r.failed)}, skipped {len(r.skipped)}"
         )
     if clean_note:

@@ -146,6 +146,22 @@ In free conversation the assessment is more cautious: only words recognized with
 
 Limitations: sound-level assessment is a heuristic; thresholds were tuned on synthetic American voices and are calibrated per user with "That was right"; intonation and stress are not assessed.
 
+## Hardware and profiles
+
+SPEC 7. One module reads the computer (`voicetutor/hardware.py`: `nvidia-smi`, Win32 memory and power status, free disk) and is passed to the core as a dependency; tests pass fakes. `voicetutor/profiles.py` turns the facts into per-item checks and a profile:
+
+| Profile | Speech recognition | Phoneme model | Conversation marks |
+| --- | --- | --- | --- |
+| `completo` | Whisper turbo `float16` | Kept once loaded | On |
+| `compacto` | Whisper turbo `int8_float16` | Loaded on demand, unloaded after 5 min idle | Off by default |
+| unsupported | Not loaded | Not loaded | — |
+
+At every start the core estimates the profile from the card's total memory (a stored measurement of the same GPU wins; a manual choice in Settings → Performance wins over both) and loads nothing on unsupported hardware. The first-run wizard (`web/js/wizard.js`) measures free memory, counting the memory the app's own models hold, runs a short benchmark (`voicetutor/benchmark.py`) and stores the result in `hardware_profile`. A changed GPU or driver raises a notice that offers the measurement again.
+
+Video memory shortage: recognition that runs out of memory frees the phoneme model and retries once, then answers `vram_low`; the process stays up. On Windows, drivers from 536.40 usually fall back to system memory first, so a shortage mostly makes the app slower.
+
+The installer checks the same requirements before downloading anything (`scripts/requirements.ps1`). The app itself never downloads models.
+
 ## Interface
 
 Four screens and a permanent bottom panel with the microphone waveform. Static mockups: `docs/ui/main.html`, `connections.html`, `reading.html`, `summary.html`; design tokens in `docs/ui/README.md`.

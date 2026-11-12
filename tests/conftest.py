@@ -24,6 +24,20 @@ os.environ["VOICETUTOR_KEYRING_SERVICE"] = "VoiceTutor-test"
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
 
 from tests.mock_llm import MockLLM  # noqa: E402  (after the environment is isolated)
+from tests.profile_opt import CHOICES, set_profile  # noqa: E402
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--vt-profile",
+        default="auto",
+        choices=CHOICES,
+        help="model profile for the gpu and e2e suites (tests/profile_opt.py)",
+    )
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    set_profile(config.getoption("--vt-profile"))
 
 
 @pytest.fixture

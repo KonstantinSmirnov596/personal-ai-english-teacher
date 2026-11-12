@@ -5,7 +5,7 @@ Maintained by Claude Code. Read at the start of every session, updated after eve
 ## State
 
 - Current stage: 3
-- Current item: 3.1
+- Current item: stage 3 acceptance (`check_stage.ps1 3`)
 - Last stage check: `check_stage.ps1 2` — exit 0, 2026-11-12 (fast 248, gpu 28, e2e 13, live skipped: no key)
 
 ## Plan items
@@ -48,14 +48,14 @@ Mark `[x]` only after the item's check passed.
 
 ### Stage 3
 
-- [ ] 3.1 Hardware detector
-- [ ] 3.2 Profiles
-- [ ] 3.3 VRAM shortage
-- [ ] 3.4 Installer requirements check
-- [ ] 3.5 First-run wizard
-- [ ] 3.6 Unsupported screen
-- [ ] 3.7 Runtime warnings
-- [ ] 3.8 Profile acceptance
+- [x] 3.1 Hardware detector
+- [x] 3.2 Profiles
+- [x] 3.3 VRAM shortage
+- [x] 3.4 Installer requirements check
+- [x] 3.5 First-run wizard
+- [x] 3.6 Unsupported screen
+- [x] 3.7 Runtime warnings
+- [x] 3.8 Profile acceptance
 
 ### Stage 4
 
@@ -112,12 +112,32 @@ Format: date, item, decision, reason. Deviations from SPEC, PLAN or `docs/design
 | 2026-11-12 | 2.4 | Accent fixtures through misaki's inline override `[word](/phonemes/)`; the synthesis guard checks the override's word, not its IPA | Kokoro's vocabulary has the needed symbols (x, r, ɾ, ʝ, β, combining tilde); IPA letters such as θ, ˈ, ᵊ are not a learner language |
 | 2026-11-12 | 2.5 | Evaluation: the target phone is where the catalog entry applies in the expected word; "named" = the judged entry and one of the pair's `names`; the 80 % "error" metric over error-level entries, close-level entries reported separately | Pseudo-words ("espeak") are not reliable espeak input; an American phoneme model names a tap /t, d/ and an inserted vowel /ə/ |
 | 2026-11-12 | 2.5 | Conversation fixture "very" → "video" with /b/, reading fixture "estart" + "tird" | In conversation only confidently recognized words are assessed with a strict margin (LLR ≥ 4); "berry" for "very" stayed below it, "video" with /b/ gives LLR 6.3 for two voices; "tink" after "I" was too weak, "tird" gives LLR 9 |
+| 2026-11-12 | 3.1 | GPU facts from `nvidia-smi` (installed with the driver), RAM and power through Win32 `ctypes` calls; no NVML binding package | No new dependency or license; the same query works in the installer (PowerShell) and in the core. `driver_version` is kept although driver 610.47 marks it deprecated (`kmd_version`): older drivers know only `driver_version` |
+| 2026-11-12 | 3.2 | Before the wizard measured anything, the start-up profile is estimated from total video memory (≥ 7600 MiB → `completo`, ≥ 5800 MiB → `compacto`); the wizard and Settings → Performance use the SPEC 7 free-memory thresholds | A game left open at start-up would otherwise lock the app as unsupported; SPEC 7 assigns the measurement to the wizard |
+| 2026-11-12 | 3.2 | Free memory counts the memory held by the app's own models (free before loading minus free now) | SPEC 7 thresholds describe what the desktop and other programs leave; measured with the models loaded, the app would otherwise compete with itself |
+| 2026-11-12 | 3.2 | A supported card with only too little free memory is not "unsupported": the wizard explains it, lets the user continue, and the benchmark stores `compacto` | Free memory changes when programs close; only the GPU, driver and architecture are hard limits |
+| 2026-11-12 | 3.2 | `pron_in_conversation` follows the profile (on in `completo`, off in `compacto`) until the user sets it | SPEC 7: marks off by default in `compacto`; an explicit user choice must win |
+| 2026-11-12 | 3.2 | A profile switch reloads STT on the GPU queue; `SpeechRecognizer.load()` reloads when its compute type changed | Switching while the models load could leave STT on the old compute type |
+| 2026-11-12 | 3.3 | Out-of-memory in the pronunciation route answers `vram_low` like recognition does | The same cause deserves the same advice (close other programs) |
+| 2026-11-12 | 3.4 | Installer messages live in `scripts/requirements.messages.json` (en, es, pt-BR), the script stays ASCII; the language follows the Windows UI culture (es-* → es, pt-* → pt-BR, otherwise English) | Windows PowerShell 5.1 reads a script without BOM in the ANSI code page; the installer runs before any learner-language choice, so English is the third option |
+| 2026-11-12 | 3.4 | `setup.ps1 -NoHardwareCheck` skips the requirements check | Developer machines and CI without an NVIDIA GPU still need the Python environment; the app checks the hardware at every start anyway, so this is not a bypass of a security check |
+| 2026-11-12 | 3.4 | Disk need: 5.5 GB next to the app plus 10 GB in local app data (15.5 GB on one drive); less when an earlier installation exists | Measured: environment 4.9 GB, models 3.1 GB, uv cache 4.9 GB, plus 2 GB for run-time data; SPEC 7 says 15 GB |
+| 2026-11-12 | 3.5 | The wizard does not download models: it lists missing ones, sends the user to `install.cmd` and then loads them (`POST /api/models/load`) | Contradiction: SPEC 7 step 3 asks for a download in the wizard; CLAUDE.md hard constraints allow downloads only at install time and run-time traffic only to the LLM. The hard constraint wins; resume and checksums move to `install.cmd` (stage 4) |
+| 2026-11-12 | 3.5 | Microphone check: median level of 3 s silence and 90th percentile of 4 s speech, raw microphone; room quiet (< 25 of 100, about −45 dBFS) → detector threshold 0.5 and noise suppression off; moderate (25–40) → 0.6, on; noisy (> 40) → 0.7, on | SPEC 7 asks the noise level to set the detector threshold and the noise-suppression default; a quiet room keeps the raw signal, which preserves the consonants the pronunciation check listens for. 0.5 was the predecessor's fixed value (vad-web's own default is 0.3) |
+| 2026-11-12 | 3.5 | The LLM step saves a connection only after a successful test; the key field is cleared and never shown | SPEC 7: the key is checked at once; a failed key should not become the active connection |
+| 2026-11-12 | 3.5 | First run hides the section navigation until the wizard ends; a re-run from Settings keeps it | A first-run user should not wander off with nothing configured; a returning user should not be trapped |
+| 2026-11-12 | 3.5 | `/api/health` reports `ok` only after the warm-up calls | The benchmark queued behind the warm-up and measured 1.3 s for the first sentence instead of 0.08 s, which would have lowered `completo` wrongly |
+| 2026-11-12 | 3.7 | Battery and changed-hardware notices are kept in the core's memory and dismissed once per run; the earlier `battery_notice_shown` setting is removed | A battery notice that never comes back after the first time would miss later battery sessions |
+| 2026-11-12 | 3.6 | The unsupported window check runs a core with a fake detector inside the test process (uvicorn in a thread) and opens it in Edge | The real launcher has no switch for fake hardware, and must not get one (no test back doors) |
+| 2026-11-12 | 3.8 | Tests take `--vt-profile`; the profile is stored in the test's data directory before a launcher starts (as a user choice), directly built recognizers get the profile's compute type | SPEC 7: both profiles pass `gpu` and `e2e`; the app reads no flag for this |
+| 2026-11-12 | 3.8 | Core peak memory = device `memory.used` minus the value before the core started, sampled every 200 ms | Windows WDDM reports no per-process memory in `nvidia-smi` (`[N/A]`) |
 
 ## Failed checks
 
 Format: check, what was tried, what was seen, next step.
 
 - `live` suite (both languages): skipped, no saved key. Next: owner runs `scripts\test.ps1 live` after entering a key in the app.
+- `e2e`, stage 3: `test_reading_marks_sounds_and_accepts_feedback` failed once in a full run ("start" marked close instead of error) and passed when rerun alone. Timing-sensitive with the looping fake microphone. Next: watch it in acceptance runs.
 - `e2e` flaky while the predecessor's windowless core holds 3.9 GB of VRAM (owner's process outside the project). Tried: rerunning single tests (they pass alone), full suite three times (one, three and zero failures). Seen: 60 s Playwright timeouts waiting for the tutor's first audio when VRAM is oversubscribed. Next: owner decides whether that process may be stopped (HUMAN_TASKS); stage 3 VRAM measurements need a free GPU.
 
 ## Measurements
@@ -141,3 +161,9 @@ Latest values of the targets in `docs/PLAN.md`.
 | Pronunciation false "error", es-419 / pt-BR | ≤ 3 % | 0.00 % / 0.00 % (0 of 2361 each) | 2026-11-12 |
 | Catalog mistakes flagged "error", es-419 / pt-BR | ≥ 80 % | 91.8 % / 87.9 % | 2026-11-12 |
 | Heard sound named, es-419 / pt-BR | ≥ 60 % | 93.1 % / 88.1 % | 2026-11-12 |
+| Core peak video memory, `compacto` (10 turns + 5 readings) | ≤ 5.0 GB | 2.48 GB (`completo`: 3.69 GB) | 2026-11-12 |
+| End of turn → first audio, mock 0 ms, `completo` / `compacto` | ≤ 0.9 s | 0.414 s / 0.401 s median | 2026-11-12 |
+| End of turn → first audio, mock 500 ms, `completo` / `compacto` | ≤ 1.5 s | 0.933 s / 0.907 s median | 2026-11-12 |
+| STT of a 10 s phrase, `completo` / `compacto` | ≤ 0.4 s | 0.326 s / 0.313 s | 2026-11-12 |
+| WER TTS → STT loop, `completo` / `compacto` | ≤ 10 %, delta ≤ 2 pp | 0.0 % / 0.0 % | 2026-11-12 |
+| Wizard benchmark, first audio without LLM | ≤ 1.2 s keeps `completo` | 0.39–0.41 s | 2026-11-12 |

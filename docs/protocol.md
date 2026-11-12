@@ -57,7 +57,7 @@ Limits: a turn is 0.3–60 s; a text frame up to 256 KB; a binary frame up to 8 
 
 | `type` | Fields | Meaning |
 | --- | --- | --- |
-| `hello` | `protocol: 1`, `app_version`, `state`, `active_connection: {id, name, model} \| null`, `settings`, `models_ready: bool` | First message after connecting. `models_ready` is false while the STT and TTS models load |
+| `hello` | `protocol: 1`, `app_version`, `state`, `active_connection: {id, name, model} \| null`, `settings`, `models_ready: bool`, `hardware: {profile, assessment, notices}` | First message after connecting. `models_ready` is false while the STT and TTS models load and warm up. `settings` are the effective settings (`pron_in_conversation` follows the profile until the user sets it). `hardware.profile` is `completo`, `compacto` or `unsupported`; `notices` lists `on_battery` and `hardware_changed` (shown once per run) |
 | `session.started` | `session_id`, `scenario: {id, title_l1}`, `connection: {id, name, model}` | Session opened |
 | `state` | `value: "idle" \| "listening" \| "transcribing" \| "thinking" \| "speaking"`, `turn_id?` | Every core state change |
 | `user.transcript` | `turn_id`, `text`, `words: [{w, start, end, p}]`, `low_conf: [word indexes]` | Turn text. `p` is the word confidence from 0 to 1; `low_conf` lists words below the threshold |
@@ -86,6 +86,7 @@ Correction `type` values: `grammar`, `vocabulary`, `phrasing`. `pattern` values 
 | `tts_failed` | Synthesis failed | Reply text stays in the feed without audio |
 | `audio_too_short` | Turn shorter than 0.3 s | Quiet hint in the panel, nothing in the feed |
 | `audio_too_long` | Turn longer than 60 s | Message |
+| `vram_low` | Speech recognition (or the pronunciation check) ran out of video memory even after the phoneme model was freed | Message asking to close other programs that use the graphics card; the turn can be repeated |
 | `bad_request` | Message failed schema validation | Log entry; nothing in the feed |
 | `internal` | Everything else | Message and log entry |
 
@@ -153,7 +154,20 @@ Connection object in answers: `{id, name, base_url, model, extra_params, json_fo
 | `GET /api/vocab`, `POST /api/vocab`, `PATCH /api/vocab/{id}`, `DELETE /api/vocab/{id}` | Vocabulary |
 | `GET /api/vocab/due` | Phrases due for review today |
 | `DELETE /api/data` | `{confirm: "DELETE", include_keys: bool}` — delete all data |
-| `GET /api/health` | `{status, gpu: {name, vram_used_mb, vram_total_mb}, models: {stt, tts, phoneme}, active_connection, problems}`; `problems` lists startup problems (`no_gpu`, `models_missing`, `model_load_failed`) with a localized message |
+| `GET /api/health` | `{status, gpu: {name, vram_used_mb, vram_total_mb}, models: {stt, tts, phoneme}, active_connection, problems}`; `status` is `ok` once the models are loaded and warmed up; `problems` lists startup problems (`unsupported_hardware`, `no_gpu`, `models_missing`, `model_load_failed`) with a localized message |
+
+Settings added in stage 3: `profile` (`auto`, `completo`, `compacto`; changing it switches the running core), `wizard_done` (the first-run wizard opens while it is false), `vad_threshold` (0.2–0.9, set by the wizard's microphone check).
+
+### Hardware, profile and first-run wizard
+
+| Method and path | Action |
+| --- | --- |
+| `GET /api/hardware` | `{info, current, profile, startup, notices, stored}`: what this computer has now (`info`), the assessment with the free video memory measured now (`current`: `{profile, measured, checks: [{id, ok, value, required, blocking, params, doc}], reasons, warnings}`), the profile in use, the start-up estimate, the notices and the last stored measurement |
+| `POST /api/hardware/benchmark` | Wizard step 4: about a minute on the GPU; `{profile, measured_profile, measurements, assessment, applied_profile}`; stored in the `hardware_profile` table; `409 models_loading` while the models load |
+| `POST /api/hardware/notices/{id}/dismiss` | `on_battery` or `hardware_changed`; hidden for the rest of the run; `204` |
+| `GET /api/models` | `{present: {stt, tts, phoneme}, all_present}` |
+| `POST /api/models/load` | After `install.cmd` added missing models: load them without a restart; `202 {state}`; `409 models_missing` while files are still missing. The app never downloads models itself |
+
 
 ### Pronunciation
 
