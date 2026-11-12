@@ -67,9 +67,19 @@ def start_session(page: Any, e2e: E2E) -> None:
     page.wait_for_selector("[data-testid=panel][data-state=idle]", timeout=60_000)
 
 
-def speak_one_turn(page: Any) -> None:
-    """Space at silence, wait for one phrase of the looping file, Space again."""
+def wait_phrase_end(page: Any) -> None:
+    """Just after a phrase of the looping file ended (speech, then 1 s of silence).
+
+    The fixtures have about 5 s of silence after the phrase, so a recording armed now catches
+    the whole next phrase. Waiting for any 1 s of silence instead can end right before the next
+    loop starts, and a little delay under load then cuts the beginning of the phrase."""
+    wait_level(page, above=True, hold_s=0.3)
     wait_level(page, above=False, hold_s=1.0)
+
+
+def speak_one_turn(page: Any) -> None:
+    """Space after a phrase ended, wait for the next phrase of the looping file, Space again."""
+    wait_phrase_end(page)
     page.keyboard.press("Space")
     page.wait_for_selector("[data-testid=panel][data-state=listening]", timeout=5000)
     wait_level(page, above=True, hold_s=0.3)

@@ -11,7 +11,7 @@ from collections.abc import Iterator
 import pytest
 
 from tests.e2e.conftest import E2E, open_env
-from tests.e2e.test_conversation import wait_level
+from tests.e2e.test_conversation import wait_level, wait_phrase_end
 
 pytestmark = pytest.mark.e2e
 
@@ -33,7 +33,7 @@ def test_reading_marks_sounds_and_accepts_feedback(env: E2E) -> None:
     page.wait_for_selector("[data-testid=reading-panel][data-state=listening]", timeout=10_000)
     page.keyboard.press("Escape")
     page.wait_for_selector("[data-testid=reading-panel][data-state=idle]")
-    wait_level(page, above=False, hold_s=1.0)
+    wait_phrase_end(page)
     page.keyboard.press("Space")
     page.wait_for_selector("[data-testid=reading-panel][data-state=listening]")
     wait_level(page, above=True, hold_s=0.3)
@@ -42,7 +42,13 @@ def test_reading_marks_sounds_and_accepts_feedback(env: E2E) -> None:
 
     page.wait_for_selector("[data-testid=read-word]", timeout=60_000)
     errors = page.locator("[data-testid=read-word][data-level=error]")
-    assert sorted(t.strip(".").lower() for t in errors.all_inner_texts()) == ["start", "third"]
+    levels = page.eval_on_selector_all(
+        "[data-testid=read-word]", "els => els.map(e => e.textContent + ':' + e.dataset.level)"
+    )
+    assert sorted(t.strip(".").lower() for t in errors.all_inner_texts()) == [
+        "start",
+        "third",
+    ], levels
     assert page.locator("[data-testid=reading-score]").is_visible()
 
     # the first wrong word is opened: what was heard, the tip, the minimal pair
@@ -95,7 +101,7 @@ def test_reading_in_portuguese(env: E2E) -> None:
     page.wait_for_selector("[data-testid=reading-panel][data-state=listening]", timeout=10_000)
     page.keyboard.press("Escape")
     page.wait_for_selector("[data-testid=reading-panel][data-state=idle]")
-    wait_level(page, above=False, hold_s=1.0)
+    wait_phrase_end(page)
     page.keyboard.press("Space")
     page.wait_for_selector("[data-testid=reading-panel][data-state=listening]")
     wait_level(page, above=True, hold_s=0.3)
