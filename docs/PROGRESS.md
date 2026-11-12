@@ -4,9 +4,9 @@ Maintained by Claude Code. Read at the start of every session, updated after eve
 
 ## State
 
-- Current stage: 1
-- Current item: 1.1
-- Last stage check: `check_stage.ps1 0` — exit 0, 2026-11-12 (fast 128, gpu 26, e2e 11)
+- Current stage: 2
+- Current item: 2.1
+- Last stage check: `check_stage.ps1 1` — exit 0, 2026-11-12 (fast 234, gpu 26, e2e 12, live skipped: no key)
 
 ## Plan items
 
@@ -26,16 +26,16 @@ Mark `[x]` only after the item's check passed.
 
 ### Stage 1
 
-- [ ] 1.1 Language registry
-- [ ] 1.2 Window i18n
-- [ ] 1.3 Prompts with a language parameter
-- [ ] 1.4 `note_ru` → `note_l1`
-- [ ] 1.5 Language guard before TTS
-- [ ] 1.6 Scenarios
-- [ ] 1.7 Recurring-mistake keys
-- [ ] 1.8 Corrector sets
-- [ ] 1.9 Window behaviour
-- [ ] 1.10 Drop the Russian locale
+- [x] 1.1 Language registry
+- [x] 1.2 Window i18n
+- [x] 1.3 Prompts with a language parameter
+- [x] 1.4 `note_ru` → `note_l1`
+- [x] 1.5 Language guard before TTS
+- [x] 1.6 Scenarios
+- [x] 1.7 Recurring-mistake keys
+- [x] 1.8 Corrector sets
+- [x] 1.9 Window behaviour
+- [x] 1.10 Drop the Russian locale
 
 ### Stage 2
 
@@ -109,6 +109,7 @@ Format: date, item, decision, reason. Deviations from SPEC, PLAN or `docs/design
 
 Format: check, what was tried, what was seen, next step.
 
+- `live` suite (both languages): skipped, no saved key. Next: owner runs `scripts	est.ps1 live` after entering a key in the app.
 - `e2e` flaky while the predecessor's windowless core holds 3.9 GB of VRAM (owner's process outside the project). Tried: rerunning single tests (they pass alone), full suite three times (one, three and zero failures). Seen: 60 s Playwright timeouts waiting for the tutor's first audio when VRAM is oversubscribed. Next: owner decides whether that process may be stopped (HUMAN_TASKS); stage 3 VRAM measurements need a free GPU.
 
 ## Measurements
@@ -125,3 +126,7 @@ Latest values of the targets in `docs/PLAN.md`.
 | WER TTS → STT loop | ≤ 10 % | 0.0 % | 2026-11-12 |
 | Startup to models ready | ≤ 20 s | 15.1–15.9 s (window 2.2 s) | 2026-11-12 |
 | Outbound connections | only the LLM host | 0 outside 127.0.0.1 | 2026-11-12 |
+| i18n completeness es-419 / pt-BR | 100 % | 100 % / 100 % (267 keys) | 2026-11-12 |
+| End of turn → first audio, mock 0 ms (stage 1) | ≤ 0.9 s | 0.396 s median | 2026-11-12 |
+| End of turn → first audio, mock 500 ms (stage 1) | ≤ 1.5 s | 0.908 s median | 2026-11-12 |
+| Live corrector quality, both languages | `docs/testing.md` thresholds | not run: no key | — |
