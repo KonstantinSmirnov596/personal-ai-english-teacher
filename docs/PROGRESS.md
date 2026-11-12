@@ -109,7 +109,7 @@ Format: date, item, decision, reason. Deviations from SPEC, PLAN or `docs/design
 
 Format: check, what was tried, what was seen, next step.
 
-- `live` suite (both languages): skipped, no saved key. Next: owner runs `scripts	est.ps1 live` after entering a key in the app.
+- `live` suite (both languages): skipped, no saved key. Next: owner runs `scripts\test.ps1 live` after entering a key in the app.
 - `e2e` flaky while the predecessor's windowless core holds 3.9 GB of VRAM (owner's process outside the project). Tried: rerunning single tests (they pass alone), full suite three times (one, three and zero failures). Seen: 60 s Playwright timeouts waiting for the tutor's first audio when VRAM is oversubscribed. Next: owner decides whether that process may be stopped (HUMAN_TASKS); stage 3 VRAM measurements need a free GPU.
 
 ## Measurements

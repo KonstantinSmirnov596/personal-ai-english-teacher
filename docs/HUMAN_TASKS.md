@@ -16,7 +16,7 @@ Claude Code turns to the owner only through this list. New questions go to "Ques
 ## Stage 1
 
 - [ ] Proofread `web/i18n/es-419.js` (Latin American Spanish, tú) and `web/i18n/pt-BR.js` (Brazilian Portuguese, você), plus `voicetutor/data/l1/*/messages.json`, `patterns.json` and the scenario titles in `voicetutor/data/scenarios.json`.
-- [ ] After entering a key in the app: `scripts	est.ps1 live` (corrector quality for both languages, up to 80 requests per language) and send the summary line it prints.
+- [ ] After entering a key in the app: `scripts\test.ps1 live` (corrector quality for both languages, up to 80 requests per language) and send the summary line it prints.
 
 ## API key
 
