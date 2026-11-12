@@ -4,9 +4,9 @@ Maintained by Claude Code. Read at the start of every session, updated after eve
 
 ## State
 
-- Current stage: 2
-- Current item: 2.1
-- Last stage check: `check_stage.ps1 1` — exit 0, 2026-11-12 (fast 234, gpu 26, e2e 12, live skipped: no key)
+- Current stage: 3
+- Current item: 3.1
+- Last stage check: `check_stage.ps1 2` — exit 0, 2026-11-12 (fast 248, gpu 28, e2e 13, live skipped: no key)
 
 ## Plan items
 
@@ -39,12 +39,12 @@ Mark `[x]` only after the item's check passed.
 
 ### Stage 2
 
-- [ ] 2.1 Catalogs
-- [ ] 2.2 Insertion errors
-- [ ] 2.3 Reading phrases
-- [ ] 2.4 Accent fixtures
-- [ ] 2.5 Metrics per language
-- [ ] 2.6 Window
+- [x] 2.1 Catalogs
+- [x] 2.2 Insertion errors
+- [x] 2.3 Reading phrases
+- [x] 2.4 Accent fixtures
+- [x] 2.5 Metrics per language
+- [x] 2.6 Window
 
 ### Stage 3
 
@@ -138,3 +138,6 @@ Latest values of the targets in `docs/PLAN.md`.
 | End of turn → first audio, mock 0 ms (stage 1) | ≤ 0.9 s | 0.396 s median | 2026-11-12 |
 | End of turn → first audio, mock 500 ms (stage 1) | ≤ 1.5 s | 0.908 s median | 2026-11-12 |
 | Live corrector quality, both languages | `docs/testing.md` thresholds | not run: no key | — |
+| Pronunciation false "error", es-419 / pt-BR | ≤ 3 % | 0.00 % / 0.00 % (0 of 2361 each) | 2026-11-12 |
+| Catalog mistakes flagged "error", es-419 / pt-BR | ≥ 80 % | 91.8 % / 87.9 % | 2026-11-12 |
+| Heard sound named, es-419 / pt-BR | ≥ 60 % | 93.1 % / 88.1 % | 2026-11-12 |

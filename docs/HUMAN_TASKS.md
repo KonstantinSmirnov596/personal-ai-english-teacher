@@ -18,6 +18,11 @@ Claude Code turns to the owner only through this list. New questions go to "Ques
 - [ ] Proofread `web/i18n/es-419.js` (Latin American Spanish, tú) and `web/i18n/pt-BR.js` (Brazilian Portuguese, você), plus `voicetutor/data/l1/*/messages.json`, `patterns.json` and the scenario titles in `voicetutor/data/scenarios.json`.
 - [ ] After entering a key in the app: `scripts\test.ps1 live` (corrector quality for both languages, up to 80 requests per language) and send the summary line it prints.
 
+## Stage 2
+
+- [ ] Proofread the pronunciation catalogs (`voicetutor/data/l1/es-419/catalog.json`, `voicetutor/data/l1/pt-BR/catalog.json`), especially the comparisons with native sounds in the tips.
+- [ ] If possible: read 10 phrases in the Reading screen per language and press "That was right" on marks you disagree with; tell Claude Code how many marks felt wrong.
+
 ## API key
 
 - [ ] Create a separate key with a spending limit at the provider and type it into the app window (Settings → API connections → Add → template → paste key → Save → Test). Never send the key in chat.
