@@ -28,6 +28,11 @@ Claude Code turns to the owner only through this list. New questions go to "Ques
 - [ ] Proofread the new Spanish and Portuguese texts: the first-run wizard and Settings → Performance (`web/i18n/es-419.js`, `web/i18n/pt-BR.js`, sections `wizard`, `performance`, `notices`), the installer messages (`scripts/requirements.messages.json`) and `docs/es/hardware.md`, `docs/pt-BR/hardware.md`.
 - [ ] If possible: run the wizard once yourself (Settings → Performance → "Run the wizard again") and say whether any step is unclear.
 
+## Stage 4
+
+- [ ] Install once the way a user would: download the release archive with a browser (so Windows marks it as downloaded from the internet), extract it with Explorer into a new folder, double-click `install.cmd`, and say whether any warning or step was confusing. Claude Code cannot add the "downloaded from the internet" mark itself in this session.
+- [ ] Proofread `README.es.md`, `README.pt-BR.md` and `docs/es/*.md`, `docs/pt-BR/*.md`.
+
 ## API key
 
 - [ ] Create a separate key with a spending limit at the provider and type it into the app window (Settings → API connections → Add → template → paste key → Save → Test). Never send the key in chat.
@@ -44,3 +49,4 @@ Format: date, stage, question, options, default until answered.
 | 2026-11-12 | 0 | Copyright line in `LICENSE`: "Copyright (c) 2026 Voice Tutor contributors". | Keep / your name / another holder | Keep |
 | 2026-11-12 | 0 | GPL question from the license audit: the app (MIT) is installed together with and imports GPL-3.0-or-later components (espeak-ng via `espeakng-loader`, `phonemizer-fork`), all downloaded from PyPI on the user's machine and never in the repository or release archive. Keep MIT, change the license, or ask a lawyer? | Keep MIT with notices / relicense (e.g. GPL-3.0) / legal review first | Keep MIT and list the GPL components in THIRD_PARTY_NOTICES; no legal conclusion from Claude Code |
 | 2026-11-12 | 3 | SPEC 7 asks the wizard to download missing models; CLAUDE.md allows downloads only at install time and no run-time traffic except the LLM. Claude Code followed CLAUDE.md: the wizard sends the user to `install.cmd` (resume and checksums there, stage 4) and loads the models afterwards. Keep it that way? | Keep install-only downloads / allow the wizard to download | Install-only downloads |
+| 2026-11-12 | 4 | CI (`.github/workflows/ci.yml`) installs the full Python environment on `windows-latest` (about 5 GB of packages; its duration on GitHub is not measured yet, nothing was pushed) to run lint and the fast suite; GPU suites stay local (`scripts/check_release.ps1`). Keep it, or run CI only on pull requests / by hand? | On every push and pull request / pull requests only / manual only | Every push to `main` and every pull request |

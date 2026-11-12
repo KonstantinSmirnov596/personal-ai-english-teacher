@@ -287,6 +287,56 @@ STAGES: dict[int, Stage] = {
         # 3.8 profile acceptance: compacto peak <= 5.0 GB, WER delta <= 2 pp
         scripts=("scripts/bench_profiles.py",),
     ),
+    4: Stage(
+        suites=("fast", "gpu", "e2e", "gpu@compacto", "e2e@compacto"),
+        optional_suites=("live",),
+        required_tests=(
+            # 4.1 installer: folders, uv and model checksums, resume, accented folders
+            "tests.test_installer_ps1::test_folder_checks",
+            "tests.test_installer_ps1::test_uv_download_is_verified",
+            "tests.test_installer_ps1::test_setup_order_and_pins",
+            "tests.test_installer_ps1::test_cmd_wrappers",
+            "tests.test_model_download::test_download_resume_after_a_broken_connection",
+            "tests.test_model_download::test_damaged_download_is_fetched_again_once",
+            "tests.test_model_download::test_manifest_covers_the_pinned_models",
+            "tests.test_espeak_path::test_accented_data_path_works",
+            # 4.2 release archive
+            "tests.test_release::test_archive_name_and_checksum",
+            "tests.test_release::test_everything_the_installer_needs",
+            "tests.test_release::test_nothing_that_must_not_ship",
+            # 4.3 privacy
+            "tests.test_privacy_logs::test_turn_text_reaches_the_log_only_with_detailed_log",
+            "tests.gpu.test_network::test_core_talks_only_to_localhost_and_the_llm",
+            # 4.4 documentation
+            "tests.test_docs::test_relative_links_resolve",
+            "tests.test_docs::test_user_docs_have_twins",
+            "tests.test_docs::test_doc_sets_are_complete",
+            "tests.test_docs::test_readmes_match",
+            "tests.test_docs::test_repository_files_exist",
+            # 4.5 screenshots for the READMEs
+            "tests.e2e.test_screenshots::test_readme_screenshots",
+            # 4.6 GitHub files
+            "tests.test_github_files::test_workflow_is_minimal_and_pinned",
+            "tests.test_github_files::test_issue_forms_in_three_languages",
+            "tests.test_github_files::test_pull_request_template_in_english",
+            # 4.7 diagnostics
+            "tests.test_diagnostics::test_archive_has_no_keys_user_or_turn_text",
+        ),
+        reports=("final.md",),
+        files=(
+            "install.cmd",
+            "uninstall.cmd",
+            "scripts/make_release.ps1",
+            "scripts/collect_diagnostics.ps1",
+            "voicetutor/data/model_files.json",
+            "docs/reports/data/token_usage.json",
+            "docs/release-notes/v0.1.0.md",
+        ),
+        # 4.6: the CI steps, locally
+        scripts=("scripts/ci_local.ps1",),
+        # 4.1: release archive into a folder with accents, clean LOCALAPPDATA and TEMP
+        clean_install=True,
+    ),
 }
 
 
@@ -412,20 +462,33 @@ def main() -> int:
             if not (REPO / f).exists():
                 problems.append(f"required file missing: {f}")
 
+    done_scripts: set[str] = set()
     for st in stages:
         for script in st.scripts:
+            if script in done_scripts:
+                continue
+            done_scripts.add(script)
             print(f"=== acceptance script: {script} ===", flush=True)
-            proc = subprocess.run(
-                [sys.executable, str(REPO / script)], cwd=REPO, env=os.environ.copy(), check=False
+            path = REPO / script
+            cmd = (
+                ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(path)]
+                if path.suffix == ".ps1"
+                else [sys.executable, str(path)]
             )
+            proc = subprocess.run(cmd, cwd=REPO, env=os.environ.copy(), check=False)
             if proc.returncode != 0:
                 problems.append(f"acceptance script failed: {script} (exit {proc.returncode})")
 
     clean_note = ""
     if any(st.clean_install for st in stages):
         print("=== setup from scratch on a clean copy ===", flush=True)
+        # A developer may keep a package cache between acceptance runs (models are always
+        # downloaded again): VOICETUTOR_CHECK_UV_CACHE=<dir>. Read by this script only.
+        clean_cmd = [sys.executable, str(REPO / "scripts" / "check_clean_install.py")]
+        if os.environ.get("VOICETUTOR_CHECK_UV_CACHE"):
+            clean_cmd += ["--uv-cache", os.environ["VOICETUTOR_CHECK_UV_CACHE"]]
         clean = subprocess.run(
-            [sys.executable, str(REPO / "scripts" / "check_clean_install.py")],
+            clean_cmd,
             cwd=REPO,
             env=os.environ.copy(),
             check=False,

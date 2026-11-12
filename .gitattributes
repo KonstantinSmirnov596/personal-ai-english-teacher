@@ -1,3 +1,9 @@
 * text=auto eol=lf
 *.wav binary
 *.onnx binary
+# Windows scripts keep CRLF: cmd.exe misreads batch files with LF-only line endings.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+*.png binary
+*.ico binary

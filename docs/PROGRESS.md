@@ -4,9 +4,9 @@ Maintained by Claude Code. Read at the start of every session, updated after eve
 
 ## State
 
-- Current stage: 3
-- Current item: stage 3 acceptance (`check_stage.ps1 3`)
-- Last stage check: `check_stage.ps1 2` — exit 0, 2026-11-12 (fast 248, gpu 28, e2e 13, live skipped: no key)
+- Current stage: 4
+- Current item: 4.1–4.7 in progress (installer, release, privacy, docs, GitHub files, diagnostics written; manifest, screenshots and clean install pending)
+- Last stage check: `check_stage.ps1 3` — exit 0, 2026-11-12, worktree of `7a1f328` (fast 291, gpu 29, e2e 18, gpu@compacto 29, e2e@compacto 18, live skipped: no key)
 
 ## Plan items
 
@@ -131,7 +131,18 @@ Format: date, item, decision, reason. Deviations from SPEC, PLAN or `docs/design
 | 2026-11-12 | 3.6 | The unsupported window check runs a core with a fake detector inside the test process (uvicorn in a thread) and opens it in Edge | The real launcher has no switch for fake hardware, and must not get one (no test back doors) |
 | 2026-11-12 | 3.8 | Tests take `--vt-profile`; the profile is stored in the test's data directory before a launcher starts (as a user choice), directly built recognizers get the profile's compute type | SPEC 7: both profiles pass `gpu` and `e2e`; the app reads no flag for this |
 | 2026-11-12 | 3.8 | Core peak memory = device `memory.used` minus the value before the core started, sampled every 200 ms | Windows WDDM reports no per-process memory in `nvidia-smi` (`[N/A]`) |
-
+| 2026-11-12 | 3.8 | Test sessions and bench scripts use their own credential service `VoiceTutor-test-<pid>`; a session-end fixture sweeps it | The first stage 3 acceptance run failed in `e2e@compacto` with "Authentication Fails": fast tests run in parallel deleted `connection-1..10` of the shared `VoiceTutor-test` service, i.e. the running e2e core's key |
+| 2026-11-12 | 3.8 | Stage 3 acceptance is rerun from a clean git worktree of the commit (junctions to `.venv`, `web/fonts`, `web/vendor`) while stage 4 continues in the main tree | The acceptance run must see the committed stage 3 state, not stage 4 work in progress |
+| 2026-11-12 | 4.1 | uv 0.13.7 from its GitHub release, SHA-256 `0cdc5b38…e021` pinned in `scripts/installer.ps1`; Python through `uv python install 3.12 --no-bin --no-registry` into `.tools\python`; package cache in `.tools\uv-cache` unless `UV_CACHE_DIR` is set | No system Python; nothing outside the app folder except data; the digest matches both the release's `.sha256` file and the GitHub API; uv verifies Python downloads against SHA-256s it ships (`HashMismatch` in `crates/uv-python-managed/src/downloads.rs` at 0.13.7) |
+| 2026-11-12 | 4.1 | Models are downloaded by the app's own installer step (`voicetutor/model_download.py`) from `huggingface.co/<repo>/resolve/<commit>/<file>`, resumed with HTTP Range, checked against `voicetutor/data/model_files.json`; the app resolves models from `<models>/<key>/<commit>` first and an older Hugging Face cache second | huggingface_hub gives no SHA-256 check of our own and resume could not be tested without network; the manifest hashes are cross-checked against the LFS SHA-256 and git blob SHA-1 Hugging Face publishes for the pinned commits; a verified file in an old cache is hard-linked instead of downloaded again |
+| 2026-11-12 | 4.1 | Accented app folders: espeak-ng gets the 8.3 short path through its own `ESPEAK_DATA_PATH`, and `espeakng_loader.get_data_path()` returns `None` so phonemizer passes no path (`voicetutor/espeak_path.py`); the installer refuses a folder without an ASCII short name, longer than 80 characters (without long paths) or not writable | Measured: espeak-ng fails with any non-ASCII data path (it uses the ANSI file API) and phonemizer expands short names with `Path.resolve()`; CTranslate2 loads models from accented paths fine; the deepest file in `.venv` is 138 characters below it |
+| 2026-11-12 | 4.1 | The clean-install check installs the release archive into a folder with spaces and accents with empty `LOCALAPPDATA`/`TEMP`, but without a Mark of the Web; resume after an interrupted download is tested with a local server (`tests/test_model_download.py`) | Writing `Zone.Identifier` streams and force-killing the installer tree were refused by the session's safety classifier; a run from a browser-downloaded archive is an owner task in HUMAN_TASKS |
+| 2026-11-12 | 4.1 | `uninstall.cmd` removes `.venv`, `.tools`, downloaded window assets and the shortcuts that point to this app; data and keys only after a separate "yes" | SPEC: user data only after confirmation; keys need the app's Python, so they are deleted before the environment |
+| 2026-11-12 | 4.3 | Conversation text is logged only through the `voicetutor.turns` logger and only with Settings → Data → "Detailed log" (warning shown); diagnostics drop that logger's lines | SPEC: no turn text in logs by default; a bug report sometimes needs the text, and then the user decides |
+| 2026-11-12 | 4.4 | Token estimate from a mock session (`scripts/token_usage.py`) with DeepSeek's 0.3 tokens per English character: tutor 850 → 1300 input tokens over 10 answers, correction about 1450, summary about 1000; output given as the `max_tokens` bound | The mock's answers say nothing about real output lengths; prices are left to the provider's page |
+| 2026-11-12 | 4.6 | CI runs on `windows-latest` with `setup.ps1 -NoHardwareCheck -SkipModels`, then `ci_local.ps1`; `actions/checkout` pinned to the v7.0.1 commit `3d3c42e5…`; no secrets | GitHub runners have no NVIDIA GPU; gpu and e2e run locally in `check_release.ps1` |
+| 2026-11-12 | 4.7 | Diagnostics are built in Python (`voicetutor/diagnostics.py`): saved keys are read from the Credential Manager only to remove exact matches, plus key-like patterns; the Windows user name in paths becomes `<user>` | The strongest guarantee that a key cannot slip through a pattern |
+| 2026-11-12 | 3.8 | Reading fixture "estart" → "es-TART" (`[start](/ɛsˈtɑɹt/)`); e2e recordings are armed right after a phrase ended; generated fixtures are rebuilt when their spec changes | The reading e2e test failed in 3 of 6 full runs: the old fixture's inserted vowel scored 1.4–4.2 nats through Edge's microphone path against the 2.0 error margin (3.3 on the file itself); "es-TART" scores 7.0. Waiting for any 1 s of silence could also end just before the looping file restarted. The check is unchanged: both words must be errors |
 ## Failed checks
 
 Format: check, what was tried, what was seen, next step.
@@ -162,8 +173,8 @@ Latest values of the targets in `docs/PLAN.md`.
 | Catalog mistakes flagged "error", es-419 / pt-BR | ≥ 80 % | 91.8 % / 87.9 % | 2026-11-12 |
 | Heard sound named, es-419 / pt-BR | ≥ 60 % | 93.1 % / 88.1 % | 2026-11-12 |
 | Core peak video memory, `compacto` (10 turns + 5 readings) | ≤ 5.0 GB | 2.48 GB (`completo`: 3.69 GB) | 2026-11-12 |
-| End of turn → first audio, mock 0 ms, `completo` / `compacto` | ≤ 0.9 s | 0.414 s / 0.401 s median | 2026-11-12 |
-| End of turn → first audio, mock 500 ms, `completo` / `compacto` | ≤ 1.5 s | 0.933 s / 0.907 s median | 2026-11-12 |
-| STT of a 10 s phrase, `completo` / `compacto` | ≤ 0.4 s | 0.326 s / 0.313 s | 2026-11-12 |
+| End of turn → first audio, mock 0 ms, `completo` / `compacto` | ≤ 0.9 s | 0.482 s / 0.476 s median (acceptance run) | 2026-11-12 |
+| End of turn → first audio, mock 500 ms, `completo` / `compacto` | ≤ 1.5 s | 0.993 s / 0.994 s median (acceptance run) | 2026-11-12 |
+| STT of a 10 s phrase, `completo` / `compacto` | ≤ 0.4 s | 0.367 s / 0.323 s (acceptance run) | 2026-11-12 |
 | WER TTS → STT loop, `completo` / `compacto` | ≤ 10 %, delta ≤ 2 pp | 0.0 % / 0.0 % | 2026-11-12 |
 | Wizard benchmark, first audio without LLM | ≤ 1.2 s keeps `completo` | 0.39–0.41 s | 2026-11-12 |
