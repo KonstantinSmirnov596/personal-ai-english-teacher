@@ -90,7 +90,25 @@ ALL_MODELS: tuple[ModelRepo, ...] = (STT, TTS, PHONEME)
 
 
 def local_path(model: ModelRepo) -> Path:
-    """Path of the pinned snapshot in the models directory; raises if it was never downloaded."""
+    """Folder of a pinned model; raises if it is not installed.
+
+    The installer layout comes first (``<models dir>/<key>/<revision>``, every file verified by
+    size and SHA-256 when ``voicetutor.setup_models`` ran); a Hugging Face cache snapshot from an
+    earlier installation is the fallback.
+    """
+    from voicetutor import model_download as md
+
+    try:
+        spec = md.manifest().get(model.key)
+    except FileNotFoundError:
+        spec = None
+    if spec is not None and spec.revision == model.revision and md.is_present(spec):
+        return md.model_root(spec)
+    return hf_snapshot_path(model)
+
+
+def hf_snapshot_path(model: ModelRepo) -> Path:
+    """Path of the pinned snapshot in a Hugging Face cache; raises if it was never downloaded."""
     configure_model_env()
     from huggingface_hub import snapshot_download
 
@@ -106,16 +124,3 @@ def local_path(model: ModelRepo) -> Path:
     if missing:
         raise FileNotFoundError(f"{model.repo_id}: missing files {missing[:3]}")
     return path
-
-
-def download(model: ModelRepo) -> Path:
-    configure_model_env()
-    from huggingface_hub import snapshot_download
-
-    return Path(
-        snapshot_download(
-            repo_id=model.repo_id,
-            revision=model.revision,
-            allow_patterns=list(model.allow_patterns),
-        )
-    )

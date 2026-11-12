@@ -6,7 +6,8 @@ $script:RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $script:VenvDir = Join-Path $RepoRoot '.venv'
 $script:VenvPython = Join-Path $VenvDir 'Scripts\python.exe'
 $script:ToolsDir = Join-Path $RepoRoot '.tools'
-$script:UvExe = Join-Path $ToolsDir 'uv\Scripts\uv.exe'
+# Python for the app, installed by uv; kept inside the app folder (uninstall.cmd removes it).
+$script:PythonDir = Join-Path $ToolsDir 'python'
 
 function Get-AppDataDir {
     if ($env:VOICETUTOR_DATA_DIR) { return $env:VOICETUTOR_DATA_DIR }
@@ -25,7 +26,10 @@ function Set-AppEnv {
     $env:HF_HUB_DISABLE_TELEMETRY = '1'
     $env:UV_PROJECT_ENVIRONMENT = $VenvDir
     $env:UV_PYTHON_DOWNLOADS = 'never'
+    $env:UV_PYTHON_INSTALL_DIR = $PythonDir
     $env:UV_NO_PROGRESS = '1'
+    # The package cache stays inside the app folder too, unless a developer points it elsewhere.
+    if (-not $env:UV_CACHE_DIR) { $env:UV_CACHE_DIR = Join-Path $ToolsDir 'uv-cache' }
 }
 
 function Invoke-Checked {

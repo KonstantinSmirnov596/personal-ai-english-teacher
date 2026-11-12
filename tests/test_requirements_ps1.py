@@ -8,6 +8,7 @@ so the cases below describe computers this machine is not.
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -141,6 +142,7 @@ def ps(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Any]:
         capture_output=True,
         timeout=120,
         check=False,
+        env={k: v for k, v in os.environ.items() if k != "PSModulePath"},
     )
     stdout = proc.stdout.decode("utf-8", "replace")
     assert proc.returncode == 0, proc.stderr.decode("utf-8", "replace") + stdout
