@@ -22,29 +22,14 @@ TEXT_SUFFIXES = {
     ".yaml", ".ps1", ".cmd", ".bat", ".cfg", ".ini", ".svg", ".lock", "",
 }  # fmt: skip
 
-# Files whose Russian text is data of the predecessor's ru locale. Stage 1 replaces the locale
-# with es-419 and pt-BR and empties this list (plan item 1.10).
+# Files whose Russian text is data of the predecessor's ru locale. Stage 1 removed the locale
+# (UI, core messages, prompts, mistake keys, scenarios, corrector set); the pronunciation catalog
+# is replaced by the es-419 and pt-BR catalogs in stage 2 (plan item 2.1), which empties the list.
 CYRILLIC_ALLOWED: dict[str, str] = {
-    "web/i18n/ru.js": "ru locale UI strings",
-    "voicetutor/i18n_ru.py": "ru locale core messages",
-    "voicetutor/data/l1_ru_catalog.json": "ru learner pronunciation catalog",
-    "voicetutor/data/patterns.json": "ru names of mistake keys",
-    "voicetutor/data/scenarios.json": "ru scenario titles",
-    "voicetutor/data/corrector_eval.jsonl": "ru corrector evaluation set",
-    "voicetutor/prompts/corrector.py": "ru example in the corrector prompt",
-    "tests/mock_llm/server.py": "ru answers of the mock LLM",
-    "tests/test_corrector.py": "ru corrector test data",
-    "tests/test_history.py": "ru history test data",
-    "tests/test_stage2_logic.py": "ru helper and synthesis-guard test data",
-    "tests/test_storage.py": "ru storage test data",
-    "tests/test_pron_logic.py": "ru text rejected by the reference endpoint",
-    "tests/test_sentences.py": "ru text for the Cyrillic detector",
-    "tests/gpu/test_speech.py": "ru text rejected by synthesis",
-    "tests/e2e/test_stage2_ui.py": "ru UI strings checked by the window test",
-    "tests/e2e/test_reading.py": "ru UI string checked by the window test",
+    "voicetutor/data/l1_ru_catalog.json": "ru pronunciation catalog until stage 2",
 }
 
-CYRILLIC = re.compile("[Ѐ-ӿԀ-ԯ]")
+CYRILLIC = re.compile(r"[\u0400-\u052f]")
 # Assembled from parts so this file does not match its own patterns.
 USER_PATH = re.compile(r"[A-Za-z]:[\\/]+" + "Us" + r"ers[\\/]+", re.IGNORECASE)
 EMAIL = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}\b")

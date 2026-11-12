@@ -1,18 +1,18 @@
 // Session summary: key takeaway with a spoken exercise, corrections, recurring mistakes,
 // pronunciation (stage 3), tutor phrases to save into the vocabulary.
 
-import { ru } from '../i18n/ru.js';
+import { L, langTag } from './i18n.js';
 import { post } from './api.js';
 import { el, icons } from './dom.js';
 
-const S = ru.summary;
+const S = L.summary;
 
 function correctionItem(c) {
   return el('li', { class: 'summary-li card-item' }, [
     el('span', { class: 'card-quote', lang: 'en', text: c.quote }),
     el('span', { class: 'muted', 'aria-hidden': 'true', text: '→' }),
     el('span', { class: 'card-fix', lang: 'en', text: c.fix }),
-    el('span', { class: 'card-note', text: c.note_ru }),
+    el('span', { class: 'card-note', text: c.note_l1 }),
   ]);
 }
 
@@ -45,7 +45,7 @@ export function renderSummary(app, summary, meta, onNew) {
 
   const corr = el('section', { class: 'summary-section', 'aria-label': S.corrections }, [el('h2', { text: S.corrections })]);
   if (summary.corrections && summary.corrections.length) {
-    corr.append(el('ul', { class: 'summary-list', lang: 'ru' }, summary.corrections.map(correctionItem)));
+    corr.append(el('ul', { class: 'summary-list', lang: langTag() }, summary.corrections.map(correctionItem)));
   } else corr.append(el('p', { class: 'muted', text: S.none }));
   root.append(corr);
 
@@ -59,7 +59,7 @@ export function renderSummary(app, summary, meta, onNew) {
         summary.patterns.map((p) => {
           const st = patternState(p);
           return el('li', { class: 'summary-li row', 'data-pattern': p.key }, [
-            el('span', { class: 'strong', text: p.title_ru }),
+            el('span', { class: 'strong', text: p.title_l1 }),
             el('span', { class: `small ${st.cls}`, text: st.text }),
           ]);
         }),
@@ -96,14 +96,14 @@ export function renderSummary(app, summary, meta, onNew) {
           add.addEventListener('click', async () => {
             add.disabled = true;
             try {
-              await post('/api/vocab', { phrase: p.en, translation_ru: p.ru || '', context: p.context || '', session_id: summary.session_id || null });
+              await post('/api/vocab', { phrase: p.en, translation_l1: p.translation_l1 || '', context: p.context || '', session_id: summary.session_id || null });
               add.textContent = S.inVocab;
             } catch {
               add.disabled = false;
             }
           });
           return el('li', { class: 'summary-li row' }, [
-            el('span', { class: 'row-main' }, [el('span', { lang: 'en', class: 'strong', text: p.en }), el('span', { class: 'muted', text: p.ru })]),
+            el('span', { class: 'row-main' }, [el('span', { lang: 'en', class: 'strong', text: p.en }), el('span', { class: 'muted', text: p.translation_l1 })]),
             add,
           ]);
         }),
@@ -119,7 +119,7 @@ function takeawayBlock(app, summary) {
   const box = el('section', { class: 'takeaway', 'aria-label': S.keyTakeaway, 'data-testid': 'key-takeaway' }, [
     el('div', { class: 'takeaway-label', text: S.keyTakeaway }),
     el('h2', { lang: 'en', text: k.title }),
-    el('p', { class: 'takeaway-text', text: k.explanation_ru }),
+    el('p', { class: 'takeaway-text', text: k.explanation_l1 }),
   ]);
   if (k.examples && k.examples.length) {
     box.append(
@@ -163,17 +163,17 @@ function takeawayBlock(app, summary) {
         );
         result.replaceChildren(
           el('strong', { class: data.correct ? 'ok-text' : 'bad-text', text: data.correct ? S.correct : S.wrong }),
-          data.note_ru ? el('span', { text: ` ${data.note_ru}` }) : '',
+          data.note_l1 ? el('span', { text: ` ${data.note_l1}` }) : '',
           data.heard ? el('div', { class: 'muted small' }, [S.heard(''), el('span', { lang: 'en', text: data.heard })]) : '',
           data.correct ? '' : el('div', { class: 'small' }, [el('span', { lang: 'en', text: data.answer_en })]),
         );
       } catch (e) {
-        result.replaceChildren(el('span', { class: 'bad-text', text: ru.errors[e.code] || ru.errors.internal }));
+        result.replaceChildren(el('span', { class: 'bad-text', text: L.errors[e.code] || L.errors.internal }));
       }
     });
     box.append(
       el('div', { class: 'exercise' }, [
-        el('div', { class: 'exercise-text' }, [el('span', { class: 'exercise-label', text: S.exercise }), el('span', { text: S.sayIt(ex.prompt_ru) })]),
+        el('div', { class: 'exercise-text' }, [el('span', { class: 'exercise-label', text: S.exercise }), el('span', { text: S.sayIt(ex.prompt_l1) })]),
         el('div', { class: 'form-actions' }, [say, show]),
         result,
       ]),

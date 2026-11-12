@@ -12,7 +12,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import Response
 from pydantic import BaseModel, ConfigDict, Field
 
-from voicetutor.llm.json_call import has_cyrillic
+from voicetutor.lang_guard import not_english
 from voicetutor.maintenance import cleanup_audio, delete_all_data
 from voicetutor.model_registry import KOKORO_VOICES
 from voicetutor.patterns import all_patterns
@@ -38,7 +38,7 @@ async def patterns(request: Request) -> list[dict[str, Any]]:
 class VocabIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     phrase: str = Field(min_length=1, max_length=200)
-    translation_ru: str = Field(default="", max_length=300)
+    translation_l1: str = Field(default="", max_length=300)
     context: str = Field(default="", max_length=600)
     session_id: str | None = None
 
@@ -46,7 +46,7 @@ class VocabIn(BaseModel):
 class VocabPatch(BaseModel):
     model_config = ConfigDict(extra="forbid")
     phrase: str | None = Field(default=None, min_length=1, max_length=200)
-    translation_ru: str | None = Field(default=None, max_length=300)
+    translation_l1: str | None = Field(default=None, max_length=300)
     result: Literal["good", "again"] | None = None
 
 
@@ -54,7 +54,7 @@ def _vocab_api(row: Any) -> dict[str, Any]:
     return {
         "id": row["id"],
         "phrase": row["phrase"],
-        "translation_ru": row["translation_ru"],
+        "translation_l1": row["translation_l1"],
         "context": row["context"],
         "interval_days": row["interval_days"],
         "reviews": row["reviews"],
@@ -89,7 +89,7 @@ async def vocab_due(request: Request) -> list[dict[str, Any]]:
 @router.post("/vocab", status_code=201)
 async def vocab_add(request: Request, body: VocabIn) -> dict[str, Any]:
     core = core_of(request)
-    if has_cyrillic(body.phrase):
+    if not_english(body.phrase):
         raise ApiError(422, "validation")
     existing = core.db.one(
         "SELECT * FROM vocab WHERE lower(phrase) = lower(?)", (body.phrase.strip(),)
@@ -98,11 +98,11 @@ async def vocab_add(request: Request, body: VocabIn) -> dict[str, Any]:
         return _vocab_api(existing)
     days, due = next_review(0, datetime.now(UTC))
     vid = core.db.execute(
-        "INSERT INTO vocab(phrase, translation_ru, context, session_id, interval_days, reviews,"
+        "INSERT INTO vocab(phrase, translation_l1, context, session_id, interval_days, reviews,"
         " next_review_at, created_at) VALUES (?, ?, ?, ?, ?, 0, ?, ?)",
         (
             body.phrase.strip(),
-            body.translation_ru,
+            body.translation_l1,
             body.context,
             body.session_id,
             days,
@@ -121,9 +121,9 @@ async def vocab_patch(request: Request, vocab_id: int, body: VocabPatch) -> dict
         raise ApiError(404, "not_found")
     if body.phrase is not None:
         core.db.execute("UPDATE vocab SET phrase = ? WHERE id = ?", (body.phrase, vocab_id))
-    if body.translation_ru is not None:
+    if body.translation_l1 is not None:
         core.db.execute(
-            "UPDATE vocab SET translation_ru = ? WHERE id = ?", (body.translation_ru, vocab_id)
+            "UPDATE vocab SET translation_l1 = ? WHERE id = ?", (body.translation_l1, vocab_id)
         )
     if body.result is not None:
         reviews = int(row["reviews"]) + 1 if body.result == "good" else 0
@@ -215,7 +215,7 @@ async def export_all(request: Request, format: str = "json") -> Response:
                 "text",
                 "quote",
                 "fix",
-                "note_ru",
+                "note_l1",
                 "pattern",
             ]
         )
@@ -227,20 +227,20 @@ async def export_all(request: Request, format: str = "json") -> Response:
                         [
                             s["id"],
                             s["started_at"],
-                            s["scenario_title_ru"],
+                            s["scenario_title_l1"],
                             t["idx"],
                             t["role"],
                             t["text"],
                             c["quote"] if c else "",
                             c["fix"] if c else "",
-                            c["note_ru"] if c else "",
+                            c["note_l1"] if c else "",
                             c["pattern"] if c else "",
                         ]
                     )
         w.writerow([])
-        w.writerow(["vocab_phrase", "translation_ru", "context", "next_review_at"])
+        w.writerow(["vocab_phrase", "translation_l1", "context", "next_review_at"])
         for v in vocab:
-            w.writerow([v["phrase"], v["translation_ru"], v["context"], v["next_review_at"]])
+            w.writerow([v["phrase"], v["translation_l1"], v["context"], v["next_review_at"]])
         return Response(
             "﻿" + buf.getvalue(),
             media_type="text/csv; charset=utf-8",

@@ -1,11 +1,11 @@
 // Settings → API connections: table of connections, one active row, add / edit form.
 
-import { ru } from '../i18n/ru.js';
+import { L } from './i18n.js';
 import { del, get, patch, post } from './api.js';
 import { clear, el, icons } from './dom.js';
 import { settingsNav } from './settings.js';
 
-const R = ru.connections;
+const R = L.connections;
 
 export class ConnectionsView {
   constructor(app) {
@@ -120,7 +120,7 @@ export class ConnectionsView {
     const t = row.last_test;
     if (!t) return el('span', { class: 'muted', text: '—' });
     if (t.ok) return el('span', { class: 'test-ok', 'data-testid': 'conn-test-result' }, [icons.check(), el('span', { text: R.latency(t.latency_ms) })]);
-    return el('span', { class: 'test-bad', 'data-testid': 'conn-test-result' }, [icons.cross(), el('span', { text: t.message_ru })]);
+    return el('span', { class: 'test-bad', 'data-testid': 'conn-test-result' }, [icons.cross(), el('span', { text: t.message_l1 })]);
   }
 
   form() {
@@ -187,7 +187,7 @@ export class ConnectionsView {
         let res;
         if (existing && !body.api_key) res = await post(`/api/connections/${existing.id}/test`);
         else res = await post('/api/connections/test', body);
-        status.textContent = res.ok ? `✓ ${R.latency(res.latency_ms)}` : res.message_ru;
+        status.textContent = res.ok ? `✓ ${R.latency(res.latency_ms)}` : res.message_l1;
       } catch (e) {
         status.textContent = e.message;
       }

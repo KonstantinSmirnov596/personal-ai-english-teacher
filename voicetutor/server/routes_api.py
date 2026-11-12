@@ -13,7 +13,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel, ConfigDict, Field
 
-from voicetutor import i18n_ru, keystore
+from voicetutor import i18n, keystore, l1
 from voicetutor.core import Core, endpoint_from_row
 from voicetutor.data_files import provider_templates
 from voicetutor.llm.client import (
@@ -67,7 +67,7 @@ async def health(request: Request) -> dict[str, Any]:
         },
         "active_connection": core.connection_ref(active) if active else None,
         "problems": (
-            [{"code": core.models.problem, "message_ru": i18n_ru.error_text(core.models.problem)}]
+            [{"code": core.models.problem, "message_l1": i18n.error_text(core.models.problem)}]
             if core.models.problem
             else []
         ),
@@ -112,14 +112,14 @@ class ConnectionTest(BaseModel):
 def _check_key(base_url: str, key: str) -> None:
     """A key is required except for local model servers (Ollama, LM Studio)."""
     if not key and not is_local_url(base_url):
-        raise ApiError(422, "validation", i18n_ru.KEY_REQUIRED)
+        raise ApiError(422, "validation", i18n.text("key_required"))
 
 
 def _check_fields(base_url: str | None, extra: Any) -> None:
     if base_url is not None and not validate_base_url(base_url):
-        raise ApiError(422, "validation", i18n_ru.INVALID_URL)
+        raise ApiError(422, "validation", i18n.text("invalid_url"))
     if extra is not None and not validate_extra_params(extra):
-        raise ApiError(422, "validation", i18n_ru.INVALID_EXTRA)
+        raise ApiError(422, "validation", i18n.text("invalid_extra"))
 
 
 def _get_conn(core: Core, conn_id: int) -> Any:
@@ -181,7 +181,7 @@ async def delete_connection(request: Request, conn_id: int) -> Response:
     core = core_of(request)
     row = _get_conn(core, conn_id)
     if row["is_active"]:
-        raise ApiError(409, "conflict", i18n_ru.ACTIVE_DELETE)
+        raise ApiError(409, "conflict", i18n.text("active_delete"))
     keystore.delete_key(conn_id)
     core.connections.delete(conn_id)
     return Response(status_code=204)
@@ -198,10 +198,10 @@ async def activate_connection(request: Request, conn_id: int) -> dict[str, Any]:
 async def _run_test(core: Core, ep: Endpoint) -> dict[str, Any]:
     ok, latency, detail, code = await core.llm.test(ep)
     if ok:
-        return {"ok": True, "latency_ms": latency, "message_ru": i18n_ru.TEST_OK}
-    text = i18n_ru.error_text(code or "llm_bad_response")
+        return {"ok": True, "latency_ms": latency, "message_l1": i18n.text("test_ok")}
+    text = i18n.error_text(code or "llm_bad_response")
     message = f"{text} {detail}".strip() if detail else text
-    return {"ok": False, "latency_ms": None, "message_ru": message[:300], "code": code}
+    return {"ok": False, "latency_ms": None, "message_l1": message[:300], "code": code}
 
 
 @router.post("/connections/{conn_id}/test")
@@ -213,11 +213,11 @@ async def test_connection(request: Request, conn_id: int) -> dict[str, Any]:
         result = {
             "ok": False,
             "latency_ms": None,
-            "message_ru": i18n_ru.error_text("llm_unauthorized"),
+            "message_l1": i18n.error_text("llm_unauthorized"),
         }
     else:
         result = await _run_test(core, endpoint_from_row(row, key))
-    core.connections.record_test(conn_id, result["ok"], result["latency_ms"], result["message_ru"])
+    core.connections.record_test(conn_id, result["ok"], result["latency_ms"], result["message_l1"])
     return result
 
 
@@ -240,6 +240,22 @@ async def test_unsaved_connection(request: Request, body: ConnectionTest) -> dic
 
 
 # --- settings ---------------------------------------------------------------------------------
+
+
+@router.get("/languages")
+async def get_languages(request: Request) -> dict[str, Any]:
+    """Learner languages found in voicetutor/data/l1 and the current one (SPEC 5)."""
+    core = core_of(request)
+    available = [
+        {
+            "code": code,
+            "name_native": meta["name_native"],
+            "name_en": meta["name_en"],
+            "html_lang": meta["html_lang"],
+        }
+        for code, meta in l1.metas().items()
+    ]
+    return {"current": core.l1, "confirmed": bool(core.settings.get().l1), "available": available}
 
 
 @router.get("/settings")
@@ -275,9 +291,9 @@ async def voices() -> list[dict[str, Any]]:
 class ScenarioIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    title_ru: str = Field(min_length=1, max_length=120)
+    title_l1: str = Field(min_length=1, max_length=120)
     title_en: str = Field(default="", max_length=120)
-    description_ru: str = Field(default="", max_length=500)
+    description_l1: str = Field(default="", max_length=500)
     role: str = Field(min_length=1, max_length=1000)
     setting: str = Field(default="", max_length=1000)
     goals: list[str] = Field(default_factory=list, max_length=10)
@@ -287,9 +303,9 @@ class ScenarioIn(BaseModel):
 class ScenarioPatch(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    title_ru: str | None = Field(default=None, min_length=1, max_length=120)
+    title_l1: str | None = Field(default=None, min_length=1, max_length=120)
     title_en: str | None = Field(default=None, max_length=120)
-    description_ru: str | None = Field(default=None, max_length=500)
+    description_l1: str | None = Field(default=None, max_length=500)
     role: str | None = Field(default=None, min_length=1, max_length=1000)
     setting: str | None = Field(default=None, max_length=1000)
     goals: list[str] | None = Field(default=None, max_length=10)
@@ -299,7 +315,7 @@ class ScenarioPatch(BaseModel):
 @router.get("/scenarios")
 async def list_scenarios(request: Request) -> list[dict[str, Any]]:
     core = core_of(request)
-    return [core.scenarios.to_api(r) for r in core.scenarios.list()]
+    return [core.scenarios.to_api(r, core.l1) for r in core.scenarios.list()]
 
 
 @router.post("/scenarios", status_code=201)
@@ -307,7 +323,7 @@ async def create_scenario(request: Request, body: ScenarioIn) -> dict[str, Any]:
     core = core_of(request)
     sid = core.scenarios.create(body.model_dump())
     row = core.scenarios.get(sid)
-    return core.scenarios.to_api(row)
+    return core.scenarios.to_api(row, core.l1)
 
 
 @router.patch("/scenarios/{scenario_id}")
@@ -317,9 +333,9 @@ async def patch_scenario(request: Request, scenario_id: str, body: ScenarioPatch
     if row is None:
         raise ApiError(404, "not_found")
     if row["builtin"]:
-        raise ApiError(409, "conflict", i18n_ru.BUILTIN_SCENARIO)
+        raise ApiError(409, "conflict", i18n.text("builtin_scenario"))
     core.scenarios.update(scenario_id, body.model_dump(exclude_none=True))
-    return core.scenarios.to_api(core.scenarios.get(scenario_id))
+    return core.scenarios.to_api(core.scenarios.get(scenario_id), core.l1)
 
 
 @router.delete("/scenarios/{scenario_id}", status_code=204)
@@ -329,7 +345,7 @@ async def delete_scenario(request: Request, scenario_id: str) -> Response:
     if row is None:
         raise ApiError(404, "not_found")
     if row["builtin"]:
-        raise ApiError(409, "conflict", i18n_ru.BUILTIN_SCENARIO)
+        raise ApiError(409, "conflict", i18n.text("builtin_scenario"))
     core.scenarios.delete(scenario_id)
     return Response(status_code=204)
 
@@ -342,7 +358,10 @@ def _session_api(row: Any) -> dict[str, Any]:
     return {
         "id": row["id"],
         "scenario_id": row["scenario_id"],
-        "scenario_title_ru": row["scenario_title_ru"],
+        "scenario_title_l1": row["scenario_title_l1"],
+        # the language the session was held in; its texts stay in that language
+        "l1": row["l1"] or l1.FALLBACK,
+        "html_lang": l1.html_lang(row["l1"] or l1.FALLBACK),
         "level": row["level"],
         "connection_name": row["connection_name"],
         "model": row["model"],
@@ -379,7 +398,7 @@ def _correction_api(row: Any) -> dict[str, Any]:
         "end": row["end"],
         "fix": row["fix"],
         "type": row["type"],
-        "note_ru": row["note_ru"],
+        "note_l1": row["note_l1"],
         "pattern": row["pattern"],
     }
 
@@ -423,7 +442,7 @@ async def export_session(request: Request, session_id: str, format: str = "json"
     if format == "csv":
         buf = io.StringIO()
         writer = csv.writer(buf)
-        writer.writerow(["idx", "role", "text", "quote", "fix", "type", "note_ru", "pattern"])
+        writer.writerow(["idx", "role", "text", "quote", "fix", "type", "note_l1", "pattern"])
         for t in detail["turns"]:
             if not t["corrections"]:
                 writer.writerow([t["idx"], t["role"], t["text"], "", "", "", "", ""])
@@ -436,7 +455,7 @@ async def export_session(request: Request, session_id: str, format: str = "json"
                         c["quote"],
                         c["fix"],
                         c["type"],
-                        c["note_ru"],
+                        c["note_l1"],
                         c["pattern"],
                     ]
                 )
@@ -478,5 +497,5 @@ async def turn_audio(request: Request, turn_id: str) -> Response:
 
 def json_error(status: int, code: str) -> JSONResponse:
     return JSONResponse(
-        {"error": {"code": code, "message_ru": i18n_ru.error_text(code)}}, status_code=status
+        {"error": {"code": code, "message_l1": i18n.error_text(code)}}, status_code=status
     )

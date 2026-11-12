@@ -16,7 +16,7 @@ from starlette.staticfiles import StaticFiles
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from voicetutor.core import Core
-from voicetutor.i18n_ru import error_text
+from voicetutor.i18n import error_text
 from voicetutor.server.guard import COOKIE_NAME, GuardMiddleware
 
 log = logging.getLogger(__name__)
@@ -38,11 +38,11 @@ for _ext, _type in (
 
 
 class ApiError(Exception):
-    def __init__(self, status: int, code: str, message_ru: str | None = None) -> None:
+    def __init__(self, status: int, code: str, message_l1: str | None = None) -> None:
         super().__init__(code)
         self.status = status
         self.code = code
-        self.message_ru = message_ru or error_text(code)
+        self.message_l1 = message_l1 or error_text(code)
 
 
 def csp(port: int) -> str:
@@ -105,7 +105,7 @@ def create_app(core: Core) -> FastAPI:
     @app.exception_handler(ApiError)
     async def _api_error(_req: Request, exc: ApiError) -> JSONResponse:
         return JSONResponse(
-            {"error": {"code": exc.code, "message_ru": exc.message_ru}}, status_code=exc.status
+            {"error": {"code": exc.code, "message_l1": exc.message_l1}}, status_code=exc.status
         )
 
     @app.exception_handler(RequestValidationError)
@@ -115,7 +115,7 @@ def create_app(core: Core) -> FastAPI:
             {
                 "error": {
                     "code": "validation",
-                    "message_ru": error_text("validation"),
+                    "message_l1": error_text("validation"),
                     "fields": fields,
                 }
             },
@@ -126,7 +126,7 @@ def create_app(core: Core) -> FastAPI:
     async def _http(_req: Request, exc: StarletteHTTPException) -> JSONResponse:
         code = "not_found" if exc.status_code == 404 else "bad_request"
         return JSONResponse(
-            {"error": {"code": code, "message_ru": error_text(code)}}, status_code=exc.status_code
+            {"error": {"code": code, "message_l1": error_text(code)}}, status_code=exc.status_code
         )
 
     @app.get("/", include_in_schema=False)

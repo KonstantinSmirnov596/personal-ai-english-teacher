@@ -11,7 +11,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from voicetutor.data_files import pattern_keys
+from voicetutor.data_files import pattern_keys, patterns
 from voicetutor.llm.client import Endpoint, LLMClient, LLMError
 from voicetutor.prompts.corrector import build_system_prompt, build_user_message
 
@@ -27,7 +27,7 @@ class RawItem(BaseModel):
     quote: str = Field(min_length=1)
     fix: str = Field(min_length=1)
     type: str
-    note_ru: str = Field(min_length=1)
+    note_l1: str = Field(min_length=1)
     pattern: str = "other"
 
 
@@ -145,7 +145,7 @@ def postprocess(
                 "end": span[1] if span else None,
                 "fix": item.fix,
                 "type": item.type,
-                "note_ru": item.note_ru.strip(),
+                "note_l1": item.note_l1.strip(),
                 "pattern": item.pattern if item.pattern in keys else "other",
             }
         )
@@ -163,9 +163,10 @@ async def run_corrector(
     tutor_said: str,
     learner_said: str,
     unsure_words: list[str],
+    lang: str = "es-419",
 ) -> CorrectorResult:
     messages = [
-        {"role": "system", "content": build_system_prompt(pattern_keys())},
+        {"role": "system", "content": build_system_prompt(patterns(), lang)},
         {
             "role": "user",
             "content": build_user_message(level, tutor_said, learner_said, unsure_words),

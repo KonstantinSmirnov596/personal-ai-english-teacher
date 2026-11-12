@@ -12,7 +12,7 @@ from functools import partial
 from pathlib import Path
 from typing import Any, TypeVar
 
-from voicetutor import __version__, keystore
+from voicetutor import __version__, i18n, keystore, l1
 from voicetutor.data_files import scenarios as builtin_scenarios
 from voicetutor.llm.client import Endpoint, LLMClient, LLMError, Timeouts, is_local_url
 from voicetutor.server.guard import AccessKeys
@@ -94,6 +94,12 @@ class Core:
         self.current_ws: Any = None
         self._load_task: asyncio.Task[None] | None = None
         self._cleanup_task: asyncio.Task[None] | None = None
+        i18n.set_current(lambda: self.l1)
+
+    @property
+    def l1(self) -> str:
+        """Current learner language: the saved setting, else the Windows-locale suggestion."""
+        return l1.resolve(self.settings.get().l1 or l1.default_code())
 
     async def startup(self) -> None:
         from voicetutor.maintenance import cleanup_loop

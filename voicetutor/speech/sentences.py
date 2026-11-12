@@ -142,11 +142,6 @@ class SentenceSplitter:
 _MARKUP = re.compile(r"[*#_`~]+")
 _BRACKETS = re.compile(r"\[[^\]]*\]")
 _SPACES = re.compile(r"\s+")
-_CYRILLIC = re.compile(r"[\u0400-\u052f]")
-
-
-def has_cyrillic(text: str) -> bool:
-    return bool(_CYRILLIC.search(text))
 
 
 def clean_for_speech(text: str) -> str:

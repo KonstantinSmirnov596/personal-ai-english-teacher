@@ -39,8 +39,10 @@ def l1_catalog() -> dict[str, Any]:
     return dict(load_json("l1_ru_catalog.json"))
 
 
-def corrector_eval() -> list[dict[str, Any]]:
-    lines = (DATA_DIR / "corrector_eval.jsonl").read_text(encoding="utf-8").splitlines()
+def corrector_eval(lang: str) -> list[dict[str, Any]]:
+    """Corrector evaluation cases for one learner language (live suite, docs/testing.md)."""
+    path = DATA_DIR / "l1" / lang / "corrector_eval.jsonl"
+    lines = path.read_text(encoding="utf-8").splitlines()
     return [json.loads(line) for line in lines if line.strip()]
 
 

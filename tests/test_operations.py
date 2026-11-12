@@ -67,7 +67,7 @@ def test_no_gpu_is_reported_in_plain_words(tmp_path: Path) -> None:
                 health = http.get("/api/health").json()
         assert health["status"] == "error"
         assert [p["code"] for p in health["problems"]] == ["no_gpu"]
-        assert "NVIDIA" in health["problems"][0]["message_ru"]
+        assert "NVIDIA" in health["problems"][0]["message_l1"]
         assert health["models"]["stt"] == "error"
     finally:
         lp.stop()
@@ -87,7 +87,7 @@ def test_missing_models_are_reported(tmp_path: Path) -> None:
                 time.sleep(0.5)
                 health = http.get("/api/health").json()
         assert [p["code"] for p in health["problems"]] == ["models_missing"]
-        assert "setup.ps1" in health["problems"][0]["message_ru"]
+        assert "setup.ps1" in health["problems"][0]["message_l1"]
     finally:
         lp.stop()
 

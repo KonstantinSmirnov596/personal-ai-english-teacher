@@ -1,12 +1,12 @@
 // Reading: read a phrase aloud, get every sound marked (correct / close / error),
 // open a word to see what was heard instead and how to fix it.
 
-import { ru } from '../i18n/ru.js';
+import { L, langTag } from './i18n.js';
 import { ApiError, get, post } from './api.js';
 import { clear, el, icons, isTextField } from './dom.js';
 import { Wave } from './wave.js';
 
-const R = ru.reading;
+const R = L.reading;
 const LEVEL_CLASS = { error: 'mark-pron-error', approx: 'mark-pron-approx', ok: 'read-word-ok' };
 
 export function wavBlob(pcm, sampleRate) {
@@ -35,7 +35,7 @@ async function postAudio(path, body, contentType) {
   const data = await resp.json().catch(() => null);
   if (!resp.ok) {
     const err = (data && data.error) || {};
-    throw new ApiError(resp.status, err.code || 'internal', err.message_ru || '');
+    throw new ApiError(resp.status, err.code || 'internal', err.message_l1 || '');
   }
   return data;
 }
@@ -78,7 +78,7 @@ export class ReadingView {
     this.sidebar = el('aside', { class: 'read-aside', 'aria-label': R.yourSounds });
     this.stateText = el('span', { class: 'panel-state-text' });
     this.hint = el('span', { class: 'panel-hint', role: 'status', 'data-testid': 'reading-message' });
-    this.canvas = el('canvas', { class: 'wave', role: 'img', 'aria-label': ru.panel.waveLabel, 'data-testid': 'wave', 'data-level': '0', 'data-source': 'mic' });
+    this.canvas = el('canvas', { class: 'wave', role: 'img', 'aria-label': L.panel.waveLabel, 'data-testid': 'wave', 'data-level': '0', 'data-source': 'mic' });
     this.micButton = el('button', { type: 'button', class: 'mic-button', 'data-testid': 'reading-mic', 'aria-label': R.record }, [icons.mic()]);
     this.micButton.addEventListener('click', () => this.toggle('phrase'));
     this.keys = el('div', { class: 'keys' });
@@ -172,7 +172,7 @@ export class ReadingView {
   update() {
     const state = this.recording ? 'listening' : this.busy ? 'assessing' : 'idle';
     this.panel.dataset.state = state;
-    this.stateText.textContent = this.recording ? ru.states.listening : this.busy ? R.assessing : this.micReady ? ru.states.idle : R.micOff;
+    this.stateText.textContent = this.recording ? L.states.listening : this.busy ? R.assessing : this.micReady ? L.states.idle : R.micOff;
     this.hint.textContent = this.message;
     this.micButton.classList.toggle('recording', this.recording === 'phrase');
     this.micButton.disabled = this.busy || this.recording === 'word' || !this.phrase;
@@ -203,7 +203,7 @@ export class ReadingView {
         type: 'button',
         class: `read-word ${LEVEL_CLASS[word.level]}`,
         'aria-pressed': String(this.selected === wi),
-        'aria-label': R.wordLabel(word.w, ru.levels[word.level]),
+        'aria-label': R.wordLabel(word.w, L.levels[word.level]),
         'data-testid': 'read-word',
         'data-level': word.level,
         text: token,
@@ -216,11 +216,11 @@ export class ReadingView {
     });
     box.append(p);
     if (phrase.targets && phrase.targets.length && !this.result) {
-      box.append(el('p', { class: 'muted small', text: R.targets(phrase.targets.map((t) => t.title_ru).join('; ')) }));
+      box.append(el('p', { class: 'muted small', text: R.targets(phrase.targets.map((t) => t.title_l1).join('; ')) }));
     }
     const legend = el('div', { class: 'read-legend' }, [
-      el('span', {}, [el('span', { class: 'legend-swatch mark-pron-error', 'aria-hidden': 'true', text: 'a' }), ` ${ru.levels.error}`]),
-      el('span', {}, [el('span', { class: 'legend-swatch mark-pron-approx', 'aria-hidden': 'true', text: 'a' }), ` ${ru.levels.approx}`]),
+      el('span', {}, [el('span', { class: 'legend-swatch mark-pron-error', 'aria-hidden': 'true', text: 'a' }), ` ${L.levels.error}`]),
+      el('span', {}, [el('span', { class: 'legend-swatch mark-pron-approx', 'aria-hidden': 'true', text: 'a' }), ` ${L.levels.approx}`]),
       el('span', { class: 'muted', text: R.legendOk }),
     ]);
     const reference = el('button', { type: 'button', class: 'btn btn-small', 'data-testid': 'reading-reference', text: R.reference });
@@ -239,7 +239,7 @@ export class ReadingView {
     const box = clear(this.detailBox);
     if (!this.result || this.selected === null) return;
     const word = this.result.words[this.selected];
-    const section = el('section', { class: 'card read-detail', lang: 'ru', 'aria-label': R.detailLabel(word.w), 'data-testid': 'word-detail' });
+    const section = el('section', { class: 'card read-detail', lang: langTag(), 'aria-label': R.detailLabel(word.w), 'data-testid': 'word-detail' });
     section.append(el('div', { class: 'read-detail-head' }, [el('h2', { lang: 'en', text: word.w }), el('span', { class: 'ipa muted', text: `/${word.ipa}/` })]));
     section.append(
       el(
@@ -248,7 +248,7 @@ export class ReadingView {
         word.phones.map((ph) =>
           el('span', { class: `phone-chip level-${ph.level}`, 'data-level': ph.level }, [
             el('span', { class: 'ipa phone-symbol', text: ph.expected }),
-            el('span', { class: 'small', text: ru.levels[ph.level] }),
+            el('span', { class: 'small', text: L.levels[ph.level] }),
           ]),
         ),
       ),
@@ -257,7 +257,7 @@ export class ReadingView {
     if (tip) {
       const title = tip.heard ? R.heardInstead(tip.heard, tip.expected) : R.notHeard(tip.expected);
       const body = el('p', { class: 'read-tip-text' });
-      if (tip.tip_ru) body.append(`${tip.tip_ru} `);
+      if (tip.tip_l1) body.append(`${tip.tip_l1} `);
       if (tip.pair) body.append(R.compare, el('span', { lang: 'en', text: `${tip.pair[0]} — ${tip.pair[1]}` }), '.');
       section.append(el('div', { class: 'read-tip' }, [el('p', { class: 'strong', 'data-testid': 'word-tip-title', text: title }), body]));
     } else {
@@ -277,7 +277,7 @@ export class ReadingView {
     section.append(el('div', { class: 'form-actions' }, actions));
     if (this.wordResult && this.wordResult.for === this.selected) {
       const w = this.wordResult.word;
-      section.append(el('p', { class: 'small', 'data-testid': 'word-repeat-result', text: R.repeatResult(ru.levels[w.level], Math.round(w.score * 100)) }));
+      section.append(el('p', { class: 'small', 'data-testid': 'word-repeat-result', text: R.repeatResult(L.levels[w.level], Math.round(w.score * 100)) }));
     }
     box.append(section);
   }
@@ -307,7 +307,7 @@ export class ReadingView {
     } catch (e) {
       console.warn('microphone unavailable', e && e.name);
       this.micReady = false;
-      this.message = ru.talk.micDeniedTitle;
+      this.message = L.talk.micDeniedTitle;
     }
     return this.micReady;
   }
@@ -330,7 +330,7 @@ export class ReadingView {
     this.recording = null;
     const rec = this.app.audio.stopRecording();
     if (!rec || rec.seconds < 0.3) {
-      this.message = ru.panel.tooShort;
+      this.message = L.panel.tooShort;
       this.update();
       return;
     }
@@ -355,7 +355,7 @@ export class ReadingView {
         this.wordResult = { for: this.selected, word: res.words[0] };
       }
     } catch (e) {
-      this.message = ru.errors[e.code] || e.message || ru.errors.internal;
+      this.message = L.errors[e.code] || e.message || L.errors.internal;
     }
     this.busy = false;
     this.update();
@@ -374,7 +374,7 @@ export class ReadingView {
       this.result = res.attempt;
       this.message = R.feedbackSaved(res.phone);
     } catch (e) {
-      this.message = ru.errors[e.code] || ru.errors.internal;
+      this.message = L.errors[e.code] || L.errors.internal;
     }
     this.update();
     this.loadSounds();

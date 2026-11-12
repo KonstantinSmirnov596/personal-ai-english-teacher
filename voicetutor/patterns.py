@@ -11,6 +11,7 @@ from __future__ import annotations
 from collections import Counter
 from typing import Any
 
+from voicetutor import l1
 from voicetutor.data_files import pattern_by_key
 from voicetutor.storage.repo import now_iso
 
@@ -18,6 +19,16 @@ FOCUS_STREAK = 3
 CLOSE_AFTER = 3
 FOCUS_MAX = 5
 IGNORED = {"other"}
+
+
+def pattern_titles(lang: str) -> dict[str, dict[str, Any]]:
+    """Mistake keys with their name and hint in the learner language (``title_l1``, ``hint_l1``)."""
+    names = l1.patterns(lang)
+    out: dict[str, dict[str, Any]] = {}
+    for key, entry in pattern_by_key().items():
+        n = names.get(key, {})
+        out[key] = {**entry, "title_l1": n.get("title", key), "hint_l1": n.get("hint", "")}
+    return out
 
 
 def _row(db: Any, key: str) -> Any:
@@ -46,7 +57,7 @@ def update_after_session(core: Any, session_id: str) -> list[dict[str, Any]]:
         if r["pattern"] not in IGNORED
     )
     checked = session_checked_turns(core, session_id)
-    titles = pattern_by_key()
+    titles = pattern_titles(core.l1)
     out: list[dict[str, Any]] = []
     now = now_iso()
     for key, n in counts.items():
@@ -85,8 +96,8 @@ def _entry(
     info = titles.get(key, {})
     return {
         "key": key,
-        "title_ru": info.get("title_ru", key),
-        "hint_ru": info.get("hint_ru", ""),
+        "title_l1": info.get("title_l1", key),
+        "hint_l1": info.get("hint_l1", ""),
         "count_in_session": n,
         "session_streak": streak,
         "clean_streak": clean,
@@ -95,11 +106,9 @@ def _entry(
 
 
 def focus_keys(core: Any) -> list[str]:
-    rows = core.db.all(
-        "SELECT key FROM pattern WHERE state = 'focus' ORDER BY count DESC, key LIMIT ?",
-        (FOCUS_MAX,),
-    )
-    return [r["key"] for r in rows]
+    known = pattern_by_key()
+    rows = core.db.all("SELECT key FROM pattern WHERE state = 'focus' ORDER BY count DESC, key")
+    return [r["key"] for r in rows if r["key"] in known][:FOCUS_MAX]
 
 
 def focus_lines(core: Any) -> list[str]:
@@ -113,15 +122,17 @@ def focus_lines(core: Any) -> list[str]:
 
 
 def all_patterns(core: Any) -> list[dict[str, Any]]:
-    titles = pattern_by_key()
+    titles = pattern_titles(core.l1)
     out = []
     for r in core.db.all("SELECT * FROM pattern ORDER BY state = 'closed', count DESC, key"):
-        info = titles.get(r["key"], {})
+        if r["key"] not in titles:
+            continue  # a key retired from the list (the predecessor's Russian-specific keys)
+        info = titles[r["key"]]
         out.append(
             {
                 "key": r["key"],
-                "title_ru": info.get("title_ru", r["key"]),
-                "hint_ru": info.get("hint_ru", ""),
+                "title_l1": info.get("title_l1", r["key"]),
+                "hint_l1": info.get("hint_l1", ""),
                 "count": r["count"],
                 "sessions_count": r["sessions_count"],
                 "session_streak": r["session_streak"],

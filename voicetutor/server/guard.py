@@ -115,7 +115,7 @@ class GuardMiddleware:
             await receive()
             await send({"type": "websocket.close", "code": 1008})
             return
-        body = json.dumps({"error": {"code": code, "message_ru": "Access denied"}}).encode()
+        body = json.dumps({"error": {"code": code, "message_l1": "Access denied"}}).encode()
         response_headers: list[Any] = [
             (b"content-type", b"application/json"),
             (b"content-length", str(len(body)).encode()),

@@ -14,11 +14,6 @@ from voicetutor.llm.client import Endpoint, LLMClient, LLMError
 log = logging.getLogger(__name__)
 
 _OBJECT = re.compile(r"\{.*\}", re.DOTALL)
-_CYRILLIC = re.compile(r"[\u0400-\u052f]")
-
-
-def has_cyrillic(text: str) -> bool:
-    return bool(_CYRILLIC.search(text or ""))
 
 
 def parse_model[M: BaseModel](text: str, model: type[M]) -> M | None:

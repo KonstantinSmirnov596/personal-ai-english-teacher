@@ -100,7 +100,7 @@ class HelperTranslate(_In):
 class HelperHowToSay(_In):
     type: Literal["helper.how_to_say"]
     request_id: str = Field(min_length=1, max_length=64)
-    text_ru: str = Field(min_length=1, max_length=500)
+    text_l1: str = Field(min_length=1, max_length=500)
 
 
 class TutorReplay(_In):
@@ -164,7 +164,7 @@ class Hello(_Out):
 
 class ScenarioRef(_Out):
     id: str
-    title_ru: str
+    title_l1: str
 
 
 class SessionStarted(_Out):
@@ -230,7 +230,7 @@ class CorrectionItem(_Out):
     end: int | None
     fix: str
     type: Literal["grammar", "vocabulary", "phrasing"]
-    note_ru: str
+    note_l1: str
     pattern: str
 
 
@@ -246,7 +246,7 @@ class PronFlag(_Out):
     word_index: int
     expected: str
     heard: str
-    tip_ru: str
+    tip_l1: str
 
 
 class PronFlags(_Out):
@@ -285,7 +285,7 @@ class Timing(_Out):
 class ErrorMsg(_Out):
     type: Literal["error"] = "error"
     code: ErrorCode
-    message_ru: str
+    message_l1: str
     retryable: bool
     turn_id: str | None = None
     request_id: str | None = None

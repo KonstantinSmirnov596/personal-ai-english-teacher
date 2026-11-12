@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "patterns": {
+    "subject_missing": {"title": "Falta el sujeto: it is", "hint": "En inglés la oración siempre lleva sujeto: It is raining, It is very good."},
+    "there_is_have": {"title": "there is / there are", "hint": "Para decir que algo existe en un lugar se usa there is o there are, no have."},
+    "age_have": {"title": "La edad: I am 30", "hint": "La edad se dice con be: I am 30 years old, no I have 30 years."},
+    "adjective_order": {"title": "El adjetivo va antes", "hint": "En inglés el adjetivo va antes del sustantivo: a red car."},
+    "adjective_plural": {"title": "El adjetivo no tiene plural", "hint": "Los adjetivos no cambian en plural: red cars, no reds cars."},
+    "possessive_of": {"title": "El posesivo 's", "hint": "Con personas se usa 's: my brother's car, no the car of my brother."},
+    "do_auxiliary": {"title": "El auxiliar do", "hint": "Las preguntas y negaciones en presente llevan do o does: Do you like coffee? I don't like it."},
+    "explain_to": {"title": "explain to me", "hint": "Explain, describe y suggest llevan to antes de la persona: Explain the problem to me."},
+    "false_friends": {"title": "Falsos amigos", "hint": "Parece una palabra en español, pero en inglés significa otra cosa: actually es «en realidad», no «actualmente»."},
+    "article_general": {"title": "Sin artículo para lo general", "hint": "Para hablar en general no se usa the: Life is hard, People need help."},
+    "people_plural": {"title": "people es plural", "hint": "People lleva el verbo en plural: People are friendly."},
+    "gerund_after_preposition": {"title": "-ing después de preposición", "hint": "Después de una preposición el verbo va en -ing: before going, after eating."},
+    "make_do": {"title": "make / do", "hint": "Make a mistake, make a decision; do your homework, do the dishes."},
+    "say_tell": {"title": "say / tell", "hint": "Tell lleva a quién: tell me; say no lo lleva: she said that…"},
+    "for_since": {"title": "for / since", "hint": "For va con una duración (for two years) y since con el momento de inicio (since 2024)."},
+    "present_perfect_vs_past_simple": {"title": "Present perfect y past simple", "hint": "Con un momento terminado (yesterday, in 2020) se usa past simple: I saw him yesterday."},
+    "third_person_s": {"title": "La -s de he, she, it", "hint": "En presente simple, después de he, she o it el verbo lleva -s: she works."},
+    "prepositions": {"title": "Preposiciones", "hint": "La preposición se aprende junto con la palabra: depend on, on Monday, at work."},
+    "word_order_questions": {"title": "Orden en las preguntas", "hint": "En la pregunta el auxiliar va antes del sujeto: Where do you work?"},
+    "double_negative": {"title": "Doble negación", "hint": "En inglés va una sola negación por oración: I didn't see anybody."},
+    "countable_uncountable": {"title": "Incontables: information, advice", "hint": "Information, advice, news y equipment no tienen plural: some information."},
+    "comparative_superlative": {"title": "Comparativos y superlativos", "hint": "Adjetivos cortos con -er y -est (bigger, the easiest); largos con more y most."},
+    "much_many": {"title": "much / many", "hint": "Many va con cosas que se cuentan (many people); much con lo que no se cuenta (much time)."},
+    "calque": {"title": "Traducción literal", "hint": "La frase está armada como en español; en inglés se dice de otra forma."},
+    "collocation": {"title": "Combinación de palabras", "hint": "Estas palabras no se usan juntas en inglés; hay una combinación fija."},
+    "word_choice": {"title": "Elección de palabra", "hint": "La palabra existe, pero con este significado se usa otra."},
+    "other": {"title": "Otro", "hint": ""}
+  }
+}

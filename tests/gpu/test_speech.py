@@ -8,9 +8,10 @@ import numpy as np
 import pytest
 
 from voicetutor.core import GpuQueue
+from voicetutor.lang_guard import LearnerLanguageError
 from voicetutor.speech.audio import STT_RATE, TTS_RATE, resample
 from voicetutor.speech.stt import SpeechRecognizer
-from voicetutor.speech.tts import CyrillicTextError, SpeechSynthesizer
+from voicetutor.speech.tts import SpeechSynthesizer
 from voicetutor.wer import wer
 
 pytestmark = pytest.mark.gpu
@@ -52,12 +53,17 @@ def test_input_resampled_from_48k(models) -> None:
     assert wer(["I usually work from home on Fridays."], [tr.text]) <= 0.1
 
 
-def test_synthesis_rejects_cyrillic(models) -> None:
+def test_synthesis_rejects_learner_language(models) -> None:
+    """SPEC 5: Spanish and Portuguese text is shown, never spoken."""
     _stt, tts = models
-    with pytest.raises(CyrillicTextError):
-        tts.synthesize("Привет, это проверка.")
-    with pytest.raises(CyrillicTextError):
-        tts.synthesize("Hello, мир.")
+    for text in (
+        "Para una duración se usa for.",
+        "Você pode repetir, por favor?",
+        "Hello, \u043c\u0438\u0440.",  # another script
+    ):
+        with pytest.raises(LearnerLanguageError):
+            tts.synthesize(text)
+    assert tts.synthesize("We met in São Paulo last May.").audio.size > 0
 
 
 def test_silence_gives_empty_transcript(models) -> None:

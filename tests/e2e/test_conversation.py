@@ -3,18 +3,17 @@ connection failure with a manual switch (docs/PLAN.md, stage 1 acceptance)."""
 
 from __future__ import annotations
 
-import re
 import time
 from typing import Any
 
 import pytest
 
 from tests.e2e.conftest import E2E
+from voicetutor.lang_guard import classify, not_english
 
 pytestmark = pytest.mark.e2e
 
 SILENCE = 10  # data-level below this is silence
-CYRILLIC = re.compile(r"[\u0400-\u052f]")
 
 STATE_RECORDER = """
 () => {
@@ -118,19 +117,23 @@ def test_conversation_turn(e2e: E2E) -> None:
     assert not card.is_visible()
     mark.click()
     assert card.is_visible()
-    assert CYRILLIC.search(card.inner_text())
+    note = card.locator(".card-note").first.inner_text()
+    assert classify(note).language == "es-419", note
+    assert card.get_attribute("lang") == "es-419"
     e2e.screenshot("04-correction-card")
 
-    # Russian only inside cards: no Cyrillic in any element marked lang="en".
+    # Learner language only inside cards: none in any element marked lang="en".
     en_texts = page.eval_on_selector_all("[lang=en]", "els => els.map(e => e.textContent)")
-    assert en_texts and not [t for t in en_texts if CYRILLIC.search(t)]
-    ru_outside = page.evaluate(
+    assert en_texts and not [t for t in en_texts if not_english(t)]
+    l1_outside = page.evaluate(
         """() => [...document.querySelectorAll('[data-testid=turn-user], [data-testid=turn-tutor]')]
             .map(t => t.cloneNode(true))
-            .map(c => { c.querySelectorAll('[lang=ru], .turn-label, .turn-actions, .turn-note')
-                         .forEach(n => n.remove()); return c.textContent; })"""
+            .map(c => {
+                c.querySelectorAll('[lang]:not([lang=en]), .turn-label, .turn-actions, .turn-note')
+                 .forEach(n => n.remove());
+                return c.textContent; })"""
     )
-    assert not [t for t in ru_outside if CYRILLIC.search(t)]
+    assert not [t for t in l1_outside if not_english(t)]
     assert not [line for line in e2e.console if line.startswith("error")], e2e.console
     # the window loads everything from the core: no CDN, fonts or scripts from outside
     allowed = (e2e.lp.base + "/", "blob:", "data:")

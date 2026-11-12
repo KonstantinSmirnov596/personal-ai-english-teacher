@@ -2,21 +2,15 @@
 
 from __future__ import annotations
 
-import re
 import time
 from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
 
+from voicetutor.lang_guard import LearnerLanguageError, not_english
 from voicetutor.model_registry import KOKORO_VOICES, TTS, local_path
 from voicetutor.speech.audio import TTS_RATE, FloatAudio
-
-_CYRILLIC = re.compile(r"[\u0400-\u052f]")
-
-
-class CyrillicTextError(ValueError):
-    """Russian text must never reach speech synthesis."""
 
 
 @dataclass(frozen=True)
@@ -66,8 +60,9 @@ class SpeechSynthesizer:
         return str(self._root / "voices" / f"{voice}.pt")
 
     def synthesize(self, text: str, voice: str = "af_heart", speed: float = 1.0) -> Synthesis:
-        if _CYRILLIC.search(text):
-            raise CyrillicTextError("Cyrillic text is not allowed in speech synthesis")
+        if not_english(text):
+            # SPEC 5: learner-language text is shown, never spoken.
+            raise LearnerLanguageError("only English text may reach speech synthesis")
         if not 0.5 <= speed <= 2.0:
             raise ValueError("speed must be within 0.5..2.0")
         self.load()

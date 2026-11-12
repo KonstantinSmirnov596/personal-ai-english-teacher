@@ -12,8 +12,9 @@ def test_builtin_scenarios_and_custom_crud(tmp_path: Path) -> None:
     with make_app(tmp_path) as ctx:
         h = ctx.auth_headers
         rows = ctx.client.get("/api/scenarios").json()
-        assert [r["id"] for r in rows][:2] == ["free_talk", "interview_backend"]
-        assert len(rows) == 6 and all(r["builtin"] for r in rows)
+        assert [r["id"] for r in rows][:2] == ["free_talk", "small_talk"]
+        assert len(rows) == 11 and all(r["builtin"] for r in rows)
+        assert rows[0]["title_l1"] == "Conversación libre"  # default learner language es-419
         assert all(r["openers"] for r in rows)
         assert ctx.client.delete("/api/scenarios/free_talk", headers=h).status_code == 409
         assert (
@@ -23,7 +24,7 @@ def test_builtin_scenarios_and_custom_crud(tmp_path: Path) -> None:
         r = ctx.client.post(
             "/api/scenarios",
             json={
-                "title_ru": "Свой",
+                "title_l1": "Mi escenario",
                 "role": "You are a barista.",
                 "openers": ["Hi! What can I get you?"],
             },
@@ -35,14 +36,14 @@ def test_builtin_scenarios_and_custom_crud(tmp_path: Path) -> None:
         r = ctx.client.patch(f"/api/scenarios/{sid}", json={"setting": "A busy cafe."}, headers=h)
         assert r.json()["setting"] == "A busy cafe."
         assert ctx.client.delete(f"/api/scenarios/{sid}", headers=h).status_code == 204
-        assert len(ctx.client.get("/api/scenarios").json()) == 6
+        assert len(ctx.client.get("/api/scenarios").json()) == 11
 
 
 def _seed_session(ctx) -> tuple[str, str]:
     s = ctx.core.sessions
     sid = s.create(
         scenario_id="free_talk",
-        scenario_title_ru="Свободный разговор",
+        scenario_title_l1="Conversación libre",
         level="B1",
         correction_mode="on_click",
         connection_id=None,
@@ -66,7 +67,7 @@ def _seed_session(ctx) -> tuple[str, str]:
                 "quote": "I has",
                 "fix": "I have",
                 "type": "grammar",
-                "note_ru": "С I — have.",
+                "note_l1": "Con I va have.",
                 "pattern": "third_person_s",
                 "start": 0,
                 "end": 5,

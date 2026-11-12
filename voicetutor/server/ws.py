@@ -13,7 +13,7 @@ from starlette.websockets import WebSocket, WebSocketDisconnect, WebSocketState
 
 from voicetutor.conversation import Conversation
 from voicetutor.core import Core
-from voicetutor.i18n_ru import error_text
+from voicetutor.i18n import error_text
 from voicetutor.protocol import MAX_BINARY_FRAME, MAX_TEXT_FRAME, ErrorMsg, parse_incoming
 
 log = logging.getLogger(__name__)
@@ -105,5 +105,5 @@ async def _receive_loop(ws: WebSocket, conv: Conversation, sender: Sender) -> No
 async def _bad_request(sender: Sender, detail: str) -> None:
     log.warning("bad websocket request: %s", detail)
     await sender.send(
-        ErrorMsg(code="bad_request", message_ru=error_text("bad_request"), retryable=False)
+        ErrorMsg(code="bad_request", message_l1=error_text("bad_request"), retryable=False)
     )

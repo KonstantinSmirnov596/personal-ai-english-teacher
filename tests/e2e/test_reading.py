@@ -59,7 +59,9 @@ def test_reading_marks_sounds_and_accepts_feedback(env: E2E) -> None:
 
     # "That was right" clears the mark and makes the sound less sensitive
     page.click("[data-testid=was-correct]")
-    page.locator("[data-testid=reading-message]").filter(has_text="мягче").wait_for(timeout=10_000)
+    page.locator("[data-testid=reading-message]").filter(has_text="menos rigor").wait_for(
+        timeout=10_000
+    )
     assert errors.count() == 1
     with env.http() as c:
         sounds = {s["phone"]: s for s in c.get("/api/pron/sounds?days=7").json()}

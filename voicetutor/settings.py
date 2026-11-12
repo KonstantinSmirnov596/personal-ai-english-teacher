@@ -6,6 +6,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from voicetutor import l1
 from voicetutor.model_registry import KOKORO_VOICES
 
 CorrectionMode = Literal["instant", "on_click", "end", "off"]
@@ -13,9 +14,18 @@ Level = Literal["A2", "B1", "B2", "C1"]
 TurnMode = Literal["manual", "auto"]
 
 
+def _check_l1(v: str | None) -> str | None:
+    if v and not l1.is_known(v):
+        raise ValueError("unknown learner language")
+    return v
+
+
 class Settings(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    # Learner language (es-419, pt-BR, ...); empty until the user confirms one: the core then
+    # uses the suggestion from the Windows locale (voicetutor.l1.default_code).
+    l1: str = ""
     turn_mode: TurnMode = "manual"
     pause_ms: int = Field(default=1500, ge=1000, le=3000)
     correction_mode: CorrectionMode = "on_click"
@@ -41,10 +51,16 @@ class Settings(BaseModel):
             raise ValueError("unknown voice")
         return v
 
+    @field_validator("l1")
+    @classmethod
+    def _l1_known(cls, v: str | None) -> str | None:
+        return _check_l1(v)
+
 
 class SettingsPatch(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    l1: str | None = None
     turn_mode: TurnMode | None = None
     pause_ms: int | None = Field(default=None, ge=1000, le=3000)
     correction_mode: CorrectionMode | None = None
@@ -60,3 +76,8 @@ class SettingsPatch(BaseModel):
     noise_suppression: bool | None = None
     pron_in_conversation: bool | None = None
     reading_raw_mic: bool | None = None
+
+    @field_validator("l1")
+    @classmethod
+    def _l1_known(cls, v: str | None) -> str | None:
+        return _check_l1(v)

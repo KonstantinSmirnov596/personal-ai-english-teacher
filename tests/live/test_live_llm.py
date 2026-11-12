@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-import re
 import sqlite3
 import time
 from pathlib import Path
@@ -20,6 +19,7 @@ import pytest
 from tests.conftest import REAL_DATA_DIR
 from voicetutor.corrector import run_corrector
 from voicetutor.data_files import corrector_eval
+from voicetutor.lang_guard import classify, not_english
 from voicetutor.llm.client import Endpoint, LLMClient
 from voicetutor.logging_setup import register_secret
 from voicetutor.prompts import tutor as tutor_prompt
@@ -27,7 +27,6 @@ from voicetutor.prompts import tutor as tutor_prompt
 pytestmark = pytest.mark.live
 
 REPORT = Path(__file__).resolve().parents[2] / "docs" / "reports" / "data" / "live_stage1.json"
-CYRILLIC = re.compile(r"[\u0400-\u052f]")
 
 
 def owner_endpoint() -> Endpoint | None:
@@ -97,12 +96,13 @@ def test_live_stream_first_chunk(endpoint: Endpoint) -> None:
         "stream", {"first_chunk_s": round(first, 3), "total_s": round(total, 3), "chars": len(text)}
     )
     assert text.strip()
-    assert not CYRILLIC.search(text)
+    assert not not_english(text)
 
 
-def test_live_corrector_quality(endpoint: Endpoint) -> None:
-    cases = corrector_eval()
-    assert len(cases) * 2 + 2 <= 80  # request budget of the live suite
+@pytest.mark.parametrize("lang", ["es-419", "pt-BR"])
+def test_live_corrector_quality(endpoint: Endpoint, lang: str) -> None:
+    cases = corrector_eval(lang)
+    assert len(cases) * 2 <= 80  # request budget per learner language (with one retry)
 
     async def run() -> list[dict[str, Any]]:
         client = LLMClient()
@@ -115,6 +115,7 @@ def test_live_corrector_quality(endpoint: Endpoint) -> None:
                 tutor_said=case.get("tutor_said", ""),
                 learner_said=case["learner_said"],
                 unsure_words=case.get("asr_unsure", []),
+                lang=lang,
             )
             out.append({"case": case, "status": res.status, "items": res.items})
         await client.aclose()
@@ -138,8 +139,10 @@ def test_live_corrector_quality(endpoint: Endpoint) -> None:
         )
         for r in results
     )
+    # SPEC 12: note_l1 is in the learner language (language guard) and at most 25 words
     note_ok = all(
-        CYRILLIC.search(i["note_ru"]) and len(i["note_ru"].split()) <= 25 for _r, i in items
+        classify(i["note_l1"]).language == lang and len(i["note_l1"].split()) <= 25
+        for _r, i in items
     )
     metrics = {
         "schema_ok": round(schema_ok, 3),
@@ -147,11 +150,11 @@ def test_live_corrector_quality(endpoint: Endpoint) -> None:
         "clean_without_items": round(clean_ok, 3),
         "expected_pattern_found": round(pattern_ok, 3),
         "low_conf_never_quoted": forbid_ok,
-        "note_ru_cyrillic_and_short": note_ok,
+        "note_l1_in_language_and_short": note_ok,
         "cases": len(results),
         "items": len(items),
     }
-    _save("corrector", metrics)
+    _save(f"corrector_{lang}", metrics)
     assert schema_ok == 1.0
     assert quote_ok >= 0.95
     assert clean_ok >= 0.80

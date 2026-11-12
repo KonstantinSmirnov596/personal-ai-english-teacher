@@ -141,6 +141,18 @@ MIGRATIONS: list[str] = [
     ALTER TABLE connection ADD COLUMN json_format TEXT NOT NULL DEFAULT 'json_object';
     UPDATE connection SET json_format = 'none' WHERE json_mode = 0;
     """,
+    # 5: learner languages (stage 1): Russian-only fields become learner-language fields; built-in
+    # scenarios carry titles per language; a session remembers the language it was held in
+    """
+    ALTER TABLE correction RENAME COLUMN note_ru TO note_l1;
+    ALTER TABLE vocab RENAME COLUMN translation_ru TO translation_l1;
+    ALTER TABLE session RENAME COLUMN scenario_title_ru TO scenario_title_l1;
+    ALTER TABLE session ADD COLUMN l1 TEXT NOT NULL DEFAULT '';
+    ALTER TABLE scenario RENAME COLUMN title_ru TO title_l1;
+    ALTER TABLE scenario RENAME COLUMN description_ru TO description_l1;
+    ALTER TABLE scenario ADD COLUMN title_l10n TEXT NOT NULL DEFAULT '{}';
+    ALTER TABLE scenario ADD COLUMN description_l10n TEXT NOT NULL DEFAULT '{}';
+    """,
 ]
 
 

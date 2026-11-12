@@ -78,7 +78,8 @@ def _json_reply(body: dict[str, Any], script: Script) -> str:
     system = " ".join(
         m.get("content", "") for m in body.get("messages", []) if m.get("role") == "system"
     )
-    if "corrections as json" in system:
+    lang = "pt" if "Portuguese" in system or "Portuguese" in _user_text(body) else "es"
+    if "corrections as JSON" in system:
         said = _learner_said(body)
         words = said.split()
         if script.corrector_items is not None:
@@ -90,7 +91,7 @@ def _json_reply(body: dict[str, Any], script: Script) -> str:
                     "quote": quote,
                     "fix": quote + " indeed",
                     "type": "grammar",
-                    "note_ru": "Тестовая правка от мока.",
+                    "note_l1": L1_TEXT[lang]["note"],
                     "pattern": "for_since",
                 }
             ]
@@ -99,10 +100,8 @@ def _json_reply(body: dict[str, Any], script: Script) -> str:
         better = (said + " Indeed.") if items else ""
         return json.dumps({"items": items, "better": better}, ensure_ascii=False)
     if "end-of-session notes" in system:
-        return json.dumps(_summary_reply(body), ensure_ascii=False)
-    user = " ".join(
-        m.get("content", "") for m in body.get("messages", []) if m.get("role") == "user"
-    )
+        return json.dumps(_summary_reply(body, lang), ensure_ascii=False)
+    user = _user_text(body)
     if "Suggest replies" in user:
         return json.dumps(
             {
@@ -112,25 +111,52 @@ def _json_reply(body: dict[str, Any], script: Script) -> str:
                 ]
             }
         )
-    if "Translate the sentence into natural Russian" in user:
-        return json.dumps({"ru": "Тестовый перевод реплики."}, ensure_ascii=False)
+    if "Translate the sentence into natural" in user:
+        return json.dumps({"translation": L1_TEXT[lang]["translation"]}, ensure_ascii=False)
     if "wants to say something in American English" in user:
         return json.dumps(
             {
                 "en": "I'd like to ask a question.",
                 "alt": "Can I ask you something?",
-                "note_ru": "Тестовая заметка.",
+                "note_l1": L1_TEXT[lang]["how_note"],
             },
             ensure_ascii=False,
         )
     if "Check a spoken answer" in user:
-        return json.dumps(
-            {"correct": False, "note_ru": "Тестовая проверка: нужен for."}, ensure_ascii=False
-        )
+        return json.dumps({"correct": False, "note_l1": L1_TEXT[lang]["check"]}, ensure_ascii=False)
     return json.dumps({"ok": True})
 
 
-def _summary_reply(body: dict[str, Any]) -> dict[str, Any]:
+# Learner-language texts of the mock: the tests check that they reach the window as text only.
+L1_TEXT: dict[str, dict[str, str]] = {
+    "es": {
+        "note": "Corrección de prueba del simulador.",
+        "translation": "Traducción de prueba de la respuesta.",
+        "how_note": "Nota de prueba sobre la frase.",
+        "check": "Revisión de prueba: aquí va for.",
+        "phrase": "frase de prueba",
+        "explanation": "For va con una duración y since con el momento de inicio.",
+        "exercise": "Trabajo aquí desde hace tres años.",
+    },
+    "pt": {
+        "note": "Correção de teste do simulador.",
+        "translation": "Tradução de teste da resposta.",
+        "how_note": "Nota de teste sobre a frase.",
+        "check": "Revisão de teste: aqui vai for.",
+        "phrase": "frase de teste",
+        "explanation": "For vai com uma duração e since com o momento de início.",
+        "exercise": "Eu trabalho aqui há três anos.",
+    },
+}
+
+
+def _user_text(body: dict[str, Any]) -> str:
+    return " ".join(
+        m.get("content", "") for m in body.get("messages", []) if m.get("role") == "user"
+    )
+
+
+def _summary_reply(body: dict[str, Any], lang: str) -> dict[str, Any]:
     data = json.loads(body["messages"][-1]["content"])
     lines: list[str] = data.get("tutor_lines", [])
     phrases = []
@@ -138,7 +164,11 @@ def _summary_reply(body: dict[str, Any]) -> dict[str, Any]:
         words = lines[0].rstrip(".?!").split()
         if len(words) >= 3:
             phrases.append(
-                {"en": " ".join(words[-3:]), "ru": "тестовая фраза", "context": lines[0]}
+                {
+                    "en": " ".join(words[-3:]),
+                    "translation_l1": L1_TEXT[lang]["phrase"],
+                    "context": lines[0],
+                }
             )
     if not data.get("focus_pattern"):
         return {"key_takeaway": None, "exercise": None, "phrases": phrases}
@@ -148,11 +178,11 @@ def _summary_reply(body: dict[str, Any]) -> dict[str, Any]:
     return {
         "key_takeaway": {
             "title": "for / since",
-            "explanation_ru": "For ставится с длительностью, since — с моментом начала.",
+            "explanation_l1": L1_TEXT[lang]["explanation"],
             "examples": examples,
         },
         "exercise": {
-            "prompt_ru": "Я работаю здесь три года.",
+            "prompt_l1": L1_TEXT[lang]["exercise"],
             "answer_en": "I have worked here for three years.",
             "accept": [
                 "I've worked here for three years.",

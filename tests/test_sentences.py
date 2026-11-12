@@ -5,7 +5,6 @@ import pytest
 from voicetutor.speech.sentences import (
     SentenceSplitter,
     clean_for_speech,
-    has_cyrillic,
 )
 
 
@@ -86,6 +85,9 @@ def test_clean_for_speech() -> None:
     assert clean_for_speech("**Great** idea [asr_unsure: foo] `x`") == "Great idea x"
 
 
-def test_has_cyrillic() -> None:
-    assert has_cyrillic("Привет")
-    assert not has_cyrillic("Hello, world")
+def test_foreign_script_is_not_english() -> None:
+    from voicetutor.lang_guard import has_foreign_script, not_english
+
+    assert has_foreign_script("\u043f\u0440\u0438\u0432\u0435\u0442")
+    assert not has_foreign_script("Hello, José, ¿qué tal?")
+    assert not not_english("Hello, world")

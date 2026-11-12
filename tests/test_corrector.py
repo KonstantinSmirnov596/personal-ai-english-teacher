@@ -6,7 +6,7 @@ import pytest
 
 from tests.mock_llm import MockLLM
 from voicetutor.corrector import locate, parse_response, postprocess, run_corrector
-from voicetutor.data_files import pattern_keys
+from voicetutor.data_files import pattern_keys, patterns
 from voicetutor.llm.client import Endpoint, LLMClient
 from voicetutor.prompts.corrector import build_system_prompt
 
@@ -41,42 +41,42 @@ def test_postprocess_rules() -> None:
             "quote": "since two years",
             "fix": "for two years",
             "type": "grammar",
-            "note_ru": "For с длительностью.",
+            "note_l1": "For va con una duración.",
             "pattern": "for_since",
         },
         {
             "quote": "we was migrating",
             "fix": "we were migrating",
             "type": "grammar",
-            "note_ru": "We — were.",
+            "note_l1": "We — were.",
             "pattern": "unknown_key",
         },
         {
             "quote": "the system",
             "fix": "the system",
             "type": "grammar",
-            "note_ru": "Без изменений.",
+            "note_l1": "Sin cambios.",
             "pattern": "other",
         },
         {
             "quote": "project",
             "fix": "projects",
             "type": "spelling",
-            "note_ru": "Тип не из перечня.",
+            "note_l1": "El tipo no está en la lista.",
             "pattern": "other",
         },
         {
             "quote": "a missing fragment",
             "fix": "x",
             "type": "vocabulary",
-            "note_ru": "Нет в тексте.",
+            "note_l1": "No está en el texto.",
             "pattern": "word_choice",
         },
         {
             "quote": "I have worked",
             "fix": "I've been working",
             "type": "phrasing",
-            "note_ru": "Длительность.",
+            "note_l1": "Duración.",
             "pattern": "present_perfect_vs_past_simple",
         },
     )
@@ -98,10 +98,11 @@ def test_empty_items_clear_better() -> None:
 
 
 def test_prompt_contains_json_and_all_keys() -> None:
-    prompt = build_system_prompt(pattern_keys())
-    assert "json" in prompt
-    for key in ("for_since", "was_were", "other"):
-        assert key in prompt
+    for lang in ("es-419", "pt-BR"):
+        prompt = build_system_prompt(patterns(), lang)
+        assert "JSON" in prompt
+        for key in pattern_keys():
+            assert f"- {key} [" in prompt
 
 
 @pytest.fixture

@@ -132,7 +132,7 @@ def test_catalog_matching() -> None:
     word = phones_of(build_reference(["word"]), "word")[1]
     assert catalog.match(word, ("ɔːɹ",)).id == "nurse_vowel"
     tip = catalog.tip(catalog.match(theta, ("s",)), "s")
-    assert tip["pair"] == ["think", "sink"] and tip["tip_ru"]
+    assert tip["pair"] == ["think", "sink"] and tip["tip_l1"]
 
 
 def ev(llr: dict) -> PhoneEvidence:
@@ -205,7 +205,7 @@ def test_pron_routes_without_model(tmp_path: Path) -> None:
     with make_app(tmp_path) as ctx:
         phrases = ctx.client.get("/api/pron/phrases").json()
         assert len(phrases) == 26 and phrases[0]["id"] == "p01"
-        assert phrases[0]["targets"][0]["title_ru"]
+        assert phrases[0]["targets"][0]["title_l1"]
         h = ctx.auth_headers
         r = ctx.client.post("/api/pron/assess?phrase_id=p01", content=b"not a wav", headers=h)
         assert r.status_code == 422 and r.json()["error"]["code"] == "pron_bad_audio"
@@ -218,4 +218,7 @@ def test_pron_routes_without_model(tmp_path: Path) -> None:
         )
         assert r.status_code == 404
         assert ctx.client.get("/api/pron/sounds?days=7").json() == []
-        assert ctx.client.get("/api/pron/reference?text=Привет").status_code == 422
+        assert (
+            ctx.client.get("/api/pron/reference?text=Hola%2C%20%C2%BFqu%C3%A9%20tal%3F").status_code
+            == 422
+        )

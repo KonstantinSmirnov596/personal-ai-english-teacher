@@ -1,0 +1,40 @@
+{"id": "pt01", "level": "B1", "tutor_said": "What's your neighborhood like?", "learner_said": "In my city has a big park near the river.", "asr_unsure": [], "expect": ["there_is_have"]}
+{"id": "pt02", "level": "A2", "tutor_said": "Tell me about your office.", "learner_said": "In the office has three meeting rooms and a kitchen.", "asr_unsure": [], "expect": ["there_is_have"]}
+{"id": "pt03", "level": "A2", "tutor_said": "Do you have kids?", "learner_said": "Yes, my son has ten years and he loves soccer.", "asr_unsure": [], "expect": ["age_have", "calque"]}
+{"id": "pt04", "level": "A2", "tutor_said": "How's the weather there?", "learner_said": "Is very hot today, so I stayed inside.", "asr_unsure": [], "expect": ["subject_missing"]}
+{"id": "pt05", "level": "B1", "tutor_said": "What do you need for the tests?", "learner_said": "We need a server new for the integration tests.", "asr_unsure": [], "expect": ["adjective_order"]}
+{"id": "pt06", "level": "B1", "tutor_said": "What are you working on this year?", "learner_said": "We have two bigs projects this year.", "asr_unsure": [], "expect": ["adjective_plural"]}
+{"id": "pt07", "level": "B1", "tutor_said": "Whose idea was the new dashboard?", "learner_said": "It was the idea of my manager, not mine.", "asr_unsure": [], "expect": ["possessive_of"]}
+{"id": "pt08", "level": "A2", "tutor_said": "We deploy everything with containers.", "learner_said": "You know how to use Docker?", "asr_unsure": [], "expect": ["do_auxiliary", "word_order_questions"]}
+{"id": "pt09", "level": "A2", "tutor_said": "Did you read the error message?", "learner_said": "Yes, but I no understand the error message.", "asr_unsure": [], "expect": ["do_auxiliary"]}
+{"id": "pt10", "level": "B1", "tutor_said": "We changed the review process last week.", "learner_said": "Can you explain me the new process?", "asr_unsure": [], "expect": ["explain_to"]}
+{"id": "pt11", "level": "B1", "tutor_said": "What are your plans for next year?", "learner_said": "I pretend to change jobs next year.", "asr_unsure": [], "expect": ["false_friends", "word_choice"]}
+{"id": "pt12", "level": "A2", "tutor_said": "What did you do on Saturday?", "learner_said": "I went to the library to buy a new book.", "asr_unsure": [], "expect": ["false_friends", "word_choice"]}
+{"id": "pt13", "level": "B1", "tutor_said": "Is the new tool hard to learn?", "learner_said": "The people need more time to learn the tool.", "asr_unsure": [], "expect": ["article_general"]}
+{"id": "pt14", "level": "A2", "tutor_said": "How do you like your team?", "learner_said": "People is very nice in my team.", "asr_unsure": [], "expect": ["people_plural"]}
+{"id": "pt15", "level": "B1", "tutor_said": "What happens at the end of a sprint?", "learner_said": "After to finish the sprint we have a retrospective.", "asr_unsure": [], "expect": ["gerund_after_preposition"]}
+{"id": "pt16", "level": "B1", "tutor_said": "When do we choose the vendor?", "learner_said": "We need to do a decision today.", "asr_unsure": [], "expect": ["make_do", "collocation"]}
+{"id": "pt17", "level": "B1", "tutor_said": "What did the ops guy tell you?", "learner_said": "He said me the server was down all night.", "asr_unsure": [], "expect": ["say_tell"]}
+{"id": "pt18", "level": "B1", "tutor_said": "How long have you lived in Curitiba?", "learner_said": "I live here since five years.", "asr_unsure": [], "expect": ["for_since", "present_perfect_vs_past_simple"]}
+{"id": "pt19", "level": "B1", "tutor_said": "When did you notice the bug?", "learner_said": "I have seen this bug yesterday in production.", "asr_unsure": [], "expect": ["present_perfect_vs_past_simple"]}
+{"id": "pt20", "level": "A2", "tutor_said": "Is your team lead usually on time?", "learner_said": "Yes, she always arrive early to the meetings.", "asr_unsure": [], "expect": ["third_person_s", "prepositions"]}
+{"id": "pt21", "level": "A2", "tutor_said": "When is the retro?", "learner_said": "The meeting is in Monday at three.", "asr_unsure": [], "expect": ["prepositions"]}
+{"id": "pt22", "level": "B1", "tutor_said": "I studied computer science in college.", "learner_said": "Nice. Where you studied programming?", "asr_unsure": [], "expect": ["word_order_questions", "do_auxiliary"]}
+{"id": "pt23", "level": "B1", "tutor_said": "Do you have friends at the new company?", "learner_said": "No, I don't know nobody in this company yet.", "asr_unsure": [], "expect": ["double_negative"]}
+{"id": "pt24", "level": "B1", "tutor_said": "Is the project description clear?", "learner_said": "Not really, I need more informations about the project.", "asr_unsure": [], "expect": ["countable_uncountable"]}
+{"id": "pt25", "level": "B1", "tutor_said": "What should we focus on this week?", "learner_said": "This is the more important task of the week.", "asr_unsure": [], "expect": ["comparative_superlative"]}
+{"id": "pt26", "level": "A2", "tutor_said": "How is the new release going?", "learner_said": "We have much problems with the new release.", "asr_unsure": [], "expect": ["much_many"]}
+{"id": "pt27", "level": "A2", "tutor_said": "Do you want to keep going?", "learner_said": "I'm with hunger, let's have lunch first.", "asr_unsure": [], "expect": ["calque"]}
+{"id": "pt28", "level": "A2", "tutor_said": "Your laptop battery is almost dead.", "learner_said": "Can you borrow me your charger?", "asr_unsure": [], "expect": ["word_choice"]}
+{"id": "pt29", "level": "B1", "tutor_said": "When will the fix be ready?", "learner_said": "Yeah, I'm gonna push it later today.", "asr_unsure": [], "expect": [], "note": "Colloquial gonna is fine."}
+{"id": "pt30", "level": "B1", "tutor_said": "How did the demo go?", "learner_said": "Um, so, I mean, it went okay, I guess.", "asr_unsure": [], "expect": [], "note": "Fillers are not corrected."}
+{"id": "pt31", "level": "B1", "tutor_said": "What did you work on yesterday?", "learner_said": "I fixed two bugs and reviewed a pull request.", "asr_unsure": [], "expect": []}
+{"id": "pt32", "level": "B1", "tutor_said": "How long have you been in tech?", "learner_said": "I've been in tech for almost eight years.", "asr_unsure": [], "expect": []}
+{"id": "pt33", "level": "B2", "tutor_said": "Would you take the lead on this?", "learner_said": "Sure, I'd be happy to take it on.", "asr_unsure": [], "expect": []}
+{"id": "pt34", "level": "B2", "tutor_said": "What's blocking you?", "learner_said": "I'm waiting on the design team to sign off on the mockups.", "asr_unsure": [], "expect": []}
+{"id": "pt35", "level": "B1", "tutor_said": "Is there a park near your place?", "learner_said": "There's a big park right across the street.", "asr_unsure": [], "expect": []}
+{"id": "pt36", "level": "B1", "tutor_said": "Why are you so tired?", "learner_said": "Like, I stayed up late, you know, fixing that bug.", "asr_unsure": [], "expect": [], "note": "Fillers like and you know are not corrected."}
+{"id": "pt37", "level": "B1", "tutor_said": "What database do you use?", "learner_said": "We use the post gress database for everything.", "asr_unsure": ["post", "gress"], "expect": [], "forbid_quote": ["post", "gress"], "note": "Low-confidence words are not corrected."}
+{"id": "pt38", "level": "B1", "tutor_said": "Where did you put the files?", "learner_said": "I put them in there folder on the shared drive.", "asr_unsure": ["there"], "expect": [], "forbid_quote": ["there"], "note": "Homophone heard with low confidence: leave it."}
+{"id": "pt39", "level": "A2", "tutor_said": "How old is your dog?", "learner_said": "He has three years and he likes the cube toys.", "asr_unsure": ["cube"], "expect": ["age_have"], "forbid_quote": ["cube"], "note": "The real mistake is corrected, the misheard word is not."}
+{"id": "pt40", "level": "B1", "tutor_said": "What's in the new office?", "learner_said": "In the new office has a cube or needs lab for testing.", "asr_unsure": ["cube", "or", "needs"], "expect": ["there_is_have"], "forbid_quote": ["cube", "needs"], "note": "The real mistake is corrected, the misheard words are not."}

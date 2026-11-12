@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "patterns": {
+    "subject_missing": {"title": "Falta o sujeito: it is", "hint": "Em inglês a frase sempre tem sujeito: It is raining, It is very good."},
+    "there_is_have": {"title": "there is / there are", "hint": "Para dizer que algo existe em um lugar, use there is ou there are, não have: There is a big park in my city."},
+    "age_have": {"title": "A idade: I am 30", "hint": "A idade se diz com be: I am 30 years old, não I have 30 years."},
+    "adjective_order": {"title": "O adjetivo vem antes", "hint": "Em inglês o adjetivo vem antes do substantivo: a red car."},
+    "adjective_plural": {"title": "O adjetivo não tem plural", "hint": "Os adjetivos não mudam no plural: red cars, não reds cars."},
+    "possessive_of": {"title": "O possessivo 's", "hint": "Com pessoas, use 's: my brother's car, não the car of my brother."},
+    "do_auxiliary": {"title": "O auxiliar do", "hint": "Perguntas e negações no presente usam do ou does: Do you like coffee? I don't like it."},
+    "explain_to": {"title": "explain to me", "hint": "Explain, describe e suggest pedem to antes da pessoa: Explain the problem to me."},
+    "false_friends": {"title": "Falsos cognatos", "hint": "Parece uma palavra em português, mas em inglês significa outra coisa: pretend é «fingir», não «pretender»."},
+    "article_general": {"title": "Sem artigo para o geral", "hint": "Para falar de forma geral não se usa the: Life is hard, People need help."},
+    "people_plural": {"title": "people é plural", "hint": "People pede o verbo no plural: People are friendly."},
+    "gerund_after_preposition": {"title": "-ing depois de preposição", "hint": "Depois de preposição o verbo vai com -ing: before going, after eating."},
+    "make_do": {"title": "make / do", "hint": "Make a mistake, make a decision; do your homework, do the dishes."},
+    "say_tell": {"title": "say / tell", "hint": "Tell pede a pessoa: tell me; say não pede: she said that…"},
+    "for_since": {"title": "for / since", "hint": "For vai com uma duração (for two years) e since com o momento de início (since 2024)."},
+    "present_perfect_vs_past_simple": {"title": "Present perfect e past simple", "hint": "Com um momento já terminado (yesterday, in 2020) use o past simple: I saw him yesterday."},
+    "third_person_s": {"title": "O -s de he, she, it", "hint": "No presente simples, depois de he, she ou it o verbo ganha -s: she works."},
+    "prepositions": {"title": "Preposições", "hint": "Aprenda a preposição junto com a palavra: depend on, on Monday, at work."},
+    "word_order_questions": {"title": "Ordem nas perguntas", "hint": "Na pergunta o auxiliar vem antes do sujeito: Where do you work?"},
+    "double_negative": {"title": "Dupla negação", "hint": "Em inglês vai só uma negação por frase: I didn't see anybody."},
+    "countable_uncountable": {"title": "Incontáveis: information, advice", "hint": "Information, advice, news e equipment não têm plural: some information."},
+    "comparative_superlative": {"title": "Comparativos e superlativos", "hint": "Adjetivos curtos com -er e -est (bigger, the easiest); longos com more e most."},
+    "much_many": {"title": "much / many", "hint": "Many vai com coisas contáveis (many people); much com incontáveis (much time)."},
+    "calque": {"title": "Tradução literal", "hint": "A frase foi montada como em português; em inglês se diz de outro jeito."},
+    "collocation": {"title": "Combinação de palavras", "hint": "Essas palavras não se usam juntas em inglês; existe uma combinação fixa."},
+    "word_choice": {"title": "Escolha de palavra", "hint": "A palavra existe, mas com esse sentido se usa outra."},
+    "other": {"title": "Outro", "hint": ""}
+  }
+}

@@ -11,7 +11,7 @@ from fastapi import APIRouter, File, Form, Request, UploadFile
 from fastapi.responses import Response
 from pydantic import BaseModel, ConfigDict, Field
 
-from voicetutor.llm.json_call import has_cyrillic
+from voicetutor.lang_guard import not_english
 from voicetutor.pron.service import PronError
 from voicetutor.server.app import ApiError
 from voicetutor.server.routes_api import core_of
@@ -43,7 +43,7 @@ def decode_wav(data: bytes) -> FloatAudio:
 
 async def _assess(request: Request, text: str, audio: FloatAudio, phrase_id: str | None) -> Any:
     core = core_of(request)
-    if has_cyrillic(text):
+    if not_english(text):
         raise ApiError(422, "pron_no_text")
     try:
         return await core.pron.assess(text, audio, source="reading", phrase_id=phrase_id)
@@ -85,7 +85,7 @@ async def reference(
     """Reference reading in the tutor's voice (Kokoro), audio/wav."""
     core = core_of(request)
     spoken = core.pron.phrase_text(phrase_id) if phrase_id else text
-    if not spoken or len(spoken) > 600 or has_cyrillic(spoken):
+    if not spoken or len(spoken) > 600 or not_english(spoken):
         raise ApiError(404 if phrase_id else 422, "not_found" if phrase_id else "pron_no_text")
     if not 0.5 <= speed <= 1.5:
         raise ApiError(422, "validation")

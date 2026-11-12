@@ -169,7 +169,7 @@ class PronService:
                     "word": word["w"],
                     "expected": tip["expected"],
                     "heard": tip["heard"],
-                    "tip_ru": " ".join(x for x in (tip["title_ru"], tip["tip_ru"]) if x),
+                    "tip_l1": " ".join(x for x in (tip["title_l1"], tip["tip_l1"]) if x),
                     "catalog_id": tip["catalog_id"],
                 }
             )
@@ -355,7 +355,7 @@ class PronService:
             for tid in p.get("targets", []):
                 entry = catalog.entry_by_id(tid)
                 if entry is not None:
-                    targets.append({"id": tid, "title_ru": entry.title_ru})
+                    targets.append({"id": tid, "title_l1": entry.title_l1})
             out.append({"id": p["id"], "text": p["text"], "targets": targets})
         return out
 

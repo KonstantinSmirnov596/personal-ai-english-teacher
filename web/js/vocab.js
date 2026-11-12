@@ -1,13 +1,13 @@
 // Vocabulary: phrases saved from session summaries, simple spaced repetition.
 
-import { ru } from '../i18n/ru.js';
+import { L, langTag } from './i18n.js';
 import { del, get, patch } from './api.js';
 import { clear, el } from './dom.js';
 
-const V = ru.vocab;
+const V = L.vocab;
 
 function formatDate(iso) {
-  return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+  return new Date(iso).toLocaleDateString(langTag(), { day: 'numeric', month: 'long' });
 }
 
 export class VocabView {
@@ -52,7 +52,7 @@ export class VocabView {
         el('li', { class: 'summary-li row', 'data-testid': 'vocab-row' }, [
           el('span', { class: 'row-main' }, [
             el('span', { lang: 'en', class: 'strong', text: item.phrase }),
-            el('span', { class: 'muted', text: item.translation_ru }),
+            el('span', { class: 'muted', text: item.translation_l1 }),
             el('span', { class: 'muted small', text: V.next(formatDate(item.next_review_at)) }),
           ]),
           remove,
@@ -64,7 +64,7 @@ export class VocabView {
 
   reviewCard(item) {
     const translation = el('div', { class: 'hidden' }, [
-      el('div', { text: item.translation_ru }),
+      el('div', { text: item.translation_l1 }),
       item.context ? el('div', { class: 'muted small', lang: 'en', text: item.context }) : null,
     ]);
     const show = el('button', { type: 'button', class: 'btn btn-small', text: V.show });

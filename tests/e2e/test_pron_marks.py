@@ -38,7 +38,7 @@ def test_pronunciation_mark_in_conversation(env: E2E) -> None:
     card = page.locator("[data-testid=pron-card]")
     text = card.inner_text()
     assert "/w/" in text and "/v/" in text
-    assert card.get_attribute("lang") == "ru"
+    assert card.get_attribute("lang") == "es-419"
     env.screenshot("15-pron-mark")
     # the grammar underline and the pronunciation fill coexist in one turn
     assert page.locator("[data-testid=correction-mark]").count() >= 1

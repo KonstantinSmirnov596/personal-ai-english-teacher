@@ -47,7 +47,7 @@ Limits: a turn is 0.3–60 s; a text frame up to 256 KB; a binary frame up to 8 
 | `playback.ended` | `turn_id`, `interrupted: bool` | The playback queue is empty. The core goes to `idle` |
 | `helper.hint` | `request_id` | Two or three possible answers to the tutor's last line |
 | `helper.translate` | `request_id`, `turn_id` | Translation of a tutor line into the learner's language |
-| `helper.how_to_say` | `request_id`, `text_ru` | How to say this phrase in English |
+| `helper.how_to_say` | `request_id`, `text_l1` | How to say this phrase in English |
 | `tutor.replay` | `turn_id`, `speed: 1.0 \| 0.8` | Replay a tutor line. The core sends `tutor.sentence` again with `replay: true` |
 | `exercise.answer` | `request_id`, `audio: {...}` + binary frame | Spoken answer to the summary exercise |
 
@@ -58,18 +58,18 @@ Limits: a turn is 0.3–60 s; a text frame up to 256 KB; a binary frame up to 8 
 | `type` | Fields | Meaning |
 | --- | --- | --- |
 | `hello` | `protocol: 1`, `app_version`, `state`, `active_connection: {id, name, model} \| null`, `settings`, `models_ready: bool` | First message after connecting. `models_ready` is false while the STT and TTS models load |
-| `session.started` | `session_id`, `scenario: {id, title_ru}`, `connection: {id, name, model}` | Session opened |
+| `session.started` | `session_id`, `scenario: {id, title_l1}`, `connection: {id, name, model}` | Session opened |
 | `state` | `value: "idle" \| "listening" \| "transcribing" \| "thinking" \| "speaking"`, `turn_id?` | Every core state change |
 | `user.transcript` | `turn_id`, `text`, `words: [{w, start, end, p}]`, `low_conf: [word indexes]` | Turn text. `p` is the word confidence from 0 to 1; `low_conf` lists words below the threshold |
 | `tutor.delta` | `turn_id`, `text` | Next raw fragment of the reply text for the feed |
 | `tutor.sentence` | `turn_id`, `index`, `text`, `replay?: bool`, `audio: {sample_rate: 24000, format: "pcm_s16le", bytes}` + binary frame | A reply sentence with audio |
 | `tutor.done` | `turn_id`, `text`, `interrupted: bool` | The reply is finished; `text` is the cleaned text that was spoken or sent |
-| `corrections` | `turn_id`, `status: "ok" \| "empty" \| "failed" \| "disabled"`, `items: [{id, quote, start, end, fix, type, note_ru, pattern}]`, `better` | Corrections. `start` and `end` are character positions of `quote` in `text`; `null` when the fragment is not found |
-| `pron.flags` | `turn_id`, `items: [{word_index, expected, heard, tip_ru}]` | Pronunciation marks in conversation |
+| `corrections` | `turn_id`, `status: "ok" \| "empty" \| "failed" \| "disabled"`, `items: [{id, quote, start, end, fix, type, note_l1, pattern}]`, `better` | Corrections. `start` and `end` are character positions of `quote` in `text`; `null` when the fragment is not found |
+| `pron.flags` | `turn_id`, `items: [{word_index, expected, heard, tip_l1}]` | Pronunciation marks in conversation |
 | `helper.result` | `request_id`, `kind: "hint" \| "translate" \| "how_to_say" \| "exercise"`, `data` | Helper answer; `data` schemas are pydantic models in `voicetutor/protocol.py` |
 | `summary` | `session_id`, `key_takeaway`, `exercise`, `corrections`, `patterns`, `sounds`, `phrases` | Session summary |
 | `timing` | `turn_id`, `stt_ms`, `llm_first_sentence_ms`, `tts_first_ms`, `first_audio_ms` | Core timings of a turn. `first_audio_ms` runs from receiving `turn.audio` to sending the first `tutor.sentence` |
-| `error` | `code`, `message_ru`, `retryable: bool`, `turn_id?`, `request_id?` | Error. Afterwards the core is `idle` |
+| `error` | `code`, `message_l1`, `retryable: bool`, `turn_id?`, `request_id?` | Error. Afterwards the core is `idle` |
 
 Correction `type` values: `grammar`, `vocabulary`, `phrasing`. `pattern` values are keys of `voicetutor/data/patterns.json`.
 
@@ -89,7 +89,7 @@ Correction `type` values: `grammar`, `vocabulary`, `phrasing`. `pattern` values 
 | `bad_request` | Message failed schema validation | Log entry; nothing in the feed |
 | `internal` | Everything else | Message and log entry |
 
-The provider's error text is never copied into `message_ru` verbatim: it is cut to 200 characters and passes the key filter.
+The provider's error text is never copied into `message_l1` verbatim: it is cut to 200 characters and passes the key filter.
 
 ### Message order of one turn
 
@@ -116,11 +116,11 @@ An empty transcript (silence, noise) gives `user.transcript` with empty `text` a
 
 ## HTTP
 
-All routes are under `/api`, bodies and answers are JSON unless noted. Error: status 4xx or 5xx and body `{"error": {"code", "message_ru"}}`.
+All routes are under `/api`, bodies and answers are JSON unless noted. Error: status 4xx or 5xx and body `{"error": {"code", "message_l1"}}`.
 
 ### Connections
 
-Connection object in answers: `{id, name, base_url, model, extra_params, key_last4, is_active, last_test: {ok, latency_ms, message_ru, at} | null}`. A field with the full key does not exist in any answer.
+Connection object in answers: `{id, name, base_url, model, extra_params, key_last4, is_active, last_test: {ok, latency_ms, message_l1, at} | null}`. A field with the full key does not exist in any answer.
 
 | Method and path | Body | Action |
 | --- | --- | --- |
@@ -129,7 +129,7 @@ Connection object in answers: `{id, name, base_url, model, extra_params, key_las
 | `PATCH /api/connections/{id}` | Any fields; `api_key` only when the key changes | Change a row |
 | `DELETE /api/connections/{id}` | — | Delete the row and its key. The active row cannot be deleted: `409` |
 | `POST /api/connections/{id}/activate` | — | Make the row active |
-| `POST /api/connections/{id}/test` | — | Short request to the provider; answer `{ok, latency_ms, message_ru}` |
+| `POST /api/connections/{id}/test` | — | Short request to the provider; answer `{ok, latency_ms, message_l1}` |
 | `POST /api/connections/test` | `{base_url, model, api_key, extra_params?}` | Test an unsaved row. The key is not stored anywhere |
 | `GET /api/connections/templates` | — | Provider templates (see `docs/reports/providers.md`) |
 
@@ -185,7 +185,7 @@ Attempt analysis (shortened):
         {"expected": "θ", "heard": "s", "start": 0.42, "end": 0.51, "gop": -3.1, "level": "error", "cls": "θ", "scored": true, "catalog_id": "th_voiceless"},
         {"expected": "ɪ", "heard": "ɪ", "start": 0.51, "end": 0.58, "gop": -0.2, "level": "ok", "cls": "ɪ", "scored": true, "catalog_id": null}
       ],
-      "tip": {"catalog_id": "th_voiceless", "phone_index": 0, "expected": "θ", "heard": "s", "title_ru": "…", "tip_ru": "…", "pair": ["think", "sink"]}
+      "tip": {"catalog_id": "th_voiceless", "phone_index": 0, "expected": "θ", "heard": "s", "title_l1": "…", "tip_l1": "…", "pair": ["think", "sink"]}
     }
   ]
 }

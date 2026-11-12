@@ -252,7 +252,7 @@ def test_conversation_marks_only_clear_errors(env: dict[str, Any]) -> None:
         assert len(flags["items"]) == 1
         item = flags["items"][0]
         assert transcript["words"][item["word_index"]]["w"].strip(".,").lower() == "very"
-        assert item["expected"] == "v" and item["heard"] == "w" and item["tip_ru"]
+        assert item["expected"] == "v" and item["heard"] == "w" and item["tip_l1"]
         client.until(lambda m: m["type"] == "tutor.done", timeout=60) if not any(
             r.msg["type"] == "tutor.done" for r in got
         ) else None

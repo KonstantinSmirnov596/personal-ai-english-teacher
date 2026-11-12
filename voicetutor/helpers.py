@@ -1,7 +1,7 @@
 """Text helpers: hint, translate, how to say, replay, exercise check.
 
-Helpers never add to the conversation history and never change the core state. Russian text is
-returned only as text; English fields are checked for Cyrillic.
+Helpers never add to the conversation history and never change the core state. Text in the
+learner language is returned only as text; English fields are checked by the language guard.
 """
 
 from __future__ import annotations
@@ -12,9 +12,11 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from voicetutor import l1
 from voicetutor.core import NoActiveConnection
+from voicetutor.lang_guard import not_english
 from voicetutor.llm.client import LLMError
-from voicetutor.llm.json_call import ask_json, has_cyrillic
+from voicetutor.llm.json_call import ask_json
 from voicetutor.prompts import helpers as prompts
 from voicetutor.protocol import (
     AudioOut,
@@ -44,28 +46,33 @@ class HintOut(BaseModel):
 
 class TranslateOut(BaseModel):
     model_config = ConfigDict(extra="ignore")
-    ru: str = Field(min_length=1, max_length=1000)
+    translation: str = Field(min_length=1, max_length=1000)
 
 
 class HowToSayOut(BaseModel):
     model_config = ConfigDict(extra="ignore")
     en: str = Field(min_length=1, max_length=400)
     alt: str = Field(default="", max_length=400)
-    note_ru: str = Field(default="", max_length=400)
+    note_l1: str = Field(default="", max_length=400)
 
 
 class ExerciseCheckOut(BaseModel):
     model_config = ConfigDict(extra="ignore")
     correct: bool
-    note_ru: str = Field(default="", max_length=400)
+    note_l1: str = Field(default="", max_length=400)
+
+
+def lang_fields(lang: str) -> dict[str, str]:
+    """Prompt parameters that name the learner language and its style."""
+    return {"l1_name_en": l1.name_en(lang), "l1_style": str(l1.meta(lang).get("style", ""))}
 
 
 def _hint_ok(h: HintOut) -> bool:
-    return all(not has_cyrillic(o.en) for o in h.options)
+    return all(not not_english(o.en) for o in h.options)
 
 
 def _how_ok(h: HowToSayOut) -> bool:
-    return not has_cyrillic(h.en) and not has_cyrillic(h.alt)
+    return not not_english(h.en) and not not_english(h.alt)
 
 
 _CONTRACTIONS = {
@@ -159,15 +166,20 @@ async def text_helper(conv: Any, msg: Any) -> None:
             await conv.error("bad_request", request_id=msg.request_id)
             return
         out = await ask_json(
-            core.llm, endpoint, prompts.TRANSLATE.format(tutor_text=row["text"]), TranslateOut
+            core.llm,
+            endpoint,
+            prompts.TRANSLATE.format(tutor_text=row["text"], **lang_fields(core.l1)),
+            TranslateOut,
         )
-        data = {"ru": out.ru, "turn_id": msg.turn_id}
+        data = {"translation_l1": out.translation, "turn_id": msg.turn_id}
         kind = "translate"
     else:
         tutor_text = conv.session.last_tutor_text if conv.session else ""
-        prompt = prompts.HOW_TO_SAY.format(level=level, tutor_text=tutor_text, text_ru=msg.text_ru)
+        prompt = prompts.HOW_TO_SAY.format(
+            level=level, tutor_text=tutor_text, text_l1=msg.text_l1, **lang_fields(core.l1)
+        )
         how = await ask_json(core.llm, endpoint, prompt, HowToSayOut, check=_how_ok)
-        data = {"en": how.en, "alt": how.alt, "note_ru": how.note_ru}
+        data = {"en": how.en, "alt": how.alt, "note_l1": how.note_l1}
         kind = "how_to_say"
     await conv.send(HelperResult(request_id=msg.request_id, kind=kind, data=data))  # type: ignore[arg-type]
 
@@ -189,7 +201,7 @@ async def replay(conv: Any, msg: TutorReplay) -> None:
         parts: list[tuple[str, bytes]] = []
         for sentence in sentences:
             spoken = clean_for_speech(sentence)
-            if not spoken or has_cyrillic(spoken):
+            if not spoken or not_english(spoken):
                 continue
             result = await core.gpu.run(
                 core.tts.synthesize, spoken, voice=settings.voice, speed=speed
@@ -228,16 +240,17 @@ async def exercise_answer(conv: Any, msg: ExerciseAnswer, pcm: bytes) -> None:
     if answer_matches(heard, answers):
         result = {
             "correct": True,
-            "note_ru": "",
+            "note_l1": "",
             "answer_en": exercise["answer_en"],
             "heard": heard,
         }
     elif not heard:
-        result = {"correct": False, "note_ru": "", "answer_en": exercise["answer_en"], "heard": ""}
+        result = {"correct": False, "note_l1": "", "answer_en": exercise["answer_en"], "heard": ""}
     else:
         _row, endpoint = core.active_endpoint()
         prompt = prompts.EXERCISE_CHECK.format(
-            prompt_ru=exercise["prompt_ru"],
+            **lang_fields(core.l1),
+            prompt_l1=exercise["prompt_l1"],
             answer_en=exercise["answer_en"],
             focus_title=(conv.last_summary.get("key_takeaway") or {}).get("title", ""),
             learner_said=heard,
@@ -245,7 +258,7 @@ async def exercise_answer(conv: Any, msg: ExerciseAnswer, pcm: bytes) -> None:
         check = await ask_json(core.llm, endpoint, prompt, ExerciseCheckOut)
         result = {
             "correct": check.correct,
-            "note_ru": check.note_ru,
+            "note_l1": check.note_l1,
             "answer_en": exercise["answer_en"],
             "heard": heard,
         }

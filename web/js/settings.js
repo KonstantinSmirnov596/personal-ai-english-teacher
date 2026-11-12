@@ -1,16 +1,16 @@
 // Settings: sound and voice, conversation, corrections, data. API connections live in
 // connections.js and share the same section navigation.
 
-import { ru } from '../i18n/ru.js';
+import { L, currentLanguage, languages, setLanguage } from './i18n.js';
 import { api, get, patch } from './api.js';
 import { clear, el } from './dom.js';
 
-const SECTIONS = ['connections', 'sound', 'conversation', 'corrections', 'data'];
+const SECTIONS = ['connections', 'language', 'sound', 'conversation', 'corrections', 'data'];
 
 export function settingsNav(current) {
-  return el('nav', { class: 'settings-nav', 'aria-label': ru.settings.title }, [
-    el('div', { class: 'settings-nav-title', text: ru.settings.title }),
-    ...SECTIONS.map((s) => el('a', { href: `#/settings/${s}`, 'aria-current': s === current ? 'page' : null, 'data-section': s, text: ru.settingsSections[s] })),
+  return el('nav', { class: 'settings-nav', 'aria-label': L.settings.title }, [
+    el('div', { class: 'settings-nav-title', text: L.settings.title }),
+    ...SECTIONS.map((s) => el('a', { href: `#/settings/${s}`, 'aria-current': s === current ? 'page' : null, 'data-section': s, text: L.settingsSections[s] })),
   ]);
 }
 
@@ -37,9 +37,10 @@ export class SettingsView {
       return;
     }
     const m = clear(this.main);
-    m.append(el('div', { class: 'page-head' }, [el('h1', { text: ru.settingsSections[this.section] })]));
+    m.append(el('div', { class: 'page-head' }, [el('h1', { text: L.settingsSections[this.section] })]));
     this.status = el('span', { class: 'muted small', role: 'status', 'data-testid': 'settings-status' });
-    if (this.section === 'sound') m.append(await this.soundSection());
+    if (this.section === 'language') m.append(this.languageSection());
+    else if (this.section === 'sound') m.append(await this.soundSection());
     else if (this.section === 'conversation') m.append(this.conversationSection());
     else if (this.section === 'corrections') m.append(this.correctionsSection());
     else if (this.section === 'data') m.append(this.dataSection());
@@ -50,7 +51,7 @@ export class SettingsView {
     try {
       this.settings = await patch('/api/settings', change);
       this.app.settings = this.settings;
-      this.status.textContent = ru.saved;
+      this.status.textContent = L.saved;
       this.app.talk.updatePanel();
       this.app.talk.syncAuto();
     } catch (e) {
@@ -70,7 +71,7 @@ export class SettingsView {
   }
 
   async soundSection() {
-    const S = ru.sound;
+    const S = L.sound;
     const s = this.settings;
     let devices = [];
     try {
@@ -134,7 +135,7 @@ export class SettingsView {
       }
     });
     const ns = this.checkbox('noise', S.noiseSuppression, s.noise_suppression, (v) => this.save({ noise_suppression: v }));
-    const raw = this.checkbox('raw-mic', ru.reading.rawMic, s.reading_raw_mic, (v) => this.save({ reading_raw_mic: v }));
+    const raw = this.checkbox('raw-mic', L.reading.rawMic, s.reading_raw_mic, (v) => this.save({ reading_raw_mic: v }));
     return el('div', { class: 'settings-group' }, [
       this.field(S.input, input),
       this.field(S.output, output),
@@ -146,8 +147,37 @@ export class SettingsView {
     ]);
   }
 
+  // Settings → Language: two (or more) learner languages, switched without restarting the app.
+  languageSection() {
+    const box = el('div', { class: 'segmented', role: 'radiogroup', 'aria-label': L.language.label, 'data-testid': 'language-switch' });
+    for (const lang of languages()) {
+      const b = el('button', {
+        type: 'button',
+        role: 'radio',
+        lang: lang.html_lang,
+        'aria-checked': String(lang.code === currentLanguage()),
+        'aria-pressed': String(lang.code === currentLanguage()),
+        'data-lang': lang.code,
+        text: lang.name_native,
+      });
+      b.addEventListener('click', () => this.switchLanguage(lang));
+      box.append(b);
+    }
+    return el('div', { class: 'settings-group' }, [
+      el('div', { class: 'field' }, [el('span', { class: 'field-label', text: L.language.label }), box]),
+      el('p', { class: 'muted small', text: L.language.hint }),
+    ]);
+  }
+
+  async switchLanguage(lang) {
+    if (lang.code === currentLanguage()) return;
+    await this.save({ l1: lang.code });
+    await setLanguage(lang.code, lang.html_lang);
+    window.dispatchEvent(new CustomEvent('voicetutor:language', { detail: lang.code }));
+  }
+
   conversationSection() {
-    const C = ru.conversationSettings;
+    const C = L.conversationSettings;
     const s = this.settings;
     const level = el('select', { class: 'select', id: 'set-level' });
     for (const lv of ['A2', 'B1', 'B2', 'C1']) {
@@ -158,7 +188,7 @@ export class SettingsView {
     level.addEventListener('change', () => this.save({ level: level.value }));
     const mode = el('select', { class: 'select', id: 'set-mode' });
     for (const m of ['manual', 'auto']) {
-      const o = el('option', { value: m, text: ru.panel[m] });
+      const o = el('option', { value: m, text: L.panel[m] });
       if (m === s.turn_mode) o.selected = true;
       mode.append(o);
     }
@@ -177,7 +207,7 @@ export class SettingsView {
   }
 
   correctionsSection() {
-    const C = ru.correctionSettings;
+    const C = L.correctionSettings;
     const list = el('div', { class: 'radio-list', role: 'radiogroup', 'aria-label': C.mode });
     for (const m of ['instant', 'on_click', 'end', 'off']) {
       const r = el('input', { type: 'radio', name: 'corr-mode', id: `corr-${m}`, value: m });
@@ -185,12 +215,12 @@ export class SettingsView {
       r.addEventListener('change', () => this.save({ correction_mode: m }));
       list.append(el('label', { class: 'check', for: `corr-${m}` }, [r, el('span', { text: C[m] })]));
     }
-    const pron = this.checkbox('pron-conv', ru.reading.inConversation, this.settings.pron_in_conversation, (v) => this.save({ pron_in_conversation: v }));
+    const pron = this.checkbox('pron-conv', L.reading.inConversation, this.settings.pron_in_conversation, (v) => this.save({ pron_in_conversation: v }));
     return el('div', { class: 'settings-group' }, [list, pron]);
   }
 
   dataSection() {
-    const D = ru.dataSettings;
+    const D = L.dataSettings;
     const retention = el('input', { type: 'number', class: 'input', id: 'set-retention', min: '0', max: '3650', value: String(this.settings.audio_retention_days) });
     retention.addEventListener('change', () => this.save({ audio_retention_days: Math.max(0, Number(retention.value) || 0) }));
     const includeKeys = el('input', { type: 'checkbox', id: 'include-keys' });

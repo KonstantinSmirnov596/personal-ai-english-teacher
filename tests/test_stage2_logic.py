@@ -55,7 +55,7 @@ def _new_session(core: Any, user_texts: list[tuple[str, list[str]]]) -> str:
     s = core.sessions
     sid = s.create(
         scenario_id="free_talk",
-        scenario_title_ru="Свободный разговор",
+        scenario_title_l1="Conversación libre",
         level="B1",
         correction_mode="on_click",
         connection_id=None,
@@ -71,7 +71,7 @@ def _new_session(core: Any, user_texts: list[tuple[str, list[str]]]) -> str:
                 "quote": text.split()[0],
                 "fix": "x",
                 "type": "grammar",
-                "note_ru": "Пояснение.",
+                "note_l1": "Explicación.",
                 "pattern": k,
                 "start": 0,
                 "end": 1,
@@ -205,12 +205,15 @@ def test_text_helpers(tmp_path: Path, mock_llm: MockLLM, test_key: str) -> None:
         call(handle_helper, conv, HelperHint(type="helper.hint", request_id="r1"), None)
         translate = HelperTranslate(type="helper.translate", request_id="r2", turn_id=tutor_turn)
         call(handle_helper, conv, translate, None)
-        how = HelperHowToSay(type="helper.how_to_say", request_id="r3", text_ru="Можно вопрос?")
+        how = HelperHowToSay(
+            type="helper.how_to_say", request_id="r3", text_l1="¿Puedo hacer una pregunta?"
+        )
         call(handle_helper, conv, how, None)
         assert not conv.errors, conv.errors
         by_id = {m.request_id: m for m in conv.sent}
         assert by_id["r1"].kind == "hint" and len(by_id["r1"].data["options"]) == 2
-        assert by_id["r2"].kind == "translate" and by_id["r2"].data["ru"]
+        assert by_id["r2"].kind == "translate"
+        assert by_id["r2"].data["translation_l1"] == "Traducción de prueba de la respuesta."
         assert by_id["r3"].data["en"] == "I'd like to ask a question."
         hint_req = next(
             r for r in mock_llm.requests if "Suggest replies" in r["body"]["messages"][0]["content"]
@@ -242,7 +245,7 @@ def test_vocab_spaced_repetition(tmp_path: Path) -> None:
         h = ctx.auth_headers
         v = ctx.client.post(
             "/api/vocab",
-            json={"phrase": "walk me through", "translation_ru": "расскажите по порядку"},
+            json={"phrase": "walk me through", "translation_l1": "cuéntame paso a paso"},
             headers=h,
         ).json()
         assert v["interval_days"] == 1
@@ -258,7 +261,10 @@ def test_vocab_spaced_repetition(tmp_path: Path) -> None:
         dup = ctx.client.post("/api/vocab", json={"phrase": "Walk me through"}, headers=h).json()
         assert dup["id"] == v["id"]
         assert (
-            ctx.client.post("/api/vocab", json={"phrase": "привет"}, headers=h).status_code == 422
+            ctx.client.post(
+                "/api/vocab", json={"phrase": "muchas gracias por todo"}, headers=h
+            ).status_code
+            == 422
         )
         assert ctx.client.delete(f"/api/vocab/{v['id']}", headers=h).status_code == 204
 
@@ -343,11 +349,13 @@ def test_delete_all_direct_call(tmp_path: Path) -> None:
         assert delete_all_data(ctx.core, include_keys=False)["ok"] is True
 
 
-def test_synthesis_service_rejects_cyrillic_before_any_model_work() -> None:
-    """Russian text never reaches synthesis: the service refuses it without loading the model."""
-    from voicetutor.speech.tts import CyrillicTextError, SpeechSynthesizer
+def test_synthesis_service_rejects_learner_language_before_any_model_work() -> None:
+    """Learner-language text never reaches synthesis: refused without loading the model."""
+    from voicetutor.lang_guard import LearnerLanguageError
+    from voicetutor.speech.tts import SpeechSynthesizer
 
     tts = SpeechSynthesizer(device="cpu")
-    with pytest.raises(CyrillicTextError):
-        tts.synthesize("Скажите это по-английски.")
+    for text in ("Dilo en inglés, por favor.", "Diga isso em inglês, por favor."):
+        with pytest.raises(LearnerLanguageError):
+            tts.synthesize(text)
     assert not tts.loaded

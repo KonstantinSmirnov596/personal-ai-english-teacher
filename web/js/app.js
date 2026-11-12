@@ -1,6 +1,6 @@
 // Window shell: header, hash router, shared state, WebSocket to the core.
 
-import { ru } from '../i18n/ru.js';
+import { L } from './i18n.js';
 import { get } from './api.js';
 import { AudioEngine } from './audio.js';
 import { ConnectionsView } from './connections.js';
@@ -12,7 +12,7 @@ import { VocabView } from './vocab.js';
 import { TalkView } from './talk.js';
 import { CoreSocket } from './ws.js';
 
-class App {
+export class App {
   constructor(root) {
     this.root = root;
     this.audio = new AudioEngine();
@@ -39,7 +39,7 @@ class App {
   }
 
   async start() {
-    document.title = ru.appTitle;
+    document.title = L.appTitle;
     try {
       this.settings = await get('/api/settings');
     } catch {
@@ -119,6 +119,12 @@ class App {
     }
   }
 
+  // After a language switch: rebuild the visible screen and the panel texts in the new language.
+  rerender() {
+    this.talk.relabel();
+    this.route();
+  }
+
   route() {
     const hash = location.hash || '#/talk';
     const [, section, sub] = hash.split('/');
@@ -148,8 +154,8 @@ class App {
   renderHeader() {
     const h = clear(this.header);
     const navLink = (key, href) =>
-      el('a', { href, 'aria-current': this.current === key ? 'page' : null, text: ru.nav[key] });
-    h.append(el('nav', { class: 'nav', 'aria-label': ru.nav.sections }, [navLink('talk', '#/talk'), navLink('reading', '#/reading'), navLink('vocab', '#/vocab'), navLink('history', '#/history')]));
+      el('a', { href, 'aria-current': this.current === key ? 'page' : null, text: L.nav[key] });
+    h.append(el('nav', { class: 'nav', 'aria-label': L.nav.sections }, [navLink('talk', '#/talk'), navLink('reading', '#/reading'), navLink('vocab', '#/vocab'), navLink('history', '#/history')]));
     const center = el('div', { class: 'header-center' });
     if (this.current === 'talk') this.talk.renderHeaderCenter(center);
     h.append(center);
@@ -157,14 +163,12 @@ class App {
     h.append(
       el('a', { class: conn ? 'conn-chip' : 'conn-chip none', href: '#/settings/connections', 'data-testid': 'active-connection' }, [
         el('span', { class: 'dot', 'aria-hidden': 'true' }),
-        el('span', { text: conn ? `${conn.name} · ${conn.model}` : ru.talk.noConnectionTitle }),
+        el('span', { text: conn ? `${conn.name} · ${conn.model}` : L.talk.noConnectionTitle }),
       ]),
     );
     h.append(
-      el('a', { class: 'icon-link', href: '#/settings/connections', 'aria-label': ru.nav.settings, 'aria-current': this.current === 'settings' ? 'page' : null }, [icons.settings()]),
+      el('a', { class: 'icon-link', href: '#/settings/connections', 'aria-label': L.nav.settings, 'aria-current': this.current === 'settings' ? 'page' : null }, [icons.settings()]),
     );
   }
 }
 
-const app = new App(document.getElementById('app'));
-app.start();

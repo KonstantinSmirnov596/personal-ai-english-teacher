@@ -22,7 +22,8 @@ import numpy as np
 
 from voicetutor.core import Core, NoActiveConnection
 from voicetutor.corrector import run_corrector
-from voicetutor.i18n_ru import error_text
+from voicetutor.i18n import error_text
+from voicetutor.lang_guard import LearnerLanguageError, not_english
 from voicetutor.llm.client import LLMError
 from voicetutor.prompts import tutor as tutor_prompt
 from voicetutor.protocol import (
@@ -67,9 +68,7 @@ from voicetutor.speech.sentences import (
     SentenceSplitter,
     clean_for_display,
     clean_for_speech,
-    has_cyrillic,
 )
-from voicetutor.speech.tts import CyrillicTextError
 from voicetutor.storage.repo import new_id
 
 log = logging.getLogger(__name__)
@@ -150,7 +149,7 @@ class Conversation:
         await self.send(
             ErrorMsg(
                 code=code,  # type: ignore[arg-type]
-                message_ru=message,
+                message_l1=message,
                 retryable=retryable,
                 turn_id=turn_id,
                 request_id=request_id,
@@ -246,16 +245,17 @@ class Conversation:
             await self.error(e.code, retryable=e.retryable)
             return
         settings = self.core.settings.get()
-        scenario = self.core.scenarios.to_api(scenario_row)
+        scenario = self.core.scenarios.to_api(scenario_row, self.core.l1)
         level = msg.level or settings.level
         session_id = self.core.sessions.create(
             scenario_id=scenario["id"],
-            scenario_title_ru=scenario["title_ru"],
+            scenario_title_l1=scenario["title_l1"],
             level=level,
             correction_mode=settings.correction_mode,
             connection_id=int(conn_row["id"]),
             connection_name=conn_row["name"],
             model=conn_row["model"],
+            l1=self.core.l1,
         )
         system_prompt = tutor_prompt.build_system_prompt(
             level=level,
@@ -273,7 +273,7 @@ class Conversation:
         await self.send(
             SessionStarted(
                 session_id=session_id,
-                scenario=ScenarioRef(id=scenario["id"], title_ru=scenario["title_ru"]),
+                scenario=ScenarioRef(id=scenario["id"], title_l1=scenario["title_l1"]),
                 connection=ConnectionRef(**self.core.connection_ref(conn_row)),
             )
         )
@@ -517,15 +517,15 @@ class Conversation:
             spoken = clean_for_speech(sentence)
             if not spoken:
                 continue
-            if has_cyrillic(spoken):
-                log.warning("tutor sentence contains Cyrillic; not synthesized")
+            if not_english(spoken):
+                log.warning("tutor sentence is not English; not synthesized")
                 continue
             tts_started = time.perf_counter()
             try:
                 result = await self.core.gpu.run(
                     self.core.tts.synthesize, spoken, voice=settings.voice, speed=settings.speed
                 )
-            except CyrillicTextError:
+            except LearnerLanguageError:
                 continue
             except Exception:
                 log.exception("speech synthesis failed")
@@ -643,7 +643,7 @@ class Conversation:
                     word_index=f["word_index"],
                     expected=f["expected"],
                     heard=f["heard"],
-                    tip_ru=f["tip_ru"],
+                    tip_l1=f["tip_l1"],
                 )
                 for f in flags
             ]
@@ -667,6 +667,7 @@ class Conversation:
             tutor_said=tutor_said,
             learner_said=text,
             unsure_words=unsure,
+            lang=self.core.l1,
         )
         if result.items:
             self.core.sessions.add_corrections(session.id, turn_id, result.items)

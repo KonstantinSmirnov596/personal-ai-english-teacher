@@ -2,7 +2,7 @@
 
 The acoustic model (wav2vec2-lv-60-espeak-cv-ft) has a multilingual vocabulary of 392 espeak
 symbols. For English scoring we reduce its output to classes: one class per American English
-phone as espeak-ng ``en-us`` prints it, plus a few accent sounds typical for Russian speakers
+phone as espeak-ng ``en-us`` prints it, plus a few accent sounds typical for learners
 (trilled r, velar fricative). Symbols that differ only in length or are foreign spellings of the
 same sound are merged into one class (phoneme symbol check, scripts/phoneme_probe.py).
 """

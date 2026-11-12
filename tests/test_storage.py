@@ -98,7 +98,7 @@ def test_sessions_turns_corrections_cascade(tmp_path: Path) -> None:
     sessions = SessionRepo(db)
     sid = sessions.create(
         scenario_id="free_talk",
-        scenario_title_ru="Свободный разговор",
+        scenario_title_l1="Conversación libre",
         level="B1",
         correction_mode="on_click",
         connection_id=None,
@@ -116,7 +116,7 @@ def test_sessions_turns_corrections_cascade(tmp_path: Path) -> None:
                 "quote": "I has",
                 "fix": "I have",
                 "type": "grammar",
-                "note_ru": "С I — have.",
+                "note_l1": "Con I va have.",
                 "pattern": "third_person_s",
                 "start": 0,
                 "end": 5,
@@ -139,7 +139,7 @@ def test_builtin_scenarios_seeded_once(tmp_path: Path) -> None:
     repo.seed_builtin(scenarios())
     repo.seed_builtin(scenarios())
     rows = repo.list()
-    assert len(rows) == 6
+    assert len(rows) == 11
     assert rows[0]["id"] == "free_talk"
     db.close()
 
@@ -152,3 +152,69 @@ def test_no_key_columns_in_schema(tmp_path: Path) -> None:
     db.close()
     with sqlite3.connect(tmp_path / "t.db") as c:
         assert c.execute("PRAGMA foreign_keys").fetchone() is not None
+
+
+def test_migration_note_l1(tmp_path: Path, monkeypatch) -> None:
+    """Plan item 1.4: a database of schema 4 (Russian-only fields) migrates with its data kept."""
+    path = tmp_path / "old.db"
+    monkeypatch.setattr("voicetutor.storage.db.MIGRATIONS", MIGRATIONS[:4])
+    old = Database(path)
+    assert old.schema_version() == 4
+    old.execute(
+        "INSERT INTO session(id, scenario_id, scenario_title_ru, level, correction_mode,"
+        " started_at) VALUES ('s1', 'free_talk', 'Old title', 'B1', 'on_click', '2026-01-01')"
+    )
+    old.execute(
+        "INSERT INTO turn(id, session_id, idx, role, text, created_at)"
+        " VALUES ('t1', 's1', 0, 'user', 'I have 30 years.', '2026-01-01')"
+    )
+    old.execute(
+        "INSERT INTO correction(id, turn_id, session_id, quote, fix, type, note_ru, pattern,"
+        " created_at) VALUES ('c1', 't1', 's1', 'I have 30 years', 'I am 30', 'grammar',"
+        " 'old explanation', 'age_have', '2026-01-01')"
+    )
+    old.execute(
+        "INSERT INTO vocab(phrase, translation_ru, next_review_at, created_at)"
+        " VALUES ('walk me through', 'old translation', '2026-01-02', '2026-01-01')"
+    )
+    old.close()
+    monkeypatch.setattr("voicetutor.storage.db.MIGRATIONS", MIGRATIONS)
+    db = Database(path)
+    assert db.schema_version() == len(MIGRATIONS)
+    assert db.one("SELECT note_l1 FROM correction WHERE id = 'c1'")["note_l1"] == "old explanation"
+    s = db.one("SELECT scenario_title_l1, l1 FROM session WHERE id = 's1'")
+    assert s["scenario_title_l1"] == "Old title" and s["l1"] == ""
+    v = db.one("SELECT translation_l1 FROM vocab WHERE phrase = 'walk me through'")
+    assert v["translation_l1"] == "old translation"
+    cols = {r["name"] for r in db.all("PRAGMA table_info(correction)")}
+    assert "note_l1" in cols and "note_ru" not in cols
+    db.close()
+
+
+def test_session_records_its_language(tmp_path: Path) -> None:
+    db = Database(tmp_path / "t.db")
+    sid = SessionRepo(db).create(
+        scenario_id="free_talk",
+        scenario_title_l1="Conversa livre",
+        level="B1",
+        correction_mode="on_click",
+        connection_id=None,
+        connection_name="",
+        model="",
+        l1="pt-BR",
+    )
+    assert db.one("SELECT l1 FROM session WHERE id = ?", (sid,))["l1"] == "pt-BR"
+    db.close()
+
+
+def test_builtin_titles_follow_the_language(tmp_path: Path) -> None:
+    db = Database(tmp_path / "t.db")
+    repo = ScenarioRepo(db)
+    repo.seed_builtin(scenarios())
+    row = repo.get("small_talk")
+    assert repo.to_api(row, "es-419")["title_l1"] == "Charla con un colega"
+    assert repo.to_api(row, "pt-BR")["title_l1"] == "Papo com um colega"
+    # a built-in removed from the data file disappears from the table
+    repo.seed_builtin([s for s in scenarios() if s["id"] != "small_talk"])
+    assert repo.get("small_talk") is None
+    db.close()

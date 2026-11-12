@@ -29,7 +29,7 @@ export async function api(method, path, body) {
   }
   if (!resp.ok) {
     const err = (data && data.error) || {};
-    throw new ApiError(resp.status, err.code || 'internal', err.message_ru || '');
+    throw new ApiError(resp.status, err.code || 'internal', err.message_l1 || '');
   }
   return data;
 }

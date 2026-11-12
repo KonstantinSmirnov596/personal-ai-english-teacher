@@ -3,7 +3,6 @@ settings sections."""
 
 from __future__ import annotations
 
-import re
 import time
 from typing import Any
 
@@ -11,9 +10,9 @@ import pytest
 
 from tests.e2e.conftest import E2E
 from tests.e2e.test_conversation import speak_one_turn, start_session
+from voicetutor.lang_guard import not_english
 
 pytestmark = pytest.mark.e2e
-CYRILLIC = re.compile(r"[\u0400-\u052f]")
 
 
 def ensure_connection(e2e: E2E) -> None:
@@ -41,23 +40,23 @@ def test_helpers_summary_and_vocab(e2e: E2E) -> None:
     page.locator("[data-testid=turn-tutor] .turn-text:not(:empty)").nth(1).wait_for(timeout=60_000)
     page.wait_for_selector("[data-testid=panel][data-state=idle]", timeout=60_000)
 
-    # Translation of a tutor turn: Russian text only, below the turn.
+    # Translation of a tutor turn: learner-language text only, below the turn.
     page.locator("[data-testid=tutor-translate]").first.click()
     tr = page.locator("[data-testid=translation]").first
     page.wait_for_function  # noqa: B018 - documentation: CSP forbids string predicates
-    tr.filter(has_text="Тестовый перевод").wait_for(timeout=20_000)
-    assert tr.get_attribute("lang") == "ru"
+    tr.filter(has_text="Traducción de prueba").wait_for(timeout=20_000)
+    assert tr.get_attribute("lang") == "es-419"
 
     # Hint: English options.
     page.click("[data-testid=helper-hint]")
     hint = page.locator("[data-testid=hint-card] li")
     hint.first.wait_for(timeout=20_000)
     assert hint.count() == 2
-    assert all(not CYRILLIC.search(t) for t in hint.all_inner_texts())
+    assert all(not not_english(t) for t in hint.all_inner_texts())
 
-    # How to say: Russian in, English out.
+    # How to say: learner language in, English out.
     page.click("[data-testid=helper-how]")
-    page.fill("[data-testid=how-input]", "Можно задать вопрос?")
+    page.fill("[data-testid=how-input]", "¿Puedo hacer una pregunta?")
     page.keyboard.press("Enter")
     page.locator("[data-testid=how-card] .strong").filter(has_text="ask a question").wait_for(
         timeout=20_000
@@ -82,7 +81,7 @@ def test_helpers_summary_and_vocab(e2e: E2E) -> None:
     time.sleep(3.5)
     say.click()
     result = page.locator("[data-testid=exercise-result]")
-    result.filter(has_text="Тестовая проверка").wait_for(timeout=30_000)
+    result.filter(has_text="Revisión de prueba").wait_for(timeout=30_000)
 
     # Save a tutor phrase into the vocabulary.
     add = page.locator("[data-testid=add-vocab]").first
@@ -117,7 +116,7 @@ def test_settings_sections(e2e: E2E) -> None:
     slider.wait_for()
     slider.fill("2200")
     slider.dispatch_event("change")
-    page.wait_for_selector("[data-testid=settings-status]:has-text('Сохранено')")
+    page.wait_for_selector("[data-testid=settings-status]:has-text('Guardado')")
     page.check("#set-headphones")
     wait_settings(e2e, pause_ms=2200, headphones=True)
     page.goto(e2e.lp.base + "/#/settings/sound")

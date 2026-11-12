@@ -9,11 +9,13 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
+from voicetutor import l1
 from voicetutor.core import NoActiveConnection
+from voicetutor.lang_guard import not_english
 from voicetutor.llm.client import LLMError
-from voicetutor.llm.json_call import has_cyrillic, parse_model
+from voicetutor.llm.json_call import parse_model
 from voicetutor.patterns import IGNORED, update_after_session
-from voicetutor.prompts.summary import SYSTEM
+from voicetutor.prompts.summary import build_system_prompt
 
 log = logging.getLogger(__name__)
 
@@ -27,13 +29,13 @@ class Example(BaseModel):
 class KeyTakeaway(BaseModel):
     model_config = ConfigDict(extra="ignore")
     title: str = Field(min_length=1, max_length=120)
-    explanation_ru: str = Field(min_length=1, max_length=1000)
+    explanation_l1: str = Field(min_length=1, max_length=1000)
     examples: list[Example] = Field(default_factory=list, max_length=4)
 
 
 class Exercise(BaseModel):
     model_config = ConfigDict(extra="ignore")
-    prompt_ru: str = Field(min_length=1, max_length=300)
+    prompt_l1: str = Field(min_length=1, max_length=300)
     answer_en: str = Field(min_length=1, max_length=300)
     accept: list[str] = Field(default_factory=list, max_length=6)
 
@@ -41,7 +43,7 @@ class Exercise(BaseModel):
 class Phrase(BaseModel):
     model_config = ConfigDict(extra="ignore")
     en: str = Field(min_length=1, max_length=120)
-    ru: str = Field(default="", max_length=200)
+    translation_l1: str = Field(default="", max_length=200)
     context: str = Field(default="", max_length=600)
 
 
@@ -78,20 +80,20 @@ def choose_focus(patterns: list[dict[str, Any]]) -> str | None:
 def _validated(out: SummaryOut, tutor_lines: list[str], focus: str | None) -> dict[str, Any]:
     takeaway = out.key_takeaway if focus else None
     exercise = out.exercise if focus else None
-    if takeaway and has_cyrillic(takeaway.title):
+    if takeaway and not_english(takeaway.title):
         takeaway = None
     if exercise and (
-        has_cyrillic(exercise.answer_en) or any(has_cyrillic(a) for a in exercise.accept)
+        not_english(exercise.answer_en) or any(not_english(a) for a in exercise.accept)
     ):
         exercise = None
     phrases: list[dict[str, Any]] = []
     for p in out.phrases[:4]:
-        if has_cyrillic(p.en) or has_cyrillic(p.context):
+        if not_english(p.en) or not_english(p.context):
             continue
         line = phrase_in_lines(p.en, tutor_lines)
         if line is None:
             continue
-        phrases.append({"en": p.en, "ru": p.ru, "context": line})
+        phrases.append({"en": p.en, "translation_l1": p.translation_l1, "context": line})
     return {
         "key_takeaway": takeaway.model_dump() if takeaway else None,
         "exercise": exercise.model_dump() if exercise else None,
@@ -107,7 +109,7 @@ async def build_summary(core: Any, session: Any) -> dict[str, Any]:
             "quote": c["quote"],
             "fix": c["fix"],
             "type": c["type"],
-            "note_ru": c["note_ru"],
+            "note_l1": c["note_l1"],
             "pattern": c["pattern"],
         }
         for c in core.sessions.corrections(session.id)
@@ -133,7 +135,9 @@ async def build_summary(core: Any, session: Any) -> dict[str, Any]:
         )
         try:
             _row, endpoint = core.active_endpoint()
-            messages = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": user}]
+            lang = core.l1
+            system = build_system_prompt(l1.name_en(lang), l1.meta(lang).get("style", ""))
+            messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
             for attempt in (1, 2):
                 text = await core.llm.complete(
                     endpoint, messages, json_mode=True, max_tokens=1200, schema=SummaryOut

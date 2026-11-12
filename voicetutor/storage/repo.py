@@ -63,7 +63,7 @@ class ConnectionRepo:
             last_test = {
                 "ok": bool(row["last_test_ok"]),
                 "latency_ms": row["last_test_latency_ms"],
-                "message_ru": row["last_test_message"] or "",
+                "message_l1": row["last_test_message"] or "",
                 "at": row["last_test_at"],
             }
         return {
@@ -154,13 +154,16 @@ class ScenarioRepo:
         self.db = db
 
     @staticmethod
-    def to_api(row: Any) -> dict[str, Any]:
+    def to_api(row: Any, lang: str = "") -> dict[str, Any]:
+        """Scenario for the window; built-in titles in ``lang`` (custom ones as written)."""
+        titles = json.loads(row["title_l10n"] or "{}")
+        descriptions = json.loads(row["description_l10n"] or "{}")
         return {
             "id": row["id"],
             "builtin": bool(row["builtin"]),
-            "title_ru": row["title_ru"],
+            "title_l1": titles.get(lang) or row["title_l1"] or row["title_en"],
             "title_en": row["title_en"],
-            "description_ru": row["description_ru"],
+            "description_l1": descriptions.get(lang) or row["description_l1"],
             "role": row["role"],
             "setting": row["setting"],
             "goals": json.loads(row["goals"]),
@@ -168,27 +171,34 @@ class ScenarioRepo:
         }
 
     def seed_builtin(self, scenarios: list[dict[str, Any]]) -> None:
+        """Insert or refresh the built-in scenarios; drop built-ins that no longer exist."""
         with self.db.transaction() as conn:
             for order, s in enumerate(scenarios):
                 conn.execute(
-                    "INSERT INTO scenario(id, builtin, title_ru, title_en, description_ru, role,"
-                    " setting, goals, openers, sort_order) VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, ?)"
-                    " ON CONFLICT(id) DO UPDATE SET builtin = 1, title_ru = excluded.title_ru,"
-                    " title_en = excluded.title_en, description_ru = excluded.description_ru,"
+                    "INSERT INTO scenario(id, builtin, title_l1, title_en, description_l1, role,"
+                    " setting, goals, openers, sort_order, title_l10n, description_l10n)"
+                    " VALUES (?, 1, '', ?, '', ?, ?, ?, ?, ?, ?, ?)"
+                    " ON CONFLICT(id) DO UPDATE SET builtin = 1, title_l1 = '',"
+                    " title_en = excluded.title_en, description_l1 = '',"
                     " role = excluded.role, setting = excluded.setting, goals = excluded.goals,"
-                    " openers = excluded.openers, sort_order = excluded.sort_order",
+                    " openers = excluded.openers, sort_order = excluded.sort_order,"
+                    " title_l10n = excluded.title_l10n,"
+                    " description_l10n = excluded.description_l10n",
                     (
                         s["id"],
-                        s["title_ru"],
                         s.get("title_en", ""),
-                        s.get("description_ru", ""),
                         s["role"],
                         s.get("setting", ""),
                         json.dumps(s.get("goals", [])),
                         json.dumps(s.get("openers", [])),
                         order,
+                        json.dumps(s.get("title", {}), ensure_ascii=False),
+                        json.dumps(s.get("description", {}), ensure_ascii=False),
                     ),
                 )
+            ids = [s["id"] for s in scenarios]
+            marks = ", ".join("?" for _ in ids)
+            conn.execute(f"DELETE FROM scenario WHERE builtin = 1 AND id NOT IN ({marks})", ids)
 
     def list(self) -> list[Any]:
         return self.db.all("SELECT * FROM scenario ORDER BY sort_order, created_at")
@@ -199,13 +209,13 @@ class ScenarioRepo:
     def create(self, data: dict[str, Any]) -> str:
         sid = "custom_" + uuid.uuid4().hex[:10]
         self.db.execute(
-            "INSERT INTO scenario(id, builtin, title_ru, title_en, description_ru, role, setting,"
+            "INSERT INTO scenario(id, builtin, title_l1, title_en, description_l1, role, setting,"
             " goals, openers) VALUES (?, 0, ?, ?, ?, ?, ?, ?, ?)",
             (
                 sid,
-                data["title_ru"],
+                data["title_l1"],
                 data.get("title_en", ""),
-                data.get("description_ru", ""),
+                data.get("description_l1", ""),
                 data["role"],
                 data.get("setting", ""),
                 json.dumps(data.get("goals", [])),
@@ -215,7 +225,7 @@ class ScenarioRepo:
         return sid
 
     def update(self, scenario_id: str, data: dict[str, Any]) -> None:
-        cols = ("title_ru", "title_en", "description_ru", "role", "setting", "goals", "openers")
+        cols = ("title_l1", "title_en", "description_l1", "role", "setting", "goals", "openers")
         sets: list[str] = []
         values: list[Any] = []
         for c in cols:
@@ -243,28 +253,30 @@ class SessionRepo:
         self,
         *,
         scenario_id: str,
-        scenario_title_ru: str,
+        scenario_title_l1: str,
         level: str,
         correction_mode: str,
         connection_id: int | None,
         connection_name: str,
         model: str,
+        l1: str = "",
     ) -> str:
         sid = new_id()
         self.db.execute(
-            "INSERT INTO session(id, scenario_id, scenario_title_ru, level, correction_mode,"
-            " connection_id, connection_name, model, started_at)"
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO session(id, scenario_id, scenario_title_l1, level, correction_mode,"
+            " connection_id, connection_name, model, started_at, l1)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 sid,
                 scenario_id,
-                scenario_title_ru,
+                scenario_title_l1,
                 level,
                 correction_mode,
                 connection_id,
                 connection_name,
                 model,
                 now_iso(),
+                l1,
             ),
         )
         return sid
@@ -360,7 +372,7 @@ class SessionRepo:
         with self.db.transaction() as conn:
             for it in items:
                 conn.execute(
-                    "INSERT INTO correction(id, turn_id, session_id, quote, fix, type, note_ru,"
+                    "INSERT INTO correction(id, turn_id, session_id, quote, fix, type, note_l1,"
                     ' pattern, start, "end", created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                     (
                         it["id"],
@@ -369,7 +381,7 @@ class SessionRepo:
                         it["quote"],
                         it["fix"],
                         it["type"],
-                        it["note_ru"],
+                        it["note_l1"],
                         it["pattern"],
                         it["start"],
                         it["end"],

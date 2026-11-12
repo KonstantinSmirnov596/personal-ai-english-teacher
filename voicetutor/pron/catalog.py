@@ -41,8 +41,8 @@ class CatalogEntry:
     detect: str
     default_level: str
     priority: int
-    title_ru: str
-    tip_ru: str
+    title_l1: str
+    tip_l1: str
     pairs: tuple[tuple[str, ...], ...]  # (expected class, heard key)
     examples: tuple[tuple[str, str, str], ...]  # (heard key, expected word, heard word)
 
@@ -89,8 +89,8 @@ def entries() -> tuple[CatalogEntry, ...]:
                 detect=e.get("detect", "substitution"),
                 default_level=e.get("default_level", "approx"),
                 priority=int(e.get("priority", 3)),
-                title_ru=e.get("title_ru", ""),
-                tip_ru=e.get("tip_ru", ""),
+                title_l1=e.get("title_ru", ""),
+                tip_l1=e.get("tip_ru", ""),
                 pairs=tuple(pairs),
                 examples=examples,
             )
@@ -156,7 +156,7 @@ def tip(entry: CatalogEntry, heard: str) -> dict[str, Any]:
     pair = entry.example_for(heard)
     return {
         "catalog_id": entry.id,
-        "title_ru": entry.title_ru,
-        "tip_ru": entry.tip_ru,
+        "title_l1": entry.title_l1,
+        "tip_l1": entry.tip_l1,
         "pair": list(pair) if pair else None,
     }

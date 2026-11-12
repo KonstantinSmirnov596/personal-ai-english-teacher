@@ -151,7 +151,7 @@ def build_result(
             if j.entry is not None:
                 tip = catalog.tip(j.entry, heard_symbol(j.heard, ""))
             else:
-                tip = {"catalog_id": None, "title_ru": "", "tip_ru": "", "pair": None}
+                tip = {"catalog_id": None, "title_l1": "", "tip_l1": "", "pair": None}
             tip["phone_index"] = local
             tip["expected"] = phones_out[local]["expected"]
             tip["heard"] = phones_out[local]["heard"]

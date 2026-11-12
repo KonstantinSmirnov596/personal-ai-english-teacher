@@ -1,7 +1,7 @@
 """Installs the window fonts (Inter, JetBrains Mono; OFL-1.1) into web/fonts at setup time.
 
 The packages come from the npm registry (Fontsource builds), pinned by version and verified by
-their sha512 integrity. Only Latin and Cyrillic subsets in WOFF2 are kept. Safe to run again.
+their sha512 integrity. Only the Latin subsets in WOFF2 are kept. Safe to run again.
 """
 
 from __future__ import annotations
@@ -16,7 +16,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 WEB_FONTS = Path(__file__).resolve().parent.parent / "web" / "fonts"
-SUBSETS = ("latin", "latin-ext", "cyrillic", "cyrillic-ext")
+# Latin covers English, Spanish and Portuguese (á é í ó ú ñ ã õ ç ü); latin-ext the rest of Latin.
+SUBSETS = ("latin", "latin-ext")
 
 
 @dataclass(frozen=True)
