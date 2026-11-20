@@ -1,6 +1,6 @@
 # Code of conduct
 
-Voice Tutor is made for people learning a language, and many of the people around the project write in a language that is not their first one. Be patient and kind about language mistakes, in issues and in code reviews alike.
+Personal AI English Teacher is made for people learning a language, and many of the people around the project write in a language that is not their first one. Be patient and kind about language mistakes, in issues and in code reviews alike.
 
 ## Expected
 

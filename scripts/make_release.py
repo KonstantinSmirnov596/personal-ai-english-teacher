@@ -1,4 +1,4 @@
-"""Release packaging (plan item 4.2): ``dist/VoiceTutor-<version>.zip`` and ``SHA256SUMS.txt``.
+"""Release packaging (plan item 4.2): ``dist/EnglishTeacher-<version>.zip`` and ``SHA256SUMS.txt``.
 
 The archive holds what a user needs to run ``install.cmd``: the app code, the installer scripts,
 the lock file, the user documentation in three languages and the notices. It never holds model
@@ -101,7 +101,7 @@ def sha256(path: Path) -> str:
 
 def build(out_dir: Path) -> Path:
     ver = version()
-    name = f"VoiceTutor-{ver}"
+    name = f"EnglishTeacher-{ver}"
     out_dir.mkdir(parents=True, exist_ok=True)
     archive = out_dir / f"{name}.zip"
     with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as z:

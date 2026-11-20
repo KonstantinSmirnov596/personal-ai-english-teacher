@@ -1,4 +1,4 @@
-# Cómo instalar Voice Tutor
+# Cómo instalar Personal AI English Teacher
 
 La instalación se hace con un doble clic y sin permisos de administrador. No necesitas Python ni ninguna otra herramienta: el instalador trae las suyas. Calcula de 20 a 60 minutos, según tu conexión a internet; casi todo el tiempo se va en descargar unos 8 GB.
 
@@ -12,10 +12,10 @@ La instalación se hace con un doble clic y sin permisos de administrador. No ne
 
 <a id="download"></a>
 
-Descarga `VoiceTutor-<versión>.zip` desde la página de versiones (Releases) del proyecto en GitHub. Al lado, `SHA256SUMS.txt` indica su suma de comprobación; para verificarla, abre PowerShell en la carpeta de descargas y compara:
+Descarga `EnglishTeacher-<versión>.zip` desde la página de versiones (Releases) del proyecto en GitHub. Al lado, `SHA256SUMS.txt` indica su suma de comprobación; para verificarla, abre PowerShell en la carpeta de descargas y compara:
 
 ```powershell
-Get-FileHash .\VoiceTutor-0.1.0.zip -Algorithm SHA256
+Get-FileHash .\EnglishTeacher-0.1.0.zip -Algorithm SHA256
 ```
 
 ## Extracción
@@ -23,7 +23,7 @@ Get-FileHash .\VoiceTutor-0.1.0.zip -Algorithm SHA256
 <a id="extract"></a>
 
 1. Haz clic derecho en el `.zip` → Propiedades → marca «Desbloquear» → Aceptar. Así evitas advertencias de seguridad para cada script.
-2. Extráelo en una carpeta tuya con una ruta corta, por ejemplo `C:\VoiceTutor` o `Documentos\VoiceTutor`. Evita `Archivos de programa` (necesita permisos de administrador) y las carpetas sincronizadas con OneDrive.
+2. Extráelo en una carpeta tuya con una ruta corta, por ejemplo `C:\EnglishTeacher` o `Documentos\EnglishTeacher`. Evita `Archivos de programa` (necesita permisos de administrador) y las carpetas sincronizadas con OneDrive.
 
 ## Instalación
 
@@ -39,7 +39,7 @@ Haz doble clic en `install.cmd`. Una ventana de consola muestra cada paso:
 6. **Fuentes y detector de voz** para la ventana de la aplicación.
 7. **Accesos directos.** Pregunta si quieres accesos directos en el escritorio y en el menú Inicio (Enter significa sí). Siempre se crea uno en la carpeta de la aplicación.
 
-Cada descarga está fijada a una versión exacta y se verifica con una suma de comprobación. Al terminar, Voice Tutor se abre con su asistente de configuración inicial.
+Cada descarga está fijada a una versión exacta y se verifica con una suma de comprobación. Al terminar, Personal AI English Teacher se abre con su asistente de configuración inicial.
 
 ## Primer inicio
 

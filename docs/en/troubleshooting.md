@@ -17,7 +17,7 @@ It lists what is missing (graphics card, driver, video memory, disk space) and l
 <a id="install-path"></a>
 ### The installer complains about the folder
 
-Extract the archive to a folder you own, for example `C:\VoiceTutor` or `Documents\VoiceTutor`, not into `Program Files` (it needs administrator rights) and not into a folder synchronized by OneDrive. Spaces in the path are fine. Accented letters are fine when Windows keeps a short name for the folder; if the installer says otherwise, choose a path without accents.
+Extract the archive to a folder you own, for example `C:\EnglishTeacher` or `Documents\EnglishTeacher`, not into `Program Files` (it needs administrator rights) and not into a folder synchronized by OneDrive. Spaces in the path are fine. Accented letters are fine when Windows keeps a short name for the folder; if the installer says otherwise, choose a path without accents.
 
 <a id="install-network"></a>
 ### A download fails or stops
@@ -27,7 +27,7 @@ Run `install.cmd` again: every step checks what is already in place, and the mod
 <a id="antivirus"></a>
 ### An antivirus removed files
 
-Some antivirus programs quarantine files inside the app's Python environment. Restore them, add the Voice Tutor folder to the exceptions, and run `install.cmd` again.
+Some antivirus programs quarantine files inside the app's Python environment. Restore them, add the Personal AI English Teacher folder to the exceptions, and run `install.cmd` again.
 
 ## Starting the app
 

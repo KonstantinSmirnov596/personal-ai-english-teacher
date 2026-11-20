@@ -1,6 +1,6 @@
-# Cómo usar Voice Tutor
+# Cómo usar Personal AI English Teacher
 
-Voice Tutor tiene cuatro secciones en la barra superior: Conversación, Lectura, Vocabulario e Historial. La configuración está detrás del ícono de controles a la derecha. La interfaz, las correcciones, las traducciones y los consejos están en tu idioma (español o portugués); el tutor siempre habla inglés estadounidense general.
+Personal AI English Teacher tiene cuatro secciones en la barra superior: Conversación, Lectura, Vocabulario e Historial. La configuración está detrás del ícono de controles a la derecha. La interfaz, las correcciones, las traducciones y los consejos están en tu idioma (español o portugués); el tutor siempre habla inglés estadounidense general.
 
 ## Primer inicio
 

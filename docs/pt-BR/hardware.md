@@ -1,6 +1,6 @@
 # Requisitos de hardware
 
-O Voice Tutor reconhece a sua voz, fala como tutor e avalia a sua pronúncia no seu próprio computador, com a sua placa de vídeo NVIDIA. O áudio nunca sai do computador. Esta página explica cada item que o instalador (`install.cmd`) e o assistente de configuração inicial verificam, e o que fazer quando algum não é atendido.
+O Personal AI English Teacher reconhece a sua voz, fala como tutor e avalia a sua pronúncia no seu próprio computador, com a sua placa de vídeo NVIDIA. O áudio nunca sai do computador. Esta página explica cada item que o instalador (`install.cmd`) e o assistente de configuração inicial verificam, e o que fazer quando algum não é atendido.
 
 ## Mínimo e recomendado
 

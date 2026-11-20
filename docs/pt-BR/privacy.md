@@ -1,6 +1,6 @@
 # Privacidade
 
-O Voice Tutor é um aplicativo de desktop sem contas, sem estatísticas de uso e sem telemetria. Esta página diz exatamente o que sai do seu computador, o que fica nele e como apagar.
+O Personal AI English Teacher é um aplicativo de desktop sem contas, sem estatísticas de uso e sem telemetria. Esta página diz exatamente o que sai do seu computador, o que fica nele e como apagar.
 
 ## O que sai do computador
 

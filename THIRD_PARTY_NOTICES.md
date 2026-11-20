@@ -1,6 +1,6 @@
 # Third-party notices
 
-Voice Tutor's own code is licensed under the MIT license (`LICENSE`). The repository and the release archive contain only that code. The installer (`install.cmd`) downloads the components below onto your computer from their official distribution points; each keeps its own license. The full license audit with sources is in `docs/reports/licenses.md`.
+Personal AI English Teacher's own code is licensed under the MIT license (`LICENSE`). The repository and the release archive contain only that code. The installer (`install.cmd`) downloads the components below onto your computer from their official distribution points; each keeps its own license. The full license audit with sources is in `docs/reports/licenses.md`.
 
 ## Models
 
@@ -13,7 +13,7 @@ Voice Tutor's own code is licensed under the MIT license (`LICENSE`). The reposi
 
 ## Copyleft components
 
-These are installed as Python packages from PyPI and used at run time. Voice Tutor does not modify them.
+These are installed as Python packages from PyPI and used at run time. Personal AI English Teacher does not modify them.
 
 | Component | License | Source code |
 | --- | --- | --- |
@@ -39,7 +39,7 @@ These are installed as Python packages from PyPI and used at run time. Voice Tut
 | Python 3.12 (python-build-standalone) | Python Software Foundation License | Installed by `uv` into the app folder |
 | uv 0.13.7 (Astral) | MIT or Apache-2.0 | Installer tool, downloaded from its GitHub release |
 | PyTorch 2.11.0 (CUDA 12.8 build) | BSD-3-Clause | Its wheel carries its own third-party notices |
-| NVIDIA CUDA and cuDNN runtime libraries | NVIDIA CUDA EULA and cuDNN license (proprietary) | Shipped inside the PyTorch and CTranslate2 wheels; Voice Tutor does not redistribute them |
+| NVIDIA CUDA and cuDNN runtime libraries | NVIDIA CUDA EULA and cuDNN license (proprietary) | Shipped inside the PyTorch and CTranslate2 wheels; Personal AI English Teacher does not redistribute them |
 | Microsoft Edge | Microsoft software license | Part of Windows; used as the app window |
 
 ## Python packages installed at run time

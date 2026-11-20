@@ -1,7 +1,7 @@
 // Interface strings of the window: Brazilian Portuguese. Same keys as web/i18n/es-419.js.
 
 export default {
-  appTitle: 'Voice Tutor',
+  appTitle: 'Personal AI English Teacher',
   nav: {
     talk: 'Conversa',
     reading: 'Leitura',
@@ -308,8 +308,8 @@ export default {
     },
     result: { ok: 'ok', warn: 'atenção', fail: 'insuficiente' },
     fixes: {
-      gpu: 'O Voice Tutor precisa de uma placa de vídeo NVIDIA (GeForce RTX série 20 ou mais nova, com 6 GB de memória de vídeo ou mais). Sem uma placa NVIDIA, o reconhecimento e a voz não funcionam.',
-      driver: 'Atualize o driver da NVIDIA em nvidia.com/drivers ou pelo aplicativo NVIDIA, reinicie o computador e abra o Voice Tutor de novo.',
+      gpu: 'O Personal AI English Teacher precisa de uma placa de vídeo NVIDIA (GeForce RTX série 20 ou mais nova, com 6 GB de memória de vídeo ou mais). Sem uma placa NVIDIA, o reconhecimento e a voz não funcionam.',
+      driver: 'Atualize o driver da NVIDIA em nvidia.com/drivers ou pelo aplicativo NVIDIA, reinicie o computador e abra o Personal AI English Teacher de novo.',
       architecture: 'Esta placa é antiga demais para as bibliotecas CUDA que o aplicativo usa. É preciso uma GeForce RTX série 20 ou mais nova.',
       vram: 'Há pouca memória de vídeo livre. Feche jogos, editores de vídeo e outros programas que usam a placa de vídeo e clique em «Verificar de novo».',
       ram: 'Com menos de 16 GB de RAM o aplicativo pode ficar lento, principalmente com o navegador e outros programas abertos.',
@@ -343,7 +343,7 @@ export default {
     modelsPresent: 'Todos os modelos estão instalados.',
     modelsMissing: 'Faltam modelos. O aplicativo não baixa nada sozinho: os modelos são instalados pelo instalador.',
     modelsSteps: [
-      'Execute o install.cmd de novo a partir da pasta do Voice Tutor. Ele baixa os modelos que faltam (cerca de 3,2 GB), continua se a conexão cair e confere se os arquivos estão completos.',
+      'Execute o install.cmd de novo a partir da pasta do Personal AI English Teacher. Ele baixa os modelos que faltam (cerca de 3,2 GB), continua se a conexão cair e confere se os arquivos estão completos.',
       'Quando terminar, clique em «Verificar de novo».',
     ],
     benchmarkRun: 'Medir',

@@ -1,4 +1,4 @@
-# Installing Voice Tutor
+# Installing Personal AI English Teacher
 
 Installation takes one double-click and no administrator rights. You do not need Python or any other tool: the installer brings its own. Plan for 20–60 minutes, depending on your internet connection; most of the time goes into downloading about 8 GB.
 
@@ -12,10 +12,10 @@ Installation takes one double-click and no administrator rights. You do not need
 
 <a id="download"></a>
 
-Download `VoiceTutor-<version>.zip` from the project's Releases page on GitHub. Next to it, `SHA256SUMS.txt` lists its checksum; to verify it, open PowerShell in the download folder and compare:
+Download `EnglishTeacher-<version>.zip` from the project's Releases page on GitHub. Next to it, `SHA256SUMS.txt` lists its checksum; to verify it, open PowerShell in the download folder and compare:
 
 ```powershell
-Get-FileHash .\VoiceTutor-0.1.0.zip -Algorithm SHA256
+Get-FileHash .\EnglishTeacher-0.1.0.zip -Algorithm SHA256
 ```
 
 ## Extract
@@ -23,7 +23,7 @@ Get-FileHash .\VoiceTutor-0.1.0.zip -Algorithm SHA256
 <a id="extract"></a>
 
 1. Right-click the `.zip` → Properties → tick "Unblock" → OK. This avoids security warnings for each script.
-2. Extract it to a folder of your own with a short path, for example `C:\VoiceTutor` or `Documents\VoiceTutor`. Avoid `Program Files` (needs administrator rights) and folders synchronized by OneDrive.
+2. Extract it to a folder of your own with a short path, for example `C:\EnglishTeacher` or `Documents\EnglishTeacher`. Avoid `Program Files` (needs administrator rights) and folders synchronized by OneDrive.
 
 ## Install
 
@@ -39,7 +39,7 @@ Double-click `install.cmd`. A console window shows each step:
 6. **Fonts and the voice detector** for the app window.
 7. **Shortcuts.** It asks whether to put shortcuts on the Desktop and in the Start menu (press Enter for yes). A shortcut is always created in the app folder.
 
-Every download is pinned to an exact version and checked against a checksum. When everything is done, Voice Tutor starts and its first-run wizard opens.
+Every download is pinned to an exact version and checked against a checksum. When everything is done, Personal AI English Teacher starts and its first-run wizard opens.
 
 ## First start
 

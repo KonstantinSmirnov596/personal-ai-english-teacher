@@ -1,6 +1,6 @@
 # Hardware requirements
 
-Voice Tutor recognizes your speech, speaks as the tutor and checks your pronunciation on your own computer, with your NVIDIA graphics card. No audio leaves the computer. This page explains each item that the installer (`install.cmd`) and the first-run wizard check, and what to do when one is not met.
+Personal AI English Teacher recognizes your speech, speaks as the tutor and checks your pronunciation on your own computer, with your NVIDIA graphics card. No audio leaves the computer. This page explains each item that the installer (`install.cmd`) and the first-run wizard check, and what to do when one is not met.
 
 ## Minimum and recommended
 

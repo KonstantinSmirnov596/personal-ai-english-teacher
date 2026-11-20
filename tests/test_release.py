@@ -28,8 +28,8 @@ def built(tmp_path_factory: pytest.TempPathFactory) -> tuple[Path, list[str]]:
 def test_archive_name_and_checksum(built: tuple[Path, list[str]]) -> None:
     archive, names = built
     ver = make_release.version()
-    assert archive.name == f"VoiceTutor-{ver}.zip"
-    assert all(n.startswith(f"VoiceTutor-{ver}/") for n in names)
+    assert archive.name == f"EnglishTeacher-{ver}.zip"
+    assert all(n.startswith(f"EnglishTeacher-{ver}/") for n in names)
     sums = (archive.parent / "SHA256SUMS.txt").read_text(encoding="ascii").split()
     assert sums == [hashlib.sha256(archive.read_bytes()).hexdigest(), archive.name]
     assert (archive.parent / f"release-notes-v{ver}.md").exists()

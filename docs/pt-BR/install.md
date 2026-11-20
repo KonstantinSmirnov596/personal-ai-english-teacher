@@ -1,4 +1,4 @@
-# Como instalar o Voice Tutor
+# Como instalar o Personal AI English Teacher
 
 A instalação é feita com um clique duplo e sem permissão de administrador. Você não precisa de Python nem de outra ferramenta: o instalador traz as dele. Conte com 20 a 60 minutos, conforme a sua conexão com a internet; quase todo o tempo vai no download de cerca de 8 GB.
 
@@ -12,10 +12,10 @@ A instalação é feita com um clique duplo e sem permissão de administrador. V
 
 <a id="download"></a>
 
-Baixe o `VoiceTutor-<versão>.zip` na página de versões (Releases) do projeto no GitHub. Ao lado, o `SHA256SUMS.txt` traz a soma de verificação; para conferir, abra o PowerShell na pasta de downloads e compare:
+Baixe o `EnglishTeacher-<versão>.zip` na página de versões (Releases) do projeto no GitHub. Ao lado, o `SHA256SUMS.txt` traz a soma de verificação; para conferir, abra o PowerShell na pasta de downloads e compare:
 
 ```powershell
-Get-FileHash .\VoiceTutor-0.1.0.zip -Algorithm SHA256
+Get-FileHash .\EnglishTeacher-0.1.0.zip -Algorithm SHA256
 ```
 
 ## Extração
@@ -23,7 +23,7 @@ Get-FileHash .\VoiceTutor-0.1.0.zip -Algorithm SHA256
 <a id="extract"></a>
 
 1. Clique com o botão direito no `.zip` → Propriedades → marque «Desbloquear» → OK. Assim você evita avisos de segurança para cada script.
-2. Extraia em uma pasta sua com um caminho curto, por exemplo `C:\VoiceTutor` ou `Documentos\VoiceTutor`. Evite `Arquivos de Programas` (precisa de permissão de administrador) e pastas sincronizadas com o OneDrive.
+2. Extraia em uma pasta sua com um caminho curto, por exemplo `C:\EnglishTeacher` ou `Documentos\EnglishTeacher`. Evite `Arquivos de Programas` (precisa de permissão de administrador) e pastas sincronizadas com o OneDrive.
 
 ## Instalação
 
@@ -39,7 +39,7 @@ Clique duas vezes no `install.cmd`. Uma janela de console mostra cada etapa:
 6. **Fontes e detector de voz** para a janela do aplicativo.
 7. **Atalhos.** Pergunta se você quer atalhos na área de trabalho e no menu Iniciar (Enter significa sim). Um atalho é sempre criado na pasta do aplicativo.
 
-Cada download é fixado em uma versão exata e conferido com uma soma de verificação. No fim, o Voice Tutor abre com o assistente de configuração inicial.
+Cada download é fixado em uma versão exata e conferido com uma soma de verificação. No fim, o Personal AI English Teacher abre com o assistente de configuração inicial.
 
 ## Primeira abertura
 

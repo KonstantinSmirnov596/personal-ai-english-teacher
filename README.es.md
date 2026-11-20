@@ -1,4 +1,4 @@
-# Voice Tutor
+# Personal AI English Teacher (ES/PT) for Desktop/Notebook with GPU
 
 [English](README.md) · [Português (Brasil)](README.pt-BR.md)
 
@@ -30,7 +30,7 @@ Detalles: [requisitos de hardware](docs/es/hardware.md).
 
 ## Instalación
 
-1. Descarga `VoiceTutor-<versión>.zip` desde la página de versiones (Releases), haz clic derecho → Propiedades → Desbloquear, y extráelo en una ruta corta como `C:\VoiceTutor`.
+1. Descarga `EnglishTeacher-<versión>.zip` desde la [página de versiones (Releases)](https://github.com/KonstantinSmirnov596/personal-ai-english-teacher/releases), haz clic derecho → Propiedades → Desbloquear, y extráelo en una ruta corta como `C:\EnglishTeacher`.
 2. Haz doble clic en `install.cmd`. Primero revisa tu computadora y luego descarga lo necesario (unos 8 GB), sin permisos de administrador y sin que necesites Python.
 3. La aplicación se abre con un asistente de configuración: idioma, revisión del equipo, micrófono, voz, conexión de API y nivel.
 

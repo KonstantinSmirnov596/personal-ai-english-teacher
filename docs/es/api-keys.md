@@ -1,6 +1,6 @@
 # Claves de API y proveedores
 
-Las respuestas del tutor, las correcciones, las traducciones y el resumen de la sesión vienen de un modelo de lenguaje grande (LLM) de un proveedor que tú eliges. Voice Tutor le envía solo el texto de la conversación: nunca el audio, nunca tu nombre. Le pagas directamente al proveedor; Voice Tutor no tiene cuentas ni cobros propios.
+Las respuestas del tutor, las correcciones, las traducciones y el resumen de la sesión vienen de un modelo de lenguaje grande (LLM) de un proveedor que tú eliges. Personal AI English Teacher le envía solo el texto de la conversación: nunca el audio, nunca tu nombre. Le pagas directamente al proveedor; Personal AI English Teacher no tiene cuentas ni cobros propios.
 
 ## Cómo elegir un proveedor
 
@@ -17,7 +17,7 @@ La ventana de conexiones trae plantillas listas. Cada valor se revisó en la doc
 
 ## Cómo crear una clave con límite de gasto
 
-Crea una clave aparte solo para Voice Tutor y ponle un límite, para que un error nunca cueste más de lo que decidiste.
+Crea una clave aparte solo para Personal AI English Teacher y ponle un límite, para que un error nunca cueste más de lo que decidiste.
 
 <a id="deepseek"></a>
 ### DeepSeek
@@ -28,7 +28,7 @@ Crea una clave aparte solo para Voice Tutor y ponle un límite, para que un erro
 <a id="openai"></a>
 ### OpenAI
 
-1. En la plataforma de OpenAI, crea un proyecto para Voice Tutor y dentro de ese proyecto crea una clave secreta ([administrar proyectos](https://help.openai.com/en/articles/9186755-managing-projects-in-the-api-platform), en inglés).
+1. En la plataforma de OpenAI, crea un proyecto para Personal AI English Teacher y dentro de ese proyecto crea una clave secreta ([administrar proyectos](https://help.openai.com/en/articles/9186755-managing-projects-in-the-api-platform), en inglés).
 2. Define un límite de gasto mensual para el proyecto y activa «Enforce a hard limit»: así las solicitudes fallan cuando se alcanza el límite, en lugar de solo enviar un aviso ([límites de gasto](https://developers.openai.com/api/docs/guides/spend-limits), en inglés).
 
 <a id="openrouter"></a>

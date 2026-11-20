@@ -11,7 +11,7 @@ param(
 . "$PSScriptRoot\_common.ps1"
 Assert-Venv
 
-$name = 'Voice Tutor'
+$name = 'Personal AI English Teacher'
 $pythonw = Join-Path $VenvDir 'Scripts\pythonw.exe'
 if (-not (Test-Path $pythonw)) { throw "pythonw.exe not found in $VenvDir" }
 $icon = Join-Path $RepoRoot 'assets\voicetutor.ico'

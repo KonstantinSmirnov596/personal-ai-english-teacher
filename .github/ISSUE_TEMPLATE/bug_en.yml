@@ -20,7 +20,7 @@ body:
 - type: input
   id: version
   attributes:
-    label: Voice Tutor version
+    label: Personal AI English Teacher version
     description: Shown in the release archive name, for example 0.1.0.
   validations:
     required: true

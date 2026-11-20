@@ -81,7 +81,7 @@ def test_shortcut_starts_app_once_and_core_exits_with_window(tmp_path: Path) -> 
     )
     assert made.returncode == 0, made.stderr
     links = list(out_dir.glob("*.lnk"))
-    assert len(links) == 1 and links[0].stem == "Voice Tutor"
+    assert len(links) == 1 and links[0].stem == "Personal AI English Teacher"
     props = ps(
         f"$l = (New-Object -ComObject WScript.Shell).CreateShortcut('{links[0]}');"
         " $l.TargetPath; $l.Arguments; $l.WorkingDirectory; $l.IconLocation"

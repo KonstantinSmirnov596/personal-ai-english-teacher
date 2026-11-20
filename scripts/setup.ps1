@@ -1,4 +1,4 @@
-# Installs or updates Voice Tutor (plan item 4.1). Started by install.cmd; no system Python and
+# Installs or updates Personal AI English Teacher (plan item 4.1). Started by install.cmd; no system Python and
 # no administrator rights needed. Safe to run again: every step checks what is in place.
 #
 #   1. requirements and folders, before anything is downloaded

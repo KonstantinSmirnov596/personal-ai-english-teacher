@@ -8,7 +8,7 @@ The owner may change them; until then these apply (SPEC section 1).
 
 | Question | Default |
 | --- | --- |
-| Working name | Voice Tutor; package `voicetutor`; data dir `%LOCALAPPDATA%\VoiceTutor`; keyring service `VoiceTutor`; env prefix `VOICETUTOR_` |
+| Working name | Personal AI English Teacher; package `voicetutor`; data dir `%LOCALAPPDATA%\VoiceTutor`; keyring service `VoiceTutor`; env prefix `VOICETUTOR_` |
 | Repository | Local git only, no remote |
 | Code license | MIT, unless the license audit (0.6) finds an obstacle |
 | Learner languages | `es-419`, `pt-BR`; Russian locale of the predecessor is dropped in stage 1 |
@@ -146,7 +146,7 @@ Goal: a user without Python installs from a release zip by double-click; docs in
 
 - **4.1 Installer.** `install.cmd` → `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\setup.ps1`; pinned uv from the Astral GitHub release with SHA-256 from the repo; `uv python install 3.12`; `uv sync --locked`; models by commit hash with resume and SHA-256; fonts/VAD by sha512; path check (spaces, non-ASCII) before downloads; shortcuts (desktop and Start menu after console confirmation); launch → wizard. `uninstall.cmd` removes shortcuts and environment, user data only after confirmation.
   *Check:* `scripts/check_clean_install.py` from the release zip with Mark of the Web into a clean directory with clean `LOCALAPPDATA`/`TEMP`; path tests; resume after interrupted download.
-- **4.2 Release packaging.** `scripts/make_release.ps1` → `VoiceTutor-<version>.zip` (no models, no environment, no espeak-ng binaries), `SHA256SUMS.txt`, release notes in three languages (draft).
+- **4.2 Release packaging.** `scripts/make_release.ps1` → `EnglishTeacher-<version>.zip` (no models, no environment, no espeak-ng binaries), `SHA256SUMS.txt`, release notes in three languages (draft).
   *Check:* `tests/test_release.py` inspects the archive content.
 - **4.3 Privacy hardening.** No turn text in logs by default; verbose-log setting with warning; network test kept.
   *Check:* fast test on log content; `tests/gpu/test_network.py`.

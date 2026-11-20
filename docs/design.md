@@ -1,4 +1,4 @@
-# Voice Tutor: system design
+# Personal AI English Teacher: system design
 
 Architecture and key decisions. Static screen mockups are in `docs/ui/`; the window–core contract is in `docs/protocol.md`; the order of work and acceptance criteria are in `docs/PLAN.md`.
 
@@ -206,7 +206,7 @@ SPEC 8: no executable; a release archive with the source and a script that needs
 
 ```mermaid
 flowchart LR
-  zip["VoiceTutor-x.y.z.zip<br/>code, docs, uv.lock"] --> cmd["install.cmd"]
+  zip["EnglishTeacher-x.y.z.zip<br/>code, docs, uv.lock"] --> cmd["install.cmd"]
   cmd --> req["requirements and folders<br/>(nothing downloaded yet)"]
   req --> uv["uv (GitHub release, SHA-256)"]
   uv --> py["Python 3.12 into .tools<br/>(uv checks SHA-256)"]

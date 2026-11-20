@@ -17,7 +17,7 @@ Ele mostra o que falta (placa de vídeo, driver, memória de vídeo, espaço em 
 <a id="install-path"></a>
 ### O instalador reclama da pasta
 
-Extraia o arquivo em uma pasta sua, por exemplo `C:\VoiceTutor` ou `Documentos\VoiceTutor`, não em `Arquivos de Programas` (precisa de permissão de administrador) nem em uma pasta sincronizada com o OneDrive. Espaços no caminho não são problema. Letras com acento também não, se o Windows mantiver um nome curto para a pasta; se o instalador disser o contrário, escolha um caminho sem acentos.
+Extraia o arquivo em uma pasta sua, por exemplo `C:\EnglishTeacher` ou `Documentos\EnglishTeacher`, não em `Arquivos de Programas` (precisa de permissão de administrador) nem em uma pasta sincronizada com o OneDrive. Espaços no caminho não são problema. Letras com acento também não, se o Windows mantiver um nome curto para a pasta; se o instalador disser o contrário, escolha um caminho sem acentos.
 
 <a id="install-network"></a>
 ### Um download falha ou para
@@ -27,7 +27,7 @@ Execute o `install.cmd` de novo: cada etapa confere o que já está pronto, e os
 <a id="antivirus"></a>
 ### Um antivírus apagou arquivos
 
-Alguns antivírus colocam em quarentena arquivos do ambiente Python do aplicativo. Restaure-os, adicione a pasta do Voice Tutor às exceções e execute o `install.cmd` de novo.
+Alguns antivírus colocam em quarentena arquivos do ambiente Python do aplicativo. Restaure-os, adicione a pasta do Personal AI English Teacher às exceções e execute o `install.cmd` de novo.
 
 ## Ao abrir o aplicativo
 

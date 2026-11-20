@@ -1,5 +1,5 @@
 @echo off
-rem Voice Tutor uninstaller: removes the Python environment, downloaded tools and shortcuts.
+rem Personal AI English Teacher uninstaller: removes the Python environment, downloaded tools and shortcuts.
 rem Your data and API keys are deleted only after you confirm.
 setlocal
 cd /d "%~dp0"

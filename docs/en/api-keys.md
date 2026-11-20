@@ -1,6 +1,6 @@
 # API keys and providers
 
-The tutor's replies, the corrections, translations and the session summary come from a large language model (LLM) at a provider you choose. Voice Tutor sends it only the text of the conversation: never audio, never your name. You pay the provider directly; Voice Tutor has no account and no fees of its own.
+The tutor's replies, the corrections, translations and the session summary come from a large language model (LLM) at a provider you choose. Personal AI English Teacher sends it only the text of the conversation: never audio, never your name. You pay the provider directly; Personal AI English Teacher has no account and no fees of its own.
 
 ## Choosing a provider
 
@@ -17,7 +17,7 @@ The connection window has ready-made templates. Every value in them was checked 
 
 ## Creating a key with a spending limit
 
-Create a separate key just for Voice Tutor and give it a limit, so a mistake can never cost more than you decided.
+Create a separate key just for Personal AI English Teacher and give it a limit, so a mistake can never cost more than you decided.
 
 <a id="deepseek"></a>
 ### DeepSeek
@@ -28,7 +28,7 @@ Create a separate key just for Voice Tutor and give it a limit, so a mistake can
 <a id="openai"></a>
 ### OpenAI
 
-1. In the OpenAI platform, create a project for Voice Tutor and create a secret key inside that project ([managing projects](https://help.openai.com/en/articles/9186755-managing-projects-in-the-api-platform)).
+1. In the OpenAI platform, create a project for Personal AI English Teacher and create a secret key inside that project ([managing projects](https://help.openai.com/en/articles/9186755-managing-projects-in-the-api-platform)).
 2. Set a monthly spend limit on the project and turn on "Enforce a hard limit": requests then fail once the limit is reached, instead of only sending an alert ([spend limits](https://developers.openai.com/api/docs/guides/spend-limits)).
 
 <a id="openrouter"></a>

@@ -1,6 +1,6 @@
 # Privacidad
 
-Voice Tutor es una aplicación de escritorio sin cuentas, sin estadísticas de uso y sin telemetría. Esta página dice exactamente qué sale de tu computadora, qué se queda en ella y cómo borrarlo.
+Personal AI English Teacher es una aplicación de escritorio sin cuentas, sin estadísticas de uso y sin telemetría. Esta página dice exactamente qué sale de tu computadora, qué se queda en ella y cómo borrarlo.
 
 ## Qué sale de la computadora
 

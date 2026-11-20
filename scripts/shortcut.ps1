@@ -71,7 +71,7 @@ namespace VoiceTutor {
 }
 
 function New-VtShortcut([string]$Path, [string]$Target, [string]$Arguments, [string]$WorkDir, [string]$Icon) {
-    [VoiceTutor.Shortcut]::Save($Path, $Target, $Arguments, $WorkDir, $Icon, 'Voice Tutor')
+    [VoiceTutor.Shortcut]::Save($Path, $Target, $Arguments, $WorkDir, $Icon, 'Personal AI English Teacher')
 }
 
 function Get-VtShortcutTarget([string]$Path) {

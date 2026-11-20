@@ -1,6 +1,6 @@
 # Privacy
 
-Voice Tutor is a desktop app without accounts, analytics or telemetry. This page lists exactly what leaves your computer, what stays on it and how to delete it.
+Personal AI English Teacher is a desktop app without accounts, analytics or telemetry. This page lists exactly what leaves your computer, what stays on it and how to delete it.
 
 ## What leaves the computer
 

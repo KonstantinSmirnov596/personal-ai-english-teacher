@@ -1,6 +1,6 @@
-# Using Voice Tutor
+# Using Personal AI English Teacher
 
-Voice Tutor has four sections in the top bar: Conversation, Reading, Vocabulary and History. Settings are behind the sliders icon on the right. The interface, corrections, translations and tips are in your language (Spanish or Portuguese); the tutor always speaks General American English.
+Personal AI English Teacher has four sections in the top bar: Conversation, Reading, Vocabulary and History. Settings are behind the sliders icon on the right. The interface, corrections, translations and tips are in your language (Spanish or Portuguese); the tutor always speaks General American English.
 
 ## First start
 

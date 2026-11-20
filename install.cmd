@@ -1,5 +1,5 @@
 @echo off
-rem Voice Tutor installer: double-click. No administrator rights and no Python needed.
+rem Personal AI English Teacher installer: double-click. No administrator rights and no Python needed.
 rem Runs scripts\setup.ps1 with Windows PowerShell; safe to run again (it continues where it stopped).
 setlocal
 cd /d "%~dp0"

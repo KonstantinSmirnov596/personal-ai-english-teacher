@@ -17,7 +17,7 @@ Indica qué falta (tarjeta gráfica, controlador, memoria de video, espacio en d
 <a id="install-path"></a>
 ### El instalador se queja de la carpeta
 
-Extrae el archivo en una carpeta tuya, por ejemplo `C:\VoiceTutor` o `Documentos\VoiceTutor`, no en `Archivos de programa` (necesita permisos de administrador) ni en una carpeta sincronizada con OneDrive. Los espacios en la ruta no son problema. Las letras con acento tampoco, si Windows conserva un nombre corto para la carpeta; si el instalador dice lo contrario, elige una ruta sin acentos.
+Extrae el archivo en una carpeta tuya, por ejemplo `C:\EnglishTeacher` o `Documentos\EnglishTeacher`, no en `Archivos de programa` (necesita permisos de administrador) ni en una carpeta sincronizada con OneDrive. Los espacios en la ruta no son problema. Las letras con acento tampoco, si Windows conserva un nombre corto para la carpeta; si el instalador dice lo contrario, elige una ruta sin acentos.
 
 <a id="install-network"></a>
 ### Una descarga falla o se detiene
@@ -27,7 +27,7 @@ Vuelve a ejecutar `install.cmd`: cada paso revisa lo que ya está listo, y los m
 <a id="antivirus"></a>
 ### Un antivirus eliminó archivos
 
-Algunos antivirus ponen en cuarentena archivos del entorno de Python de la aplicación. Restáuralos, agrega la carpeta de Voice Tutor a las excepciones y vuelve a ejecutar `install.cmd`.
+Algunos antivirus ponen en cuarentena archivos del entorno de Python de la aplicación. Restáuralos, agrega la carpeta de Personal AI English Teacher a las excepciones y vuelve a ejecutar `install.cmd`.
 
 ## Al iniciar la aplicación
 

@@ -1,7 +1,7 @@
 """Clean installation from the release archive (plan item 4.1).
 
-1. ``make_release`` builds ``VoiceTutor-<version>.zip``; it is extracted into a folder whose path
-   has a space and accents (and stays under the installer's 80-character limit).
+1. ``make_release`` builds ``EnglishTeacher-<version>.zip``; it is extracted into a folder whose
+   path has a space and accents (and stays under the installer's 80-character limit).
 2. ``LOCALAPPDATA`` and ``TEMP`` point to new empty folders (also with spaces and an accent), so
    nothing from this machine is reused: uv, Python, packages and models are downloaded and
    verified again by ``install.cmd -Shortcuts no -NoLaunch``.
@@ -153,7 +153,7 @@ def main() -> int:
             app / ".tools" / "python",
             app / "web" / "fonts" / "fonts.css",
             app / "web" / "vendor" / "vad" / "bundle.min.js",
-            app / "Voice Tutor.lnk",
+            app / "Personal AI English Teacher.lnk",
         ]
         missing = [str(p) for p in expected if not p.exists()]
         if missing:

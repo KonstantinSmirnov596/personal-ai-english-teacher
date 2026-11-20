@@ -1,6 +1,6 @@
 # Chaves de API e provedores
 
-As respostas do tutor, as correções, as traduções e o resumo da sessão vêm de um modelo de linguagem grande (LLM) de um provedor que você escolhe. O Voice Tutor envia a ele só o texto da conversa: nunca o áudio, nunca o seu nome. Você paga direto ao provedor; o Voice Tutor não tem contas nem cobranças próprias.
+As respostas do tutor, as correções, as traduções e o resumo da sessão vêm de um modelo de linguagem grande (LLM) de um provedor que você escolhe. O Personal AI English Teacher envia a ele só o texto da conversa: nunca o áudio, nunca o seu nome. Você paga direto ao provedor; o Personal AI English Teacher não tem contas nem cobranças próprias.
 
 ## Como escolher um provedor
 
@@ -17,7 +17,7 @@ A janela de conexões traz modelos de conexão prontos. Cada valor foi conferido
 
 ## Como criar uma chave com limite de gasto
 
-Crie uma chave separada só para o Voice Tutor e coloque um limite, para que um erro nunca custe mais do que você decidiu.
+Crie uma chave separada só para o Personal AI English Teacher e coloque um limite, para que um erro nunca custe mais do que você decidiu.
 
 <a id="deepseek"></a>
 ### DeepSeek
@@ -28,7 +28,7 @@ Crie uma chave separada só para o Voice Tutor e coloque um limite, para que um 
 <a id="openai"></a>
 ### OpenAI
 
-1. Na plataforma da OpenAI, crie um projeto para o Voice Tutor e, dentro dele, crie uma chave secreta ([gerenciar projetos](https://help.openai.com/en/articles/9186755-managing-projects-in-the-api-platform), em inglês).
+1. Na plataforma da OpenAI, crie um projeto para o Personal AI English Teacher e, dentro dele, crie uma chave secreta ([gerenciar projetos](https://help.openai.com/en/articles/9186755-managing-projects-in-the-api-platform), em inglês).
 2. Defina um limite de gasto mensal para o projeto e ative «Enforce a hard limit»: assim as solicitações falham quando o limite é atingido, em vez de só enviar um alerta ([limites de gasto](https://developers.openai.com/api/docs/guides/spend-limits), em inglês).
 
 <a id="openrouter"></a>

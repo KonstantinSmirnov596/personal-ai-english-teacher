@@ -1,6 +1,6 @@
-# Contributing to Voice Tutor
+# Contributing to Personal AI English Teacher
 
-Thank you for helping. Voice Tutor is a Windows desktop app for practicing spoken American English, for learners who speak Latin American Spanish or Brazilian Portuguese. Bug reports, translations, pronunciation catalogs and code are all welcome.
+Thank you for helping. Personal AI English Teacher is a Windows desktop app for practicing spoken American English, for learners who speak Latin American Spanish or Brazilian Portuguese. Bug reports, translations, pronunciation catalogs and code are all welcome.
 
 Code, comments, commit messages and developer documentation are in English. User-facing texts are in Spanish and Portuguese (and English for the installer and the docs).
 

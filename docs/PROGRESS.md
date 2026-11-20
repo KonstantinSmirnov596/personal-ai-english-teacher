@@ -4,7 +4,7 @@ Maintained by Claude Code. Read at the start of every session, updated after eve
 
 ## State
 
-- Current stage: done (stages 0–4 accepted); waiting for the owner's decisions on publication
+- Current stage: done (stages 0–4 accepted); first publication approved by the owner on 2026-11-20 (repository and release v0.1.0)
 - Current item: none open; owner tasks in `docs/HUMAN_TASKS.md`
 - Last stage check: `check_stage.ps1 4` — exit 0, 2026-11-12, clean worktree of `554066c` with its own environment (repeated setup OK; fast 328, gpu 29, e2e 20, gpu@compacto 29, e2e@compacto 20; profile benchmark, `ci_local.ps1` and the clean install from the release archive passed; live skipped: no key)
 
@@ -149,6 +149,14 @@ Format: date, item, decision, reason. Deviations from SPEC, PLAN or `docs/design
 | 2026-11-12 | 4.1 | `.gitattributes` keeps CRLF for `.cmd`, `.bat`, `.ps1` | `* text=auto eol=lf` would give batch files LF endings on checkout, which cmd.exe can misread |
 | 2026-11-12 | 4.5 | Of two neighbouring insertions "added after" and "added before" (the same vowel between two words) only the one with the larger margin is reported | The Portuguese README screenshot showed a false mark on "should" before "es-TART"; the stage 2 metrics of both languages are unchanged |
 | 2026-11-12 | 4.8 | `check_stage.ps1` runs the developer setup (`-Dev -Shortcuts no -NoLaunch`); the acceptance worktree builds its own environment from the package cache instead of a junction to the main `.venv` | The first stage 4 run used the user setup, which rebuilt `.venv` without test tools through the junction (the main environment was rebuilt with `setup.ps1 -Dev`) and would have created Desktop shortcuts |
+| 2026-11-20 | publication | Product name "Personal AI English Teacher" (window title, UI, shortcut, docs); the full title "Personal AI English Teacher (ES/PT) for Desktop/Notebook with GPU" for the README heading, the repository description and the release; internal identifiers (`voicetutor`, `%LOCALAPPDATA%\VoiceTutor`, keyring service, `VOICETUTOR_*`) unchanged | Owner's answer; renaming internal identifiers would move users' data and keys for no gain |
+| 2026-11-20 | publication | Release archive and suggested folder `EnglishTeacher-<version>` | Explorer extracts into a folder named after the archive; a short name keeps the nested path under the installer's 80-character limit |
+| 2026-11-20 | publication | License MIT, "Copyright (c) 2026 Konstantin Smirnov"; GPL components listed in `THIRD_PARTY_NOTICES.md` | Owner left the license to Claude Code and accepted the default on the GPL question; MIT gives users and contributors the widest permission; the GPL components are installed from PyPI on the user's machine and never shipped |
+| 2026-11-20 | publication | `docs/SPEC.md` and `docs/BASELINE_REPORT.md` tracked; the hygiene test allows Cyrillic only in these two files and still forbids `CLAUDE.local.md`; the release archive keeps excluding them | Owner's answer; users do not need the Russian brief in the archive |
+| 2026-11-20 | publication | Before the first push all commits are rewritten to author and committer `Konstantin Smirnov <GitHub noreply address>` with dates kept and the Claude co-author trailer; branch `master` renamed to `main` | Owner's answer; the personal e-mail address must not reach the public history; CI triggers on `main` |
+| 2026-11-20 | publication | v0.1.0 is published as a pre-release | Texts not proofread by native speakers, `live` suite not run, only one GPU tested |
+| 2026-11-20 | publication | The hygiene rule for profile paths requires a folder name after `Users\` (`test_user_path_pattern` checks both sides) | The published brief quotes the bare prefix when it describes this check; a prefix without a name is not personal data, and every real profile path still matches |
+
 ## Failed checks
 
 Format: check, what was tried, what was seen, next step.

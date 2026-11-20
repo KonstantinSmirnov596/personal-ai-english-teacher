@@ -162,7 +162,7 @@ function Read-VtYesNo {
     return ($YesLetters.ToUpperInvariant().Contains($first))
 }
 
-function Get-VtShortcutPaths([string]$Name = 'Voice Tutor') {
+function Get-VtShortcutPaths([string]$Name = 'Personal AI English Teacher') {
     return @(
         (Join-Path ([Environment]::GetFolderPath('Desktop')) "$Name.lnk"),
         (Join-Path ([Environment]::GetFolderPath('Programs')) "$Name.lnk")

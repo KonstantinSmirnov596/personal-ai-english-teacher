@@ -38,9 +38,9 @@ $asciiShort = { param($p) 'C:\PROGRA~1\VOICET~1' }
 $ok = { param($p) $true }
 $a = @{ ShortPath = { param($p) '' }; LongPaths = $false; Writable = $ok }
 $data = 'D:\Home\ana\AppData\Local\VoiceTutor'
-$out.plain = Ids (Test-VtInstallPath -AppDir 'C:\VoiceTutor' -DataDir $data @a)
-$out.spaces = Ids (Test-VtInstallPath -AppDir 'D:\Home\ana\My Apps\Voice Tutor' -DataDir $data @a)
-$jose = 'D:\Home\José\Voice Tutor'
+$out.plain = Ids (Test-VtInstallPath -AppDir 'C:\EnglishTeacher' -DataDir $data @a)
+$out.spaces = Ids (Test-VtInstallPath -AppDir 'D:\Home\ana\My Apps\AI Tutor' -DataDir $data @a)
+$jose = 'D:\Home\José\Personal AI English Teacher'
 $b = @{ ShortPath = $asciiShort; LongPaths = $false; Writable = $ok }
 $out.accent_short = Ids (Test-VtInstallPath -AppDir $jose -DataDir 'D:\Home\José\AppData' @b)
 $out.accent_noshort = Ids (Test-VtInstallPath -AppDir $jose -DataDir $data @a)
@@ -194,11 +194,11 @@ def test_every_script_parses_in_windows_powershell() -> None:
 def test_shortcuts_in_accented_folders(tmp_path: Path) -> None:
     """WScript.Shell cannot save a shortcut under "José Ñ"; the Unicode helper can, and the
     target reads back unchanged (scripts/shortcut.ps1)."""
-    folder = tmp_path / "José Ñ" / "Voice Tutor"
+    folder = tmp_path / "José Ñ" / "Personal AI English Teacher"
     folder.mkdir(parents=True)
     target = folder / "pythonw.exe"
     target.write_bytes(b"")
-    link = folder / "Voice Tutor.lnk"
+    link = folder / "Personal AI English Teacher.lnk"
     code = (
         f". '{SCRIPTS / 'shortcut.ps1'}'; "
         f"New-VtShortcut -Path '{link}' -Target '{target}' -Arguments '-m voicetutor.launcher' "

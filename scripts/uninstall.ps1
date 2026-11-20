@@ -1,6 +1,6 @@
-# Removes Voice Tutor from this computer (plan item 4.1). Started by uninstall.cmd.
+# Removes Personal AI English Teacher from this computer (plan item 4.1). Started by uninstall.cmd.
 #
-#   - asks first; closes a running Voice Tutor
+#   - asks first; closes a running Personal AI English Teacher
 #   - removes the shortcuts that point to this app, .venv, .tools (uv, Python, package cache),
 #     and the downloaded window assets (web\fonts, web\vendor)
 #   - asks separately before deleting the data folder (%LOCALAPPDATA%\VoiceTutor) and the API
@@ -30,7 +30,7 @@ if (-not $remove) {
 }
 $deleteData = $DeleteData -or ((-not $Yes) -and (Read-VtYesNo -Question (Say 'uninstall_data_question' @{ path = $dataDir }) -YesLetters ([string]$Msg.yes_letters) -Default $false))
 
-# A running Voice Tutor keeps files open. The venv's pythonw.exe is a launcher that starts the
+# A running Personal AI English Teacher keeps files open. The venv's pythonw.exe is a launcher that starts the
 # interpreter from .tools\python, so match any Python process from this app folder.
 $appPrefix = $RepoRoot.TrimEnd([char]92) + [char]92
 $running = @(Get-CimInstance Win32_Process -Filter "Name = 'pythonw.exe' OR Name = 'python.exe'" |
@@ -49,7 +49,7 @@ if ($deleteData -and (Test-Path $VenvPython)) {
 
 # Shortcuts that point to this app.
 . "$PSScriptRoot\shortcut.ps1"
-foreach ($link in @((Get-VtShortcutPaths) + (Join-Path $RepoRoot 'Voice Tutor.lnk'))) {
+foreach ($link in @((Get-VtShortcutPaths) + (Join-Path $RepoRoot 'Personal AI English Teacher.lnk'))) {
     if (Test-Path $link) {
         $target = Get-VtShortcutTarget $link
         if ($target -and $target.StartsWith($VenvDir, [StringComparison]::OrdinalIgnoreCase)) {

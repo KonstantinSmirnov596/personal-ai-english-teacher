@@ -11,7 +11,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-WINDOW_TITLE = "Voice Tutor"
+WINDOW_TITLE = "Personal AI English Teacher"
 ERROR_ALREADY_EXISTS = 183
 SW_RESTORE = 9
 

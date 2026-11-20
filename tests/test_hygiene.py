@@ -23,12 +23,17 @@ TEXT_SUFFIXES = {
 }  # fmt: skip
 
 # The predecessor's Russian locale is gone (stage 1 removed the UI, prompts and data; stage 2
-# replaced the pronunciation catalog): no file may contain Cyrillic.
-CYRILLIC_ALLOWED: dict[str, str] = {}
+# replaced the pronunciation catalog). Only the owner's own documents, written in Russian and
+# published by the owner's decision (2026-11-20), contain Cyrillic.
+CYRILLIC_ALLOWED: dict[str, str] = {
+    "docs/SPEC.md": "the owner's brief, in Russian",
+    "docs/BASELINE_REPORT.md": "the owner's report on the predecessor, in Russian",
+}
 
 CYRILLIC = re.compile(r"[\u0400-\u052f]")
-# Assembled from parts so this file does not match its own patterns.
-USER_PATH = re.compile(r"[A-Za-z]:[\\/]+" + "Us" + r"ers[\\/]+", re.IGNORECASE)
+# Assembled from parts so this file does not match its own patterns. A profile folder name must
+# follow: the bare prefix, as the brief quotes it when it describes this check, names nobody.
+USER_PATH = re.compile(r"[A-Za-z]:[\\/]+" + "Us" + r"ers[\\/]+(?=[\w.$-])", re.IGNORECASE)
 EMAIL = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}\b")
 SK_KEY = re.compile(r"\bsk-[A-Za-z0-9_-]{12,}")
 SK_TEST = re.compile(r"\bsk-test-")
@@ -82,11 +87,25 @@ def test_scan_sees_the_repository(files: list[tuple[str, str]]) -> None:
 
 def test_local_only_files_are_not_published() -> None:
     names = {rel(p) for p in published_files()}
-    for local in ("docs/SPEC.md", "docs/BASELINE_REPORT.md", "CLAUDE.local.md"):
+    # The brief and the baseline are published (owner's decision, 2026-11-20); local notes are not.
+    for local in ("CLAUDE.local.md",):
         assert local not in names, f"{local} must stay untracked"
     assert ".claude/settings.local.json" not in names
     assert not [n for n in names if n.startswith((".venv/", ".tools/", "test-results/"))]
     assert not [n for n in names if n.endswith((".db", ".db-wal", ".db-shm", ".lnk"))]
+
+
+def test_user_path_pattern() -> None:
+    users = "Us" + "ers"
+    for path in (
+        f"C:\\{users}\\someone\\AppData",
+        f"c:/{users}/someone",
+        f"D:\\\\{users}\\\\José",
+        f"C:\\{users}\\Public",
+    ):
+        assert USER_PATH.search(path), path
+    for text in (f"`C:\\\\{users}\\\\`", f"C:\\{users}\\ ", f"C:\\{users}\\<user>"):
+        assert not USER_PATH.search(text), text
 
 
 def test_no_user_profile_paths_or_user_name(files: list[tuple[str, str]]) -> None:

@@ -1,4 +1,4 @@
-# Voice Tutor
+# Personal AI English Teacher
 
 Open-source Windows desktop app for practicing spoken American English. Learners speak Latin American Spanish (`es-419`) or Brazilian Portuguese (`pt-BR`); the tutor speaks only General American English. Speech recognition, speech synthesis and pronunciation assessment run locally on an NVIDIA GPU; only dialogue text goes to the LLM provider the user picks.
 
@@ -6,8 +6,8 @@ The code base comes from a private single-user predecessor; its location and own
 
 Project documents:
 
-- `docs/SPEC.md` — the brief (owner's language, not tracked in git). Source of truth for WHAT to build.
-- `docs/BASELINE_REPORT.md` — what the predecessor does and its measured targets (not tracked in git).
+- `docs/SPEC.md` — the brief (owner's language; published in the repository by the owner's decision). Source of truth for WHAT to build.
+- `docs/BASELINE_REPORT.md` — what the predecessor does and its measured targets (owner's language; published).
 - `docs/PLAN.md` — stages 0–4, items, checks. Source of truth for ORDER and for when a stage is closed.
 - `docs/PROGRESS.md` — current stage and item, decisions with reasons, failed checks, measurements.
 - `docs/HUMAN_TASKS.md` — what only the owner can do, plus the question queue.
@@ -32,7 +32,7 @@ Project documents:
 
 ## Hard constraints
 
-- No publishing: no `git push`, no GitHub repository, release, issue or PR without the owner's explicit command in chat. Work happens in the local git repository.
+- No publishing without the owner's explicit command in chat: no `git push`, no new GitHub repository, release, issue or PR. The owner approved the first publication on 2026-11-20 (repository `KonstantinSmirnov596/personal-ai-english-teacher`, release v0.1.0); each later push or release needs a new command.
 - Never ask the owner for an API key in chat. Keys are typed only into the app window.
 - At runtime the only outbound traffic is HTTPS (or `http://127.0.0.1` for local providers) to the base URL of the active LLM connection. No telemetry, analytics, crash reports, update checks, CDNs, external fonts or scripts. Packages, models, fonts and the VAD are downloaded only at install time.
 - Audio never leaves the computer: STT, TTS and pronunciation assessment run locally.
@@ -72,7 +72,7 @@ Pinned in `uv.lock`; facts and links in `docs/reports/stage0.md`.
 - `scripts/ci_local.ps1` — the CI steps, locally (ruff, fast suite).
 - `scripts/check_release.ps1` — gpu and e2e under both profiles (what CI cannot run).
 - `install.cmd` / `uninstall.cmd` — the user's installer and uninstaller (`scripts/setup.ps1`, `scripts/uninstall.ps1`).
-- `scripts/make_release.ps1` — `dist/VoiceTutor-<version>.zip` and `SHA256SUMS.txt`. Nothing is uploaded.
+- `scripts/make_release.ps1` — `dist/EnglishTeacher-<version>.zip` and `SHA256SUMS.txt`. Nothing is uploaded.
 - `scripts/collect_diagnostics.ps1` — a bug-report archive without keys or conversation text.
 
 ## Test isolation

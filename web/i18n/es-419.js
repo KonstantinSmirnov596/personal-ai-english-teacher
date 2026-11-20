@@ -1,7 +1,7 @@
 // Interface strings of the window: Spanish (Latin America). Same keys as web/i18n/pt-BR.js.
 
 export default {
-  appTitle: 'Voice Tutor',
+  appTitle: 'Personal AI English Teacher',
   nav: {
     talk: 'Conversación',
     reading: 'Lectura',
@@ -308,8 +308,8 @@ export default {
     },
     result: { ok: 'bien', warn: 'aviso', fail: 'no alcanza' },
     fixes: {
-      gpu: 'Voice Tutor necesita una tarjeta gráfica NVIDIA (GeForce RTX serie 20 o más reciente, con 6 GB de memoria de video o más). Sin una tarjeta NVIDIA el reconocimiento y la voz no pueden funcionar.',
-      driver: 'Actualiza el controlador de NVIDIA desde nvidia.com/drivers o la aplicación NVIDIA, reinicia la computadora y vuelve a abrir Voice Tutor.',
+      gpu: 'Personal AI English Teacher necesita una tarjeta gráfica NVIDIA (GeForce RTX serie 20 o más reciente, con 6 GB de memoria de video o más). Sin una tarjeta NVIDIA el reconocimiento y la voz no pueden funcionar.',
+      driver: 'Actualiza el controlador de NVIDIA desde nvidia.com/drivers o la aplicación NVIDIA, reinicia la computadora y vuelve a abrir Personal AI English Teacher.',
       architecture: 'Esta tarjeta es demasiado antigua para las bibliotecas de CUDA que usa la aplicación. Se necesita una GeForce RTX serie 20 o más reciente.',
       vram: 'Hay poca memoria de video libre. Cierra juegos, editores de video y otros programas que usen la tarjeta gráfica y haz clic en «Revisar otra vez».',
       ram: 'Con menos de 16 GB de RAM la aplicación puede ir lenta, sobre todo con el navegador y otros programas abiertos.',
@@ -343,7 +343,7 @@ export default {
     modelsPresent: 'Todos los modelos están instalados.',
     modelsMissing: 'Faltan modelos. La aplicación no descarga nada por su cuenta: los modelos se instalan con el instalador.',
     modelsSteps: [
-      'Ejecuta install.cmd otra vez desde la carpeta de Voice Tutor. Descarga los modelos que faltan (unos 3,2 GB), continúa si la conexión se corta y revisa que los archivos estén completos.',
+      'Ejecuta install.cmd otra vez desde la carpeta de Personal AI English Teacher. Descarga los modelos que faltan (unos 3,2 GB), continúa si la conexión se corta y revisa que los archivos estén completos.',
       'Cuando termine, haz clic en «Revisar otra vez».',
     ],
     benchmarkRun: 'Medir',
