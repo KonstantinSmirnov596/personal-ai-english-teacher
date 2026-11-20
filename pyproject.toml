@@ -1,6 +1,6 @@
 [project]
 name = "voicetutor"
-version = "0.1.0"
+version = "0.1.1"
 description = "Local voice tutor for spoken American English with pronunciation feedback for Spanish and Portuguese speakers"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"

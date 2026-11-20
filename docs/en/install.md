@@ -15,7 +15,7 @@ Installation takes one double-click and no administrator rights. You do not need
 Download `EnglishTeacher-<version>.zip` from the project's Releases page on GitHub. Next to it, `SHA256SUMS.txt` lists its checksum; to verify it, open PowerShell in the download folder and compare:
 
 ```powershell
-Get-FileHash .\EnglishTeacher-0.1.0.zip -Algorithm SHA256
+Get-FileHash .\EnglishTeacher-0.1.1.zip -Algorithm SHA256
 ```
 
 ## Extract

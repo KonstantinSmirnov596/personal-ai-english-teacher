@@ -2,6 +2,12 @@
 
 All notable changes are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.1.1] - 2026-11-20
+
+### Fixed
+
+- The installer could stop right after installing Python with "Python was installed but uv cannot find it". Windows PowerShell sometimes ended the `uv python find` step early and read its exit code as a failure; the installer now waits for the step to finish.
+
 ## [0.1.0] - 2026-11-20
 
 First public version.

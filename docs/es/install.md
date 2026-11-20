@@ -15,7 +15,7 @@ La instalación se hace con un doble clic y sin permisos de administrador. No ne
 Descarga `EnglishTeacher-<versión>.zip` desde la página de versiones (Releases) del proyecto en GitHub. Al lado, `SHA256SUMS.txt` indica su suma de comprobación; para verificarla, abre PowerShell en la carpeta de descargas y compara:
 
 ```powershell
-Get-FileHash .\EnglishTeacher-0.1.0.zip -Algorithm SHA256
+Get-FileHash .\EnglishTeacher-0.1.1.zip -Algorithm SHA256
 ```
 
 ## Extracción
