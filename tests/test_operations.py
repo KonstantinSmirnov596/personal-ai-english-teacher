@@ -55,7 +55,21 @@ def test_second_launch_does_not_start_a_second_core(tmp_path: Path) -> None:
         third.stop()
 
 
+def startup_messages(code: str) -> set[str]:
+    texts = set()
+    for path in (REPO / "voicetutor" / "data" / "l1").glob("*/messages.json"):
+        texts.add(json.loads(path.read_text(encoding="utf-8"))["errors"][code])
+    return texts
+
+
 def test_no_gpu_is_reported_in_plain_words(tmp_path: Path) -> None:
+    # With an NVIDIA card the hardware check passes and hiding CUDA leaves "no_gpu"; without one
+    # (CI runners) the hardware check already stops the start-up with "unsupported_hardware".
+    from voicetutor import profiles
+    from voicetutor.hardware import SystemDetector
+
+    card = profiles.assess(SystemDetector().detect(tmp_path), measured=False)
+    expected = "unsupported_hardware" if card.profile == "unsupported" else "no_gpu"
     lp = LauncherProcess(tmp_path, env={"CUDA_VISIBLE_DEVICES": "-1"})
     try:
         lp.login()
@@ -66,8 +80,10 @@ def test_no_gpu_is_reported_in_plain_words(tmp_path: Path) -> None:
                 time.sleep(0.5)
                 health = http.get("/api/health").json()
         assert health["status"] == "error"
-        assert [p["code"] for p in health["problems"]] == ["no_gpu"]
-        assert "NVIDIA" in health["problems"][0]["message_l1"]
+        assert [p["code"] for p in health["problems"]] == [expected]
+        assert health["problems"][0]["message_l1"] in startup_messages(expected)
+        if expected == "no_gpu":
+            assert "NVIDIA" in health["problems"][0]["message_l1"]
         assert health["models"]["stt"] == "error"
     finally:
         lp.stop()

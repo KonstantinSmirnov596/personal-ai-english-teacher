@@ -4,8 +4,9 @@ Maintained by Claude Code. Read at the start of every session, updated after eve
 
 ## State
 
-- Current stage: done (stages 0–4 accepted); first publication approved by the owner on 2026-11-20 (repository and release v0.1.0)
+- Current stage: done (stages 0–4 accepted); published 2026-11-20 on the owner's command: https://github.com/KonstantinSmirnov596/personal-ai-english-teacher, pre-release v0.1.0 (tag on `eb5dd72`)
 - Current item: none open; owner tasks in `docs/HUMAN_TASKS.md`
+- Before publication (2026-11-20, after the rename): `ci_local.ps1` OK (fast 329), e2e OK, clean install from `EnglishTeacher-0.1.0.zip` OK in 358 s; the first CI run on GitHub failed on `test_no_gpu_is_reported_in_plain_words` (runner without an NVIDIA card), fixed in the next commit
 - Last stage check: `check_stage.ps1 4` — exit 0, 2026-11-12, clean worktree of `554066c` with its own environment (repeated setup OK; fast 328, gpu 29, e2e 20, gpu@compacto 29, e2e@compacto 20; profile benchmark, `ci_local.ps1` and the clean install from the release archive passed; live skipped: no key)
 
 ## Plan items
@@ -155,6 +156,7 @@ Format: date, item, decision, reason. Deviations from SPEC, PLAN or `docs/design
 | 2026-11-20 | publication | `docs/SPEC.md` and `docs/BASELINE_REPORT.md` tracked; the hygiene test allows Cyrillic only in these two files and still forbids `CLAUDE.local.md`; the release archive keeps excluding them | Owner's answer; users do not need the Russian brief in the archive |
 | 2026-11-20 | publication | Before the first push all commits are rewritten to author and committer `Konstantin Smirnov <GitHub noreply address>` with dates kept and the Claude co-author trailer; branch `master` renamed to `main` | Owner's answer; the personal e-mail address must not reach the public history; CI triggers on `main` |
 | 2026-11-20 | publication | v0.1.0 is published as a pre-release | Texts not proofread by native speakers, `live` suite not run, only one GPU tested |
+| 2026-11-20 | publication | `test_no_gpu_is_reported_in_plain_words` takes the expected problem from the real hardware check: `no_gpu` when the computer has a supported NVIDIA card (CUDA hidden by the test), `unsupported_hardware` when it has none; both check the exact catalog message | The first CI run on GitHub (no NVIDIA card) stopped at the hardware check, which is the app's intended behaviour since stage 3; the test was written on a GPU machine |
 | 2026-11-20 | publication | The hygiene rule for profile paths requires a folder name after `Users\` (`test_user_path_pattern` checks both sides) | The published brief quotes the bare prefix when it describes this check; a prefix without a name is not personal data, and every real profile path still matches |
 
 ## Failed checks
